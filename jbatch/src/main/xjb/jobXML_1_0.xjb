@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Licensed to the Apache Software Foundation (ASF) under one or more
+  contributor license agreements.  See the NOTICE file distributed with
+  this work for additional information regarding copyright ownership.
+  The ASF licenses this file to You under the Apache License, Version 2.0
+  (the "License"); you may not use this file except in compliance with
+  the License.  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+<!-- used to generate JAXB model but since this one was manually updated this file is here just for history -->
+<jaxb:bindings xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+               xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
+               jaxb:version="2.1">
+
+  <jaxb:bindings schemaLocation="../xsd/jobXML_1_0.xsd" node="/xsd:schema">
+    <jaxb:schemaBindings>
+      <jaxb:package name="org.apache.batchee.jaxb"/>
+    </jaxb:schemaBindings>
+    <jaxb:bindings node="//xsd:complexType[@name='Step']/xsd:attribute[@name='next']">
+      <jaxb:property name="nextFromAttribute"/>
+    </jaxb:bindings>
+    <jaxb:bindings node="//xsd:complexType[@name='Split']/xsd:attribute[@name='next']">
+      <jaxb:property name="nextFromAttribute"/>
+    </jaxb:bindings>
+    <jaxb:bindings node="//xsd:complexType[@name='Flow']/xsd:attribute[@name='next']">
+      <jaxb:property name="nextFromAttribute"/>
+    </jaxb:bindings>
+    <jaxb:bindings node="//xsd:complexType[@name='Job']">
+      <jaxb:class name="JSLJob"/>
+    </jaxb:bindings>
+    <jaxb:bindings node="//xsd:complexType[@name='Job']/xsd:sequence/xsd:choice[1]">
+      <jaxb:property name="executionElements">
+        <jaxb:baseType name="org.apache.batchee.container.jsl.ExecutionElement"/>
+      </jaxb:property>
+    </jaxb:bindings>
+    <jaxb:bindings node="//xsd:complexType[@name='Decision']/xsd:sequence/xsd:group[1]">
+      <jaxb:property name="transitionElements">
+        <jaxb:baseType name="org.apache.batchee.container.jsl.TransitionElement"/>
+      </jaxb:property>
+    </jaxb:bindings>
+    <jaxb:bindings node="//xsd:complexType[@name='Step']/xsd:sequence/xsd:group[1]">
+      <jaxb:property name="transitionElements">
+        <jaxb:baseType name="org.apache.batchee.container.jsl.TransitionElement"/>
+      </jaxb:property>
+    </jaxb:bindings>
+    <jaxb:bindings node="//xsd:complexType[@name='Split']/xsd:sequence/xsd:element[@name='flow']">
+      <jaxb:property name="flows"/>
+    </jaxb:bindings>
+    <jaxb:bindings node="//xsd:complexType[@name='Flow']/xsd:sequence/xsd:choice[1]">
+      <jaxb:property name="executionElements">
+        <jaxb:baseType name="org.apache.batchee.container.jsl.ExecutionElement"/>
+      </jaxb:property>
+    </jaxb:bindings>
+    <jaxb:bindings node="//xsd:complexType[@name='Flow']/xsd:sequence/xsd:group[1]">
+      <jaxb:property name="transitionElements">
+        <jaxb:baseType name="org.apache.batchee.container.jsl.TransitionElement"/>
+      </jaxb:property>
+    </jaxb:bindings>
+    <jaxb:bindings node="//xsd:complexType[@name='Properties']">
+      <jaxb:class name="JSLProperties"/>
+    </jaxb:bindings>
+    <jaxb:bindings node="//xsd:complexType[@name='Properties']/xsd:sequence/xsd:element[1]">
+      <jaxb:property name="propertyList"/>
+    </jaxb:bindings>
+    <jaxb:bindings node="//xsd:complexType[@name='Listeners']/xsd:sequence/xsd:element[1]">
+      <jaxb:property name="listenerList"/>
+    </jaxb:bindings>
+    <jaxb:bindings node="//xsd:complexType[@name='ExceptionClassFilter']/xsd:sequence/xsd:element[@name='include']">
+      <jaxb:property name="includeList"/>
+    </jaxb:bindings>
+    <jaxb:bindings node="//xsd:complexType[@name='ExceptionClassFilter']/xsd:sequence/xsd:element[@name='exclude']">
+      <jaxb:property name="excludeList"/>
+    </jaxb:bindings>
+  </jaxb:bindings>
+</jaxb:bindings>
+

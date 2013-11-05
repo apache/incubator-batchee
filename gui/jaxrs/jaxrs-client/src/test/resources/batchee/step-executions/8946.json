@@ -1,0 +1,15 @@
+[
+    {
+        "id": 0,
+        "name": "j0",
+        "batchStatus": "FAILED",
+        "startTime": 1380887154398,
+        "endTime": 1380887154435,
+        "exitStatus": "out"
+    },
+    {
+        "name": "j1",
+        "batchStatus": "COMPLETED",
+        "exitStatus": "es"
+    }
+]

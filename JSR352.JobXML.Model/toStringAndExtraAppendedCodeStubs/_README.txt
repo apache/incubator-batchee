@@ -1,1 +1,0 @@
-More convenient to use .java extensions for the files in this directory so we get syntax highlighting in the editor.

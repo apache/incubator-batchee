@@ -1,0 +1,8 @@
+{"id": 753, "name": "job", "batchStatus": "COMPLETED", "startTime": 1380887154330, "endTime": 1380887154448, "exitStatus": "exit", "createTime": 1380887154287, "lastUpdatedTime": 1380887154448, "jobParameters": {
+    "entries": [
+        {
+            "key": "test",
+            "value": "jbatch"
+        }
+    ]
+}}

@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Licensed to the Apache Software Foundation (ASF) under one or more
+  contributor license agreements.  See the NOTICE file distributed with
+  this work for additional information regarding copyright ownership.
+  The ASF licenses this file to You under the Apache License, Version 2.0
+  (the "License"); you may not use this file except in compliance with
+  the License.  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+<batch-artifacts xmlns="http://xmlns.jcp.org/xml/ns/javaee">
+  <ref id="chainProcessor" class="org.apache.batchee.extras.chain.ChainProcessor" />
+  <ref id="flatReader" class="org.apache.batchee.extras.flat.FlatFileItemReader" />
+  <ref id="flatWriter" class="org.apache.batchee.extras.flat.FlatFileItemWriter" />
+  <ref id="jdbcReader" class="org.apache.batchee.extras.jdbc.JdbcReader" />
+  <ref id="jdbcWriter" class="org.apache.batchee.extras.jdbc.JdbcWriter" />
+  <ref id="jdbcBatchlet" class="org.apache.batchee.extras.jdbc.JdbcBatchlet" />
+  <ref id="jpaReader" class="org.apache.batchee.extras.jpa.JpaItemReader" />
+  <ref id="jpaWriter" class="org.apache.batchee.extras.jpa.JpaItemWriter" />
+  <ref id="noopWriter" class="org.apache.batchee.extras.noop.NoopItemWriter" />
+  <ref id="staxReader" class="org.apache.batchee.extras.stax.StaxItemReader" />
+  <ref id="staxWriter" class="org.apache.batchee.extras.stax.StaxItemWriter" />
+  <ref id="beanValidationProcessor" class="org.apache.batchee.extras.validation.BeanValidationItemProcessor" />
+</batch-artifacts>

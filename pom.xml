@@ -1,218 +1,192 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
-    <groupId>javax.batch</groupId>
-    <artifactId>jbatch</artifactId>
-    <version>1.0</version>
-    <packaging>pom</packaging>
-	<name>JSR-352 RI</name>
-	<description>
-		Batch processing is a pervasive workload pattern, expressed by a distinct application organization and
-		execution model. It is found across virtually every industry, applied to such tasks as statement
-		generation, bank postings, risk evaluation, credit score calculation, inventory management, portfolio
-		optimization, and on and on. Nearly any bulk processing task from any business sector is a candidate for
-		batch processing.
-		Batch processing is typified by bulk-oriented, non-interactive, background execution. Frequently long-
-		running, it may be data or computationally intensive, execute sequentially or in parallel, and may be
-		initiated through various invocation models, including ad hoc, scheduled, and on-demand.
-		Batch applications have common requirements, including logging, checkpointing, and parallelization.
-		Batch workloads have common requirements, especially operational control, which allow for initiation
-		of, and interaction with, batch instances; such interactions include stop and restart.
-	</description>
-	<url>http://java.net/projects/jbatch</url>
-	<licenses>
-		<license>
-			<name>The Apache Software License, Version 2.0</name>
-			<url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
-			<distribution>repo</distribution>
-		</license>
-	</licenses>
-	<scm>
-		<url>git://java.net/jbatch~jsr-352-git-repository</url>
-		<connection>scm:git://java.net/jbatch~jsr-352-git-repository</connection>
-		<developerConnection>scm:git://java.net/jbatch~jsr-352-git-repository</developerConnection>
-	</scm>
-	<parent>
-		<groupId>net.java</groupId>
-		<artifactId>jvnet-parent</artifactId>
-		<version>1</version>
-	</parent>
-	<developers>
-		<developer>
-			<id>scottkurz</id>
-			<name>Scott Kurz</name>
-			<email>skurz@us.ibm.com</email>
-		</developer>
-		<developer>
-			<id></id>
-			<name>Kaushik Mukherjee</name>
-			<email>kmukherj@us.ibm.com</email>
-		</developer>
-		<developer>
-			<id>htavarez</id>
-			<name>Hendrix Tavarez</name>
-			<email>htavarez@us.ibm.com</email>
-		</developer>
-		<developer>
-			<id>dmbelina</id>
-			<name>Dan Belina</name>
-			<email>belina@us.ibm.com</email>
-		</developer>
-		<developer>
-			<id>ajmauer</id>
-			<name>Andrew Mauer</name>
-			<email>ajmauer@us.ibm.com</email>
-		</developer>
-	</developers>
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Licensed to the Apache Software Foundation (ASF) under one or more
+  contributor license agreements.  See the NOTICE file distributed with
+  this work for additional information regarding copyright ownership.
+  The ASF licenses this file to You under the Apache License, Version 2.0
+  (the "License"); you may not use this file except in compliance with
+  the License.  You may obtain a copy of the License at
 
-    <!-- Activate PGP signing only when performing a release -->
-	<profiles>
-		<profile>
-			<id>release-sign-artifacts</id>
-			<activation>
-				<property>
-					<name>performRelease</name>
-					<value>true</value>
-				</property>
-			</activation>
-			<pluginRepositories>
-				<pluginRepository>
-					<id>mc-release</id>
-					<name>Local Maven repository of releases</name>
-					<url>http://mc-repo.googlecode.com/svn/maven2/releases</url>
-					<snapshots>
-						<enabled>false</enabled>
-					</snapshots>
-					<releases>
-						<enabled>true</enabled>
-					</releases>
-				</pluginRepository>
-			</pluginRepositories>
-			<build>
-				<plugins>
-					<plugin>
-						<groupId>org.apache.maven.plugins</groupId>
-						<artifactId>maven-gpg-plugin</artifactId>
-						<version>1.4</version>
-						<executions>
-							<execution>
-								<id>sign-artifacts</id>
-								<phase>verify</phase>
-								<goals>
-									<goal>sign</goal>
-								</goals>
-							</execution>
-						</executions>
-					</plugin>
+      http://www.apache.org/licenses/LICENSE-2.0
 
-				</plugins>
-			</build>
-		</profile>
-	</profiles>
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
 
-    <properties>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    </properties>
-    <modules>
-	<module>JSR352.JobXML.Model</module>
-	<module>JSR352.Runtime</module>
-	<module>JSR352.RI.SPI</module>
-    </modules>
+  <parent>
+    <groupId>org.apache</groupId>
+    <artifactId>apache</artifactId>
+    <version>13</version>
+  </parent>
 
-	<build>
-		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-source-plugin</artifactId>
-				<executions>
-					<execution>
-						<id>attach-sources</id>
-						<goals>
-							<goal>jar</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-javadoc-plugin</artifactId>
-				<configuration>
-					<bottom>
-					<![CDATA[
-					<p align="left">&#169; Copyright IBM Corp. 2013<br>Licensed under the Apache License, Version 2.0
-					]]>
-					</bottom>
-				</configuration>
-				<executions>
-					<execution>
-						<id>attach-javadocs</id>
-						<goals>
-							<goal>jar</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
-					<plugin>
-						<groupId>com.mycila.maven-license-plugin</groupId>
-						<artifactId>maven-license-plugin</artifactId>
-						<configuration>
-							<header>header.txt</header>
-							<skipExistingHeaders>true</skipExistingHeaders>
-							<!-- <strictCheck>true</strictCheck> -->
-							<aggregate>true</aggregate>
-							<excludes>
-								<exclude>**/*.txt</exclude>
-								<exclude>**/*.sql</exclude>
-								<exclude>LICENSE.txt</exclude>
-								<exclude>Documentation</exclude>
-								<exclude>JSR352.Aggregation</exclude>
-								<exclude>JSR352.BinaryDependencies</exclude>
-								<exclude>JSR352.BinaryDependencies.WeDoNotShip</exclude>
-								<exclude>JSR352.JEE.CDI.Integration</exclude>
-								<exclude>JSR352.TCK.CTS</exclude>
-								<exclude>JSR352.WASExtensions</exclude>
-								<exclude>Legal.and.Release.Utils</exclude>
-								<exclude>**/build.properties</exclude>
-								<exclude>**/build.xml</exclude>
-								<exclude>**/src/test/resources/**</exclude>
-								<exclude>**/src/test/data/**</exclude>
-								<exclude>**/bin/**</exclude>
-								<exclude>**/jaxbgen/**</exclude>
-								<exclude>**/toStringStubs/**</exclude>
-								<exclude>**/*.html</exclude>
-								<exclude>**/*.css</exclude>
-								<exclude>**/.jazzignore</exclude>
-								<exclude>**/*.ddl</exclude>
-								<exclude>**/testJunitsBin/**</exclude>
-								<exclude>**/testArtifactsBin/**</exclude>
-								<exclude>**/testResources/**</exclude>
-								<exclude>**/jsr352-tck.properties</exclude>
-								<exclude>**/jsr352-tck-impl-*.xml</exclude>
-								<exclude>**/testng-class.xml</exclude>
-								<exclude>**/testng-method.xml</exclude>
-								<exclude>**/beans.xml</exclude>
-							</excludes>
-							<includes>
-								<include>JSR352.API/**</include>
-								<include>JSR352.JobXML.Model/**</include>
-								<include>JSR352.Runtime/**</include>
-								<include>JSR352.RI.SPI/**</include>
-								<include>JSR352.TCK.SPI/**</include>
-								<include>JSR352.Tests.TCK/**</include>
-							</includes>
-						</configuration>
-						<executions>
-						<!-- 
-							<execution>
-								<id>check-headers</id>
-								<phase>verify</phase>
-								<goals>
-									<goal>check</goal>
-								</goals>
-							</execution>
-						-->
-						</executions>
-					</plugin>
-		</plugins>
-	</build>
+  <groupId>org.apache.batchee</groupId>
+  <artifactId>batchee-parent</artifactId>
+  <version>0.0.1-SNAPSHOT</version>
+  <packaging>pom</packaging>
+  <name>BatchEE</name>
+
+  <modules>
+    <module>jbatch</module>
+    <module>extensions</module>
+    <module>gui</module>
+    <module>tools</module>
+  </modules>
+
+  <dependencyManagement>
+    <dependencies>
+      <!-- APIs -->
+      <dependency>
+        <groupId>javax.batch</groupId>
+        <artifactId>javax.batch-api</artifactId>
+        <version>${batch-api.version}</version>
+        <scope>provided</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.geronimo.specs</groupId>
+        <artifactId>geronimo-servlet_3.0_spec</artifactId>
+        <version>1.0</version>
+        <scope>provided</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.geronimo.specs</groupId>
+        <artifactId>geronimo-atinject_1.0_spec</artifactId>
+        <version>1.0</version>
+        <scope>provided</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.geronimo.specs</groupId>
+        <artifactId>geronimo-jcdi_1.0_spec</artifactId>
+        <version>1.0</version>
+        <scope>provided</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.geronimo.specs</groupId>
+        <artifactId>geronimo-interceptor_1.1_spec</artifactId>
+        <version>1.0</version>
+        <scope>provided</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.geronimo.components</groupId>
+        <artifactId>geronimo-transaction</artifactId>
+        <version>3.1.1</version>
+        <scope>provided</scope>
+      </dependency>
+
+      <dependency>
+        <groupId>com.fasterxml.jackson.jaxrs</groupId>
+        <artifactId>jackson-jaxrs-json-provider</artifactId>
+        <version>${jackson.version}</version>
+        <scope>test</scope>
+      </dependency>
+
+      <!-- Testing libraries -->
+      <dependency> <!-- TCK and default tests -->
+        <groupId>org.testng</groupId>
+        <artifactId>testng</artifactId>
+        <version>6.8.5</version>
+        <scope>test</scope>
+      </dependency>
+      <dependency> <!-- camel/arquillian -->
+        <groupId>junit</groupId>
+        <artifactId>junit</artifactId>
+        <version>4.11</version>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.derby</groupId>
+        <artifactId>derby</artifactId>
+        <version>10.10.1.1</version>
+        <scope>test</scope>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
+  <build>
+    <resources>
+      <resource>
+        <directory>src/main/resources</directory>
+      </resource>
+      <resource>
+        <directory>src/main/xsd</directory>
+      </resource>
+    </resources>
+
+    <plugins>
+      <plugin>
+        <groupId>org.apache.rat</groupId>
+        <artifactId>apache-rat-plugin</artifactId>
+        <version>0.9</version>
+        <configuration>
+          <includes>
+            <include>src/**/*</include>
+            <include>pom.xml</include>
+          </includes>
+          <excludes>
+            <exclude>**/*/MANIFEST.MF</exclude>
+            <exclude>.git</exclude>
+            <exclude>.gitignore</exclude>
+            <exclude>derby.log</exclude>
+            <exclude>**/META-INF/services/*</exclude>
+            <exclude>**/bootstrap-*</exclude>
+            <exclude>**/js/jquery-*</exclude>
+            <exclude>**/*.json</exclude> <!-- json can't get comments -->
+          </excludes>
+        </configuration>
+        <executions>
+          <execution>
+            <phase>validate</phase>
+            <goals>
+              <goal>check</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <version>2.16</version>
+        <configuration>
+          <systemPropertyVariables>
+            <derby.stream.error.file>target/derby.log</derby.stream.error.file>
+          </systemPropertyVariables>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>3.1</version>
+        <configuration>
+          <source>1.6</source>
+          <target>1.6</target>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+
+  <properties>
+    <atinject.version>1.0</atinject.version>
+    <batch-api.version>1.0</batch-api.version>
+    <jackson.version>2.2.2</jackson.version>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+  </properties>
+
+  <repositories>
+    <repository>
+      <id>apache-snapshot-repository</id>
+      <url>https://repository.apache.org/snapshots/</url>
+    </repository>
+  </repositories>
+  <pluginRepositories>
+    <pluginRepository>
+      <id>sonatype-public-repository</id>
+      <url>https://oss.sonatype.org/content/groups/public</url>
+    </pluginRepository>
+  </pluginRepositories>
 </project>
-
