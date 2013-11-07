@@ -28,6 +28,10 @@
 
   <custom>
     <fluidoSkin>
+      <ohloh>
+        <projectId>batchee</projectId>
+        <widget>stats</widget>
+      </ohloh>
       <topBarEnabled>true</topBarEnabled>
       <topBarIcon />
       <sideBarEnabled>true</sideBarEnabled>
