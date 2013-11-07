@@ -27,7 +27,7 @@ you surely already have it and just need to define a custom `javax.ws.rs.core.Ap
 as class in `getClasses` and configure `org.apache.batchee.jaxrs.server.JBatchExceptionMapper` if you want
 to map `javax.batch.operations.BatchRuntimeException` to status 500:
 
-```xml
+<pre class="prettyprint linenums"><![CDATA[
 <web-app version="2.5"
          xmlns="http://java.sun.com/xml/ns/javaee"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -59,7 +59,7 @@ to map `javax.batch.operations.BatchRuntimeException` to status 500:
     <url-pattern>/api/*</url-pattern>
   </servlet-mapping>
 </web-app>
-```
+]]></pre>
 
 Here is the mapping:
 

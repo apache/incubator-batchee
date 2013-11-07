@@ -20,13 +20,13 @@ under the License.
 ## jbatch (aka batchee-jbatch)
 ### Dependency
 
-```xml
+<pre class="prettyprint linenums"><![CDATA[
 <dependency>
   <groupId>org.apache.batchee</groupId>
   <artifactId>batchee-jbatch</artifactId>
   <version>${batchee.version}</version>
 </dependency>
-```
+]]></pre>
 
 ### Goal
 
@@ -35,13 +35,13 @@ Implements JBatch (aka JSR 352). More details on [configuration](./configuration
 ## Shiro
 ### Dependency
 
-```xml
+<pre class="prettyprint linenums"><![CDATA[
 <dependency>
   <groupId>org.apache.batchee</groupId>
   <artifactId>batchee-shiro</artifactId>
   <version>${batchee.version}</version>
 </dependency>
-```
+]]></pre>
 
 ### Goal
 
@@ -51,13 +51,13 @@ A simple integration with Apache Shiro to check permissions when running a batch
 ## Hazelcast
 ### Dependency
 
-```xml
+<pre class="prettyprint linenums"><![CDATA[
 <dependency>
   <groupId>org.apache.batchee</groupId>
   <artifactId>batchee-hazelcast</artifactId>
   <version>${batchee.version}</version>
 </dependency>
-```
+]]></pre>
 
 ### Goal
 
@@ -67,29 +67,29 @@ A module based on Hazelcast API to allow distributed locks.
 ## GUI/Web module
 ### Dependency
 
-```xml
+<pre class="prettyprint linenums"><![CDATA[
 <dependency>
   <groupId>org.apache.batchee</groupId>
   <artifactId>batchee-servlet</artifactId>
   <version>${batchee.version}</version>
 </dependency>
-```
+]]></pre>
 
-```xml
+<pre class="prettyprint linenums"><![CDATA[
 <dependency>
   <groupId>org.apache.batchee</groupId>
   <artifactId>batchee-jaxrs-client</artifactId>
   <version>${batchee.version}</version>
 </dependency>
-```
+]]></pre>
 
-```xml
+<pre class="prettyprint linenums"><![CDATA[
 <dependency>
   <groupId>org.apache.batchee</groupId>
   <artifactId>batchee-jaxrs-server</artifactId>
   <version>${batchee.version}</version>
 </dependency>
-```
+]]></pre>
 
 ### Goal
 
@@ -98,13 +98,13 @@ A simple web front to visualize JBatch information and expose as JAX-RS resource
 ## Extras
 ### Dependency
 
-```xml
+<pre class="prettyprint linenums"><![CDATA[
 <dependency>
   <groupId>org.apache.batchee</groupId>
   <artifactId>batchee-extras</artifactId>
   <version>${batchee.version}</version>
 </dependency>
-```
+]]></pre>
 
 ### Goal
 
@@ -113,13 +113,13 @@ Basic implementations for Readers/Writers/Processors/.... More on it in extensio
 ## BeanIO
 ### Dependency
 
-```xml
+<pre class="prettyprint linenums"><![CDATA[
 <dependency>
   <groupId>org.apache.batchee</groupId>
   <artifactId>batchee-beanio</artifactId>
   <version>${batchee.version}</version>
 </dependency>
-```
+]]></pre>
 
 ### Goal
 
@@ -128,13 +128,13 @@ Basic implementations of a reader and a writer using BeanIO library. Details in 
 ## JSefa
 ### Dependency
 
-```xml
+<pre class="prettyprint linenums"><![CDATA[
 <dependency>
   <groupId>org.apache.batchee</groupId>
   <artifactId>batchee-jsefa</artifactId>
   <version>${batchee.version}</version>
 </dependency>
-```
+]]></pre>
 
 ### Goal
 
@@ -143,13 +143,13 @@ Basic implementations of a reader and a writer using JSefa library.
 ## Groovy
 ### Dependency
 
-```xml
+<pre class="prettyprint linenums"><![CDATA[
 <dependency>
   <groupId>org.apache.batchee</groupId>
   <artifactId>batchee-groovy</artifactId>
   <version>${batchee.version}</version>
 </dependency>
-```
+]]></pre>
 
 ### Goal
 
@@ -160,13 +160,13 @@ to add some dynamicity to batches.
 ## Camel
 ### Dependency
 
-```xml
+<pre class="prettyprint linenums"><![CDATA[
 <dependency>
   <groupId>org.apache.batchee</groupId>
   <artifactId>batchee-camel</artifactId>
   <version>${batchee.version}</version>
 </dependency>
-```
+]]></pre>
 
 ### Goal
 
@@ -176,13 +176,13 @@ A simple integration with Apache Camel.
 ## CDI
 ### Dependency
 
-```xml
+<pre class="prettyprint linenums"><![CDATA[
 <dependency>
   <groupId>org.apache.batchee</groupId>
   <artifactId>batchee-cdi</artifactId>
   <version>${batchee.version}</version>
 </dependency>
-```
+]]></pre>
 
 ### Goal
 
@@ -191,13 +191,13 @@ Provides basic batch oriented scopes (`@JobScoped` and `@StepScoped`).
 ## Maven Plugin
 ### Coordinates
 
-```xml
+<pre class="prettyprint linenums"><![CDATA[
 <plugin>
   <groupId>org.apache.batchee</groupId>
   <artifactId>batchee-maven-plugin</artifactId>
   <version>${batchee.version}</version>
 </plugin>
-```
+]]></pre>
 
 ### Goal
 
@@ -207,13 +207,13 @@ Allows you to contol your batchees from Maven.
 ## Jackson
 ### Dependency
 
-```xml
+<pre class="prettyprint linenums"><![CDATA[
 <dependency>
   <groupId>org.apache.batchee</groupId>
   <artifactId>batchee-jackson</artifactId>
   <version>${batchee.version}</version>
 </dependency>
-```
+]]></pre>
 
 ### Goal
 

@@ -36,7 +36,7 @@ returned value of the n processor.
 
 Sample:
 
-```xml
+<pre class="prettyprint linenums"><![CDATA[
 <step id="step1">
   <chunk>
     <reader ref="..." />
@@ -46,9 +46,7 @@ Sample:
       </properties>
     </processor>
     <writer ref="..." />
-</chunk>
-</step>
-```
+  </chunk></step>]]></pre>
 
 Note: `org.apache.batchee.extras.chain.ChainBatchlet` does the same for `javax.batch.api.Batchlet`.
 
@@ -59,18 +57,17 @@ Shortname: `chainProcessor`
 A reader reading line by line a file. By default the line is returned as a `java.lang.String`. To return another object
 just override `protected Object preReturn(String line, long lineNumber)` method:
 
-```java
+<pre class="prettyprint linenums"><![CDATA[
 public class MyFlatReader extends FlatFileItemReader {
     @Override
     protected Object preReturn(String line, long lineNumber) {
         return new Person(line);
     }
-}
-```
+}]]></pre>
 
 Sample:
 
-```xml
+<pre class="prettyprint linenums"><![CDATA[
 <step id="step1">
   <chunk>
     <reader ref="org.apache.batchee.extras.flat.FlatFileItemReader">
@@ -81,8 +78,7 @@ Sample:
     <processor ref="..." />
     <writer ref="..." />
   </chunk>
-</step>
-```
+</step>]]></pre>
 
 Configuration:
 
@@ -98,19 +94,18 @@ Shortname: `flatReader`
 A writer writing an item by line. By default `toString()` is used on items, to change it
 just override `protected String preWrite(Object object)` method:
 
-```java
+<pre class="prettyprint linenums"><![CDATA[
 public class MyFlatReader extends FlatFileItemReader {
     @Override
     protected String preWrite(final Object object) {
         final Person person = (Person) object;
         return person.getName() + "," + person.getAge();
     }
-}
-```
+}]]></pre>
 
 Sample:
 
-```xml
+<pre class="prettyprint linenums"><![CDATA[
 <step id="step1">
   <chunk>
     <reader ref="..."/>
@@ -121,8 +116,7 @@ Sample:
       </properties>
     </writer>
   </chunk>
-</step>
-```
+</step>]]></pre>
 
 Configuration:
 
@@ -138,7 +132,7 @@ A simple `Batchlet` to execute sql.
 
 Sample:
 
-```xml
+<pre class="prettyprint linenums"><![CDATA[
 <step id="step1">
   <batchlet ref="jdbcBatchlet">
     <properties>
@@ -151,8 +145,7 @@ Sample:
       <property name="password" value="app" />
     </properties>
   </batchlet>
-</step>
-```
+</step>]]></pre>
 
 Configuration:
 
@@ -171,7 +164,7 @@ This reader execute a query while the query returns items.
 
 Sample:
 
-```xml
+<pre class="prettyprint linenums"><![CDATA[
 <step id="step1">
   <chunk>
     <reader ref="org.apache.batchee.extras.jdbc.JdbcReader">
@@ -187,8 +180,7 @@ Sample:
     <processor ref="..." />
     <writer ref="..." />
   </chunk>
-</step>
-```
+</step>]]></pre>
 
 Configuration:
 
@@ -203,7 +195,7 @@ Configuration:
 
 Here is a sample record mapper deleting items once read (Note: you probably don't want to do so or at least not without a managed datasource):
 
-```java
+<pre class="prettyprint linenums"><![CDATA[
 public class SimplePersonMapper implements RecordMapper {
     @Override
     public Object map(final ResultSet resultSet) throws SQLException {
@@ -211,8 +203,7 @@ public class SimplePersonMapper implements RecordMapper {
         resultSet.deleteRow();
         return new Person(name);
     }
-}
-```
+}]]></pre>
 
 Shortname: `jdbcReader`
 
@@ -222,7 +213,7 @@ A writer storing items in a database.
 
 Sample:
 
-```xml
+<pre class="prettyprint linenums"><![CDATA[
 <step id="step1">
   <chunk>
     <reader ref="..."/>
@@ -238,8 +229,7 @@ Sample:
       </properties>
     </writer>
   </chunk>
-</step>
-```
+</step>]]></pre>
 
 Configuration:
 
@@ -254,14 +244,13 @@ Configuration:
 
 Here is a sample object mapper:
 
-```java
+<pre class="prettyprint linenums"><![CDATA[
 public class SimpleMapper implements ObjectMapper {
     @Override
     public void map(final Object item, final PreparedStatement statement) throws SQLException {
         statement.setString(1, item.toString()); // 1 because our insert statement uses values(?)
     }
-}
-```
+}]]></pre>
 
 Shortname: `jdbcWriter`
 
@@ -271,7 +260,7 @@ Reads items from a JPA query.
 
 Sample:
 
-```xml
+<pre class="prettyprint linenums"><![CDATA[
 <step id="step1">
   <chunk>
     <reader ref="org.apache.batchee.extras.jpa.JpaItemReader">
@@ -283,8 +272,7 @@ Sample:
     <processor ref="..." />
     <writer ref="..." />
   </chunk>
-</step>
-```
+</step>]]></pre>
 
 Configuration:
 
@@ -305,7 +293,7 @@ Write items through JPA API.
 
 Sample:
 
-```xml
+<pre class="prettyprint linenums"><![CDATA[
 <step id="step1">
   <chunk>
     <reader ref="..." />
@@ -317,8 +305,7 @@ Sample:
       </properties>
     </writer>
   </chunk>
-</step>
-```
+</step>]]></pre>
 
 Configuration:
 
@@ -335,15 +322,14 @@ A writer doing nothing (in <chunk/> a writer is mandatory so it can mock one if 
 
 Sample:
 
-```xml
+<pre class="prettyprint linenums"><![CDATA[
 <step id="step1">
   <chunk>
     <reader ref="..." />
     <processor ref="..." />
     <writer ref="org.apache.batchee.extras.noop.NoopItemWriter" />
   </chunk>
-</step>
-```
+</step>]]></pre>
 
 Shortname: `noopWriter`
 
@@ -357,7 +343,7 @@ A reader using StAX API to read a XML file.
 
 Sample:
 
-```xml
+<pre class="prettyprint linenums"><![CDATA[
 <step id="step1">
   <chunk>
     <reader ref="org.apache.batchee.extras.stax.StaxItemReader">
@@ -370,8 +356,7 @@ Sample:
     <processor ref="..." />
     <writer ref="..." />
   </chunk>
-</step>
-```
+</step>]]></pre>
 
 Configuration:
 
@@ -388,7 +373,7 @@ A writer using StAX API to write a XML file.
 
 Sample:
 
-```xml
+<pre class="prettyprint linenums"><![CDATA[
 <step id="step1">
   <chunk>
     <reader ref="..." />
@@ -400,8 +385,7 @@ Sample:
       </properties>
     </writer>
   </chunk>
-</step>
-```
+</step>]]></pre>
 
 Configuration:
 
@@ -420,7 +404,7 @@ A reader using BeanIO.
 
 Sample:
 
-```xml
+<pre class="prettyprint linenums"><![CDATA[
 <step id="step1">
   <chunk>
     <reader ref="org.apache.batchee.beanio.BeanIOReader">
@@ -433,12 +417,11 @@ Sample:
     <processor ref="..." />
     <writer ref="..." />
   </chunk>
-</step>
-```
+</step>]]></pre>
 
 Here is the associated beanio.xml:
 
-```xml
+<pre class="prettyprint linenums"><![CDATA[
 <beanio xmlns="http://www.beanio.org/2012/03"
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:schemaLocation="http://www.beanio.org/2012/03 http://www.beanio.org/2012/03/mapping.xsd">
@@ -448,8 +431,7 @@ Here is the associated beanio.xml:
       <field name="field2"/>
     </record>
   </stream>
-</beanio>
-```
+</beanio>]]></pre>
 
 Configuration:
 
@@ -467,7 +449,7 @@ A writer using BeanIO.
 
 Sample:
 
-```xml
+<pre class="prettyprint linenums"><![CDATA[
 <step id="step1">
   <chunk>
     <reader ref="..." />
@@ -480,8 +462,7 @@ Sample:
       </properties>
     </writer>
   </chunk>
-</step>
-```
+</step>]]></pre>
 
 Configuration:
 
@@ -499,7 +480,7 @@ A processor reusing Camel logic.
 
 Sample:
 
-```xml
+<pre class="prettyprint linenums"><![CDATA[
 <step id="step1">
   <chunk>
     <reader ref="..." />
@@ -510,8 +491,7 @@ Sample:
     </processor>
     <writer ref="..." />
   </chunk>
-</step>
-```
+</step>]]></pre>
 
 Configuration:
 
@@ -526,7 +506,7 @@ Same as previous one but with a chain
 
 Sample:
 
-```xml
+<pre class="prettyprint linenums"><![CDATA[
 <step id="step1">
   <chunk>
     <reader ref="..." />
@@ -537,8 +517,7 @@ Sample:
     </processor>
     <writer ref="..." />
   </chunk>
-</step>
-```
+</step>]]></pre>
 
 Configuration: mainly the chain configuration excepted "chain" value is a list of endpoints.
 
@@ -550,7 +529,7 @@ A reader using camel consumers.
 
 Sample:
 
-```xml
+<pre class="prettyprint linenums"><![CDATA[
 <step id="step1">
   <chunk>
     <reader ref="org.apache.batchee.camel.CamelItemReader">
@@ -561,8 +540,7 @@ Sample:
     <processor ref="..." />
     <writer ref="..." />
   </chunk>
-</step>
-```
+</step>]]></pre>
 
 Configuration:
 
@@ -577,7 +555,7 @@ A writer using camel producer.
 
 Sample:
 
-```xml
+<pre class="prettyprint linenums"><![CDATA[
 <step id="step1">
   <chunk>
     <reader ref="..." />
@@ -588,8 +566,7 @@ Sample:
       </properties>
     </writer>
   </chunk>
-</step>
-```
+</step>]]></pre>
 
 Configuration:
 
@@ -622,7 +599,7 @@ A reader delegating to a groovy script.
 
 Sample:
 
-```xml
+<pre class="prettyprint linenums"><![CDATA[
 <step id="step1">
   <chunk>
    <reader ref="groovyReader">
@@ -633,8 +610,7 @@ Sample:
    <processor ref="..." />
    <writer ref="..." />
   </chunk>
-</step>
-```
+</step>]]></pre>
 
 Configuration:
 
@@ -648,7 +624,7 @@ A processor delegating to a groovy script.
 
 Sample:
 
-```xml
+<pre class="prettyprint linenums"><![CDATA[
  <step id="step1">
  <chunk>
    <reader ref="..." />
@@ -659,8 +635,7 @@ Sample:
    </processor>
    <writer ref="..." />
  </chunk>
-</step>
-```
+</step>]]></pre>
 
 Configuration:
 
@@ -674,7 +649,7 @@ A writer delegating to a groovy script.
 
 Sample:
 
-```xml
+<pre class="prettyprint linenums"><![CDATA[
 <step id="step1">
   <chunk>
     <reader ref="..." />
@@ -685,8 +660,7 @@ Sample:
       </properties>
     </writer>
   </chunk>
-</step>
-```
+</step>]]></pre>
 
 Configuration:
 
@@ -700,15 +674,14 @@ A batchlet delegating to a groovy script.
 
 Sample:
 
-```xml
+<pre class="prettyprint linenums"><![CDATA[
 <step id="step1">
   <batchlet ref="groovyBatchlet">
     <properties>
       <property name="scriptPath" value="/groovy/batchlet.groovy"/>
     </properties>
   </batchlet>
-</step>
-```
+</step>]]></pre>
 
 Configuration:
 
@@ -722,15 +695,14 @@ A simple processor validating an item using bean validation.
 
 Sample:
 
-```xml
+<pre class="prettyprint linenums"><![CDATA[
 <step id="step1">
   <chunk>
    <reader ref="..." />
    <processor ref="beanValidationProcessor" />
    <writer ref="..." />
- </chunk>
-</step>
-```
+  </chunk>
+</step>]]></pre>
 
 Configuration:
 
@@ -745,7 +717,7 @@ Use JSefa to read a CSV file.
 
 Sample:
 
-```xml
+<pre class="prettyprint linenums"><![CDATA[
 <step id="step1">
   <chunk>
     <reader ref="jsefaCsvReader">
@@ -756,8 +728,7 @@ Sample:
     </reader>
     <writer ref="..." />
   </chunk>
-</step>
-```
+</step>]]></pre>
 
 Configuration (excepted for file see org.jsefa.csv.config.CsvConfiguration for detail):
 
@@ -788,7 +759,7 @@ Use JSefa to write a CSV file.
 
 Sample:
 
-```xml
+<pre class="prettyprint linenums"><![CDATA[
 <step id="step1">
   <chunk>
     <reader ref="..." />
@@ -799,8 +770,7 @@ Sample:
       </properties>
     </writer>
   </chunk>
-</step>
-```
+</step>]]></pre>
 
 Configuration (excepted for file and encoding see org.jsefa.csv.config.CsvConfiguration for detail):
 
@@ -832,7 +802,7 @@ Use JSefa to read a FLR file.
 
 Sample:
 
-```xml
+<pre class="prettyprint linenums"><![CDATA[
 <step id="step1">
   <chunk>
     <reader ref="jsefaFlrReader">
@@ -843,8 +813,7 @@ Sample:
     </reader>
     <writer ref="..." />
   </chunk>
-</step>
-```
+</step>]]></pre>
 
 Configuration (excepted for file see org.jsefa.flr.config.FlrConfiguration for detail):
 
@@ -870,7 +839,7 @@ Use JSefa to write a FLR file.
 
 Sample:
 
-```xml
+<pre class="prettyprint linenums"><![CDATA[
 <step id="step1">
   <chunk>
     <reader ref="..." />
@@ -881,8 +850,7 @@ Sample:
       </properties>
     </writer>
   </chunk>
-</step>
-```
+</step>]]></pre>
 
 Configuration (excepted for file see org.jsefa.flr.config.FlrConfiguration for detail):
 
@@ -909,7 +877,7 @@ Use JSefa to read a XML file.
 
 Sample:
 
-```xml
+<pre class="prettyprint linenums"><![CDATA[
 <step id="step1">
   <chunk>
     <reader ref="jsefaXmlReader">
@@ -921,8 +889,7 @@ Sample:
     <processor ref="org.apache.batchee.jsefa.JSefaXmlReaderTest$StoreItems" />
     <writer ref="noopWriter" />
   </chunk>
-</step>
-```
+</step>]]></pre>
 
 Configuration (excepted for file see org.jsefa.flr.config.FlrConfiguration for detail):
 
@@ -948,7 +915,7 @@ Use JSefa to write a XML file.
 
 Sample:
 
-```xml
+<pre class="prettyprint linenums"><![CDATA[
 <step id="step1">
   <chunk>
     <reader ref="org.apache.batchee.jsefa.JSefaXmlWriterTest$TwoItemsReader" />
@@ -959,8 +926,7 @@ Sample:
       </properties>
     </writer>
   </chunk>
-</step>
-```
+</step>]]></pre>
 
 Configuration (excepted for file see org.jsefa.flr.config.FlrConfiguration for detail):
 
@@ -987,7 +953,7 @@ Use JSefa to read a XML file.
 
 Sample:
 
-```xml
+<pre class="prettyprint linenums"><![CDATA[
 <step id="step1">
   <chunk>
     <reader ref="jacksonJSonReader">
@@ -998,8 +964,7 @@ Sample:
     </reader>
     <writer ref="org.apache.batchee.jackson.JacksonJsonReaderTest$Writer" />
   </chunk>
-</step>
-```
+</step>]]></pre>
 
 Configuration (excepted for file see org.jsefa.flr.config.FlrConfiguration for detail):
 
@@ -1016,7 +981,7 @@ Use JSefa to write a XML file.
 
 Sample:
 
-```xml
+<pre class="prettyprint linenums"><![CDATA[
 <step id="step1">
   <chunk>
     <reader ref="org.apache.batchee.jackson.JacksonJSonWriterTest$Reader" />
@@ -1027,8 +992,7 @@ Sample:
       </properties>
     </writer>
   </chunk>
-</step>
-```
+</step>]]></pre>
 
 Configuration (excepted for file see org.jsefa.flr.config.FlrConfiguration for detail):
 
@@ -1046,7 +1010,7 @@ A batchlet getting a hazelcast lock.
 
 Sample:
 
-```xml
+<pre class="prettyprint linenums"><![CDATA[
 <step id="lock" next="check-lock">
   <batchlet ref="hazelcastLock">
     <properties>
@@ -1054,8 +1018,7 @@ Sample:
       <property name="lockName" value="batchee-lock"/>
     </properties>
   </batchlet>
-</step>
-```
+</step>]]></pre>
 
 Configuration (excepted for file see org.jsefa.flr.config.FlrConfiguration for detail):
 
@@ -1074,7 +1037,7 @@ A batchlet releasing a hazelcast lock.
 
 Sample:
 
-```xml
+<pre class="prettyprint linenums"><![CDATA[
 <step id="unlock" next="check-unlock">
   <batchlet ref="hazelcastUnlock">
     <properties>
@@ -1082,8 +1045,7 @@ Sample:
       <property name="lockName" value="batchee-lock"/>
     </properties>
   </batchlet>
-</step>
-```
+</step>]]></pre>
 
 Configuration (excepted for file see org.jsefa.flr.config.FlrConfiguration for detail):
 
@@ -1116,9 +1078,8 @@ in steps.
 
 For BatchEE you can add them in `batchee.properties` this way:
 
-```
+<pre class="prettyprint linenums"><![CDATA[
 org.apache.batchee.job.listeners.before = beforeJobScopeListener
 org.apache.batchee.job.listeners.after = afterJobScopeListener
 org.apache.batchee.step.listeners.before = beforeStepScopeListener
-org.apache.batchee.step.listeners.after = afterStepScopeListener
-```
+org.apache.batchee.step.listeners.after = afterStepScopeListener]]></pre>

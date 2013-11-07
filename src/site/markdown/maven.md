@@ -19,17 +19,17 @@ under the License.
 # Maven Plugin
 ## Coordinates
 
-```xml
+<pre class="prettyprint linenums"><![CDATA[
 <plugin>
   <groupId>org.apache.batchee</groupId>
   <artifactId>batchee-maven-plugin</artifactId>
   <version>${batchee.version}</version>
 </plugin>
-```
+]]></pre>
 
 ## Configuration for a remote BatchEE instance (JAX-RS client)
 
-```xml
+<pre class="prettyprint linenums"><![CDATA[
 <plugin>
   <groupId>org.apache.batchee</groupId>
   <artifactId>batchee-maven-plugin</artifactId>
@@ -58,11 +58,11 @@ under the License.
     </clientConfiguration>
   </configuration>
 </plugin>
-```
+]]></pre>
 
 ## Goals
 
-```
+<pre class="prettyprint linenums"><![CDATA[
 batchee:abandon
   Abandon a job.
 
@@ -380,4 +380,4 @@ batchee:stop
 
     properties
       the BatchEE properties when executed locally
-```
+]]></pre>

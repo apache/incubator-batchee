@@ -28,14 +28,11 @@
 
   <custom>
     <fluidoSkin>
+      <sourceLineNumbersEnabled>true</sourceLineNumbersEnabled>
       <ohloh>
         <projectId>batchee</projectId>
         <widget>stats</widget>
       </ohloh>
-      <topBarEnabled>true</topBarEnabled>
-      <topBarIcon />
-      <sideBarEnabled>true</sideBarEnabled>
-      <sourceLineNumbersEnabled>true</sourceLineNumbersEnabled>
     </fluidoSkin>
   </custom>
 
