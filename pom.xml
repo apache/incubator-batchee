@@ -32,6 +32,55 @@
   <packaging>pom</packaging>
   <name>BatchEE</name>
 
+  <scm>
+    <connection>scm:git:https://git-wip-us.apache.org/repos/asf/incubator-batchee.git</connection>
+    <developerConnection>scm:git:https://git-wip-us.apache.org/repos/asf/incubator-batchee.git</developerConnection>
+    <url>https://git-wip-us.apache.org/repos/asf?p=incubator-batchee.git;a=summary</url>
+  </scm>
+
+  <ciManagement>
+    <system>jenkins</system>
+    <url>https://builds.apache.org/job/batchee/</url>
+  </ciManagement>
+
+  <issueManagement>
+    <system>jira</system>
+    <url>https://issues.apache.org/jira/browse/BATCHEE</url>
+  </issueManagement>
+
+  <mailingLists>
+    <mailingList>
+      <name>Users</name>
+      <post>user@batchee.incubator.apache.org</post>
+      <subscribe>user-subscribe@batchee.incubator.apache.org</subscribe>
+      <unsubscribe>user-unsubscribe@batchee.incubator.apache.org</unsubscribe>
+      <archive>http://mail-archives.apache.org/mod_mbox/batchee-user/</archive>
+      <otherArchives>
+        <otherArchive>http://batchee-user.markmail.org/</otherArchive>
+      </otherArchives>
+    </mailingList>
+    <mailingList>
+      <name>Dev</name>
+      <post>dev@batchee.incubator.apache.org</post>
+      <subscribe>dev-subscribe@batchee.incubator.apache.org</subscribe>
+      <unsubscribe>dev-unsubscribe@batchee.incubator.apache.org</unsubscribe>
+      <archive>http://mail-archives.apache.org/mod_mbox/batchee-dev/</archive>
+      <otherArchives>
+        <otherArchive>http://batchee-dev.markmail.org/</otherArchive>
+      </otherArchives>
+    </mailingList>
+    <mailingList>
+      <name>Commits</name>
+      <post>commits@batchee.incubator.apache.org</post>
+      <subscribe>commits-subscribe@batchee.incubator.apache.org</subscribe>
+      <unsubscribe>commits-unsubscribe@batchee.incubator.apache.org</unsubscribe>
+      <archive>http://mail-archives.apache.org/mod_mbox/batchee-commits/</archive>
+      <otherArchives>
+        <otherArchive>http://batchee-commits.markmail.org/</otherArchive>
+      </otherArchives>
+    </mailingList>
+  </mailingLists>
+
   <modules>
     <module>jbatch</module>
     <module>extensions</module>
