@@ -38,6 +38,15 @@
     <url>https://git-wip-us.apache.org/repos/asf?p=incubator-batchee.git;a=summary</url>
   </scm>
 
+  <properties>
+    <atinject.version>1.0</atinject.version>
+    <batch-api.version>1.0</batch-api.version>
+    <jackson.version>2.2.2</jackson.version>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <batchee.scmPubUrl>https://svn.apache.org/repos/asf/incubator/batchee/site-content/</batchee.scmPubUrl>
+    <batchee.scmPubCheckoutDirectory>${user.home}/batchee-site</batchee.scmPubCheckoutDirectory>
+  </properties>
+
   <ciManagement>
     <system>jenkins</system>
     <url>https://builds.apache.org/job/batchee/</url>
@@ -47,6 +56,13 @@
     <system>jira</system>
     <url>https://issues.apache.org/jira/browse/BATCHEE</url>
   </issueManagement>
+
+  <distributionManagement>
+    <site>
+      <id>apache.website</id>
+      <url>scm:svn:${batchee.scmPubUrl}</url>
+    </site>
+  </distributionManagement>
 
   <mailingLists>
     <mailingList>
@@ -272,15 +288,6 @@
       </plugin>
     </plugins>
   </build>
-
-  <properties>
-    <atinject.version>1.0</atinject.version>
-    <batch-api.version>1.0</batch-api.version>
-    <jackson.version>2.2.2</jackson.version>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <batchee.scmPubUrl>https://svn.apache.org/repos/asf/incubator/batchee/site-content/</batchee.scmPubUrl>
-    <batchee.scmPubCheckoutDirectory>${user.home}/batchee-site</batchee.scmPubCheckoutDirectory>
-  </properties>
 
   <repositories>
     <repository>
