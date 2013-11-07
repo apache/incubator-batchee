@@ -185,8 +185,9 @@
         <version>1.0-beta-2</version>
         <configuration>
           <content>${project.reporting.outputDirectory}</content>
-          <pubScmUrl>scm:svn:https://svn.apache.org/repos/asf/incubator/sirona/site-content/</pubScmUrl>
+          <pubScmUrl>scm:svn:https://svn.apache.org/repos/asf/incubator/batchee/site-content/</pubScmUrl>
           <tryUpdate>true</tryUpdate>
+          <checkoutDirectory>${batchee.scmPubCheckoutDirectory}</checkoutDirectory>
         </configuration>
         <executions>
           <execution>
@@ -206,6 +207,8 @@
     <batch-api.version>1.0</batch-api.version>
     <jackson.version>2.2.2</jackson.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <batchee.scmPubUrl>https://svn.apache.org/repos/asf/incubator/batchee/site-content/</batchee.scmPubUrl>
+    <batchee.scmPubCheckoutDirectory>${user.home}/batchee-site</batchee.scmPubCheckoutDirectory>
   </properties>
 
   <repositories>
