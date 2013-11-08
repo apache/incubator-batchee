@@ -44,7 +44,7 @@
     <jackson.version>2.2.2</jackson.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <batchee.scmPubUrl>https://svn.apache.org/repos/asf/incubator/batchee/site-content/</batchee.scmPubUrl>
-    <batchee.scmPubCheckoutDirectory>${user.home}/batchee-site</batchee.scmPubCheckoutDirectory>
+    <batchee.scmPubCheckoutDirectory>${basedir}/.site-content</batchee.scmPubCheckoutDirectory>
   </properties>
 
   <ciManagement>
