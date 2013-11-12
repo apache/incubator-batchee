@@ -25,9 +25,15 @@
     <alt>Apache BatchEE logo</alt>
     <href>/index.html</href>
   </bannerLeft>
+  <bannerRight>
+    <src>http://incubator.apache.org/images/egg-logo.png</src>
+    <href>http://incubator.apache.org/</href>
+  </bannerRight>
 
   <custom>
     <fluidoSkin>
+      <topBarEnabled>true</topBarEnabled>
+      <sideBarEnabled>false</sideBarEnabled>
       <sourceLineNumbersEnabled>true</sourceLineNumbersEnabled>
       <ohloh>
         <projectId>batchee</projectId>
@@ -50,5 +56,21 @@
       <item name="Extensions" href="/extensions.html"/>
       <item name="GUI" href="/gui.html"/>
     </menu>
+
+    <menu ref="reports" inherit="bottom"/>
+
+    <menu name="ASF">
+      <item name="How Apache Works" href="http://www.apache.org/foundation/how-it-works.html"/>
+      <item name="Foundation" href="http://www.apache.org/foundation/"/>
+      <item name="Sponsoring Apache" href="http://www.apache.org/foundation/sponsorship.html"/>
+      <item name="Thanks" href="http://www.apache.org/foundation/thanks.html"/>
+    </menu>
+
+    <footer>
+      <div class="row span16"><div>Apache Batchee, Apache, the Apache feather logo, and the Apache Batchee project logos are trademarks of The Apache Software Foundation.
+        All other marks mentioned may be trademarks or registered trademarks of their respective owners.</div>
+      </div>
+    </footer>
+
   </body>
 </project>
