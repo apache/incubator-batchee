@@ -18,6 +18,7 @@ package org.apache.batchee.camel;
 
 import org.apache.batchee.util.Batches;
 import org.apache.camel.ConsumerTemplate;
+import org.apache.camel.component.direct.DirectEndpoint;
 import org.testng.annotations.Test;
 
 import javax.batch.api.chunk.ItemReader;
@@ -38,18 +39,21 @@ public class CamelWriterTest extends CamelBridge {
     public void write() throws Exception {
         final ConsumerTemplate tpl = CONTEXT.createConsumerTemplate();
         final Collection<Object> received = new ArrayList<Object>(2);
-        final ExecutorService thread = Executors.newFixedThreadPool(1);
+
+        final ExecutorService thread = Executors.newSingleThreadExecutor();
         thread.submit(new Runnable() {
             @Override
             public void run() {
-                Object o;
                 do {
-                    o = tpl.receiveBody("direct:writer");
-                    received.add(o);
+                    received.add(tpl.receiveBody("direct:writer"));
                 } while (received.size() < 2);
             }
         });
         thread.shutdown();
+
+        do { // starting the listener in another thread w can get timing issues so ensuring we are in the right state
+            Thread.sleep(20);
+        } while (DirectEndpoint.class.cast(CONTEXT.getEndpoint("direct:writer")).getConsumer() == null);
 
         final JobOperator jobOperator = BatchRuntime.getJobOperator();
         Batches.waitForEnd(jobOperator, jobOperator.start("camel-writer", new Properties()));
