@@ -92,20 +92,20 @@ public class JBatchController extends HttpServlet {
         req.setAttribute("mapping", mapping);
 
         final String path = req.getPathInfo();
-        if (path.startsWith(EXECUTIONS_MAPPING)) {
+        if (path != null && path.startsWith(EXECUTIONS_MAPPING)) {
             final String name = URLDecoder.decode(path.substring(EXECUTIONS_MAPPING.length()), "UTF-8");
             final int start = extractInt(req, "start", -1);
             listExecutions(req, name, executionByPage, start);
-        } else if (path.startsWith(STEP_EXECUTIONS_MAPPING)) {
+        } else if (path != null && path.startsWith(STEP_EXECUTIONS_MAPPING)) {
             final int executionId = Integer.parseInt(path.substring(STEP_EXECUTIONS_MAPPING.length()));
             listStepExecutions(req, executionId);
-        } else if (path.startsWith(VIEW_MAPPING)) {
+        } else if (path != null && path.startsWith(VIEW_MAPPING)) {
             final String name = URLDecoder.decode(path.substring(VIEW_MAPPING.length()), "UTF-8");
             view(req, name);
-        } else if (path.startsWith(START_MAPPING)) {
+        } else if (path != null && path.startsWith(START_MAPPING)) {
             final String name = URLDecoder.decode(path.substring(START_MAPPING.length()), "UTF-8");
             start(req, name);
-        } else if (path.startsWith(DO_START_MAPPING)) {
+        } else if (path != null && path.startsWith(DO_START_MAPPING)) {
             String name = URLDecoder.decode(path.substring(DO_START_MAPPING.length()), "UTF-8");
             if (name.isEmpty()) {
                 name = req.getParameter(FORM_JOB_NAME);
