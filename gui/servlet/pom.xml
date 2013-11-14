@@ -117,7 +117,7 @@
           </execution>
         </executions>
       </plugin>
-      <plugin> <!-- use mvn clean package tomcat7:run -DskipTests -->
+      <plugin> <!-- use mvn tomcat7:run  -->
         <groupId>org.apache.tomcat.maven</groupId>
         <artifactId>tomcat7-maven-plugin</artifactId>
         <version>2.2</version>
