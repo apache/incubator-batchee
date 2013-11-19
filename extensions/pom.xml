@@ -18,53 +18,53 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <modelVersion>4.0.0</modelVersion>
+    <modelVersion>4.0.0</modelVersion>
 
-  <parent>
-    <artifactId>batchee-parent</artifactId>
-    <groupId>org.apache.batchee</groupId>
-    <version>0.0.2-SNAPSHOT</version>
-  </parent>
+    <parent>
+        <artifactId>batchee-parent</artifactId>
+        <groupId>org.apache.batchee</groupId>
+        <version>0.0.2-SNAPSHOT</version>
+    </parent>
 
-  <artifactId>batchee-extensions</artifactId>
-  <name>BatchEE :: Extensions</name>
-  <packaging>pom</packaging>
+    <artifactId>batchee-extensions</artifactId>
+    <name>BatchEE :: Extensions</name>
+    <packaging>pom</packaging>
 
-  <modules>
-    <module>shiro</module>
-    <module>extras</module>
-    <module>beanio</module>
-    <module>camel</module>
-    <module>groovy</module>
-    <module>jsefa</module>
-    <module>jackson</module>
-    <module>cdi</module>
-    <module>hazelcast</module>
-  </modules>
+    <modules>
+        <module>shiro</module>
+        <module>extras</module>
+        <module>beanio</module>
+        <module>camel</module>
+        <module>groovy</module>
+        <module>jsefa</module>
+        <module>jackson</module>
+        <module>cdi</module>
+        <module>hazelcast</module>
+    </modules>
 
-  <dependencies>
-    <dependency>
-      <groupId>javax.batch</groupId>
-      <artifactId>javax.batch-api</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.geronimo.specs</groupId>
-      <artifactId>geronimo-atinject_1.0_spec</artifactId>
-    </dependency>
+    <dependencies>
+        <dependency>
+            <groupId>org.apache.geronimo.specs</groupId>
+            <artifactId>geronimo-jbatch_1.0_spec</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.geronimo.specs</groupId>
+            <artifactId>geronimo-atinject_1.0_spec</artifactId>
+        </dependency>
 
-    <dependency>
-      <groupId>org.testng</groupId>
-      <artifactId>testng</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.batchee</groupId>
-      <artifactId>batchee-jbatch</artifactId>
-      <version>${project.version}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.derby</groupId>
-      <artifactId>derby</artifactId>
-    </dependency>
-  </dependencies>
+        <dependency>
+            <groupId>org.testng</groupId>
+            <artifactId>testng</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.batchee</groupId>
+            <artifactId>batchee-jbatch</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.derby</groupId>
+            <artifactId>derby</artifactId>
+        </dependency>
+    </dependencies>
 </project>

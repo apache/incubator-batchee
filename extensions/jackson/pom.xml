@@ -18,31 +18,31 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <modelVersion>4.0.0</modelVersion>
+    <modelVersion>4.0.0</modelVersion>
 
-  <parent>
-    <artifactId>batchee-extensions</artifactId>
-    <groupId>org.apache.batchee</groupId>
-    <version>0.0.2-SNAPSHOT</version>
-  </parent>
+    <parent>
+        <artifactId>batchee-extensions</artifactId>
+        <groupId>org.apache.batchee</groupId>
+        <version>0.0.2-SNAPSHOT</version>
+    </parent>
 
-  <artifactId>batchee-jackson</artifactId>
-  <name>BatchEE :: Extensions :: Jackson</name>
+    <artifactId>batchee-jackson</artifactId>
+    <name>BatchEE :: Extensions :: Jackson</name>
 
-  <dependencies>
-    <dependency>
-      <groupId>com.fasterxml.jackson.core</groupId>
-      <artifactId>jackson-databind</artifactId>
-      <version>${jackson.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.batchee</groupId>
-      <artifactId>batchee-extras</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-  </dependencies>
+    <dependencies>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>${jackson.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.batchee</groupId>
+            <artifactId>batchee-extras</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+    </dependencies>
 
-  <properties>
-    <jackson.version>2.2.3</jackson.version>
-  </properties>
+    <properties>
+        <jackson.version>2.2.3</jackson.version>
+    </properties>
 </project>
