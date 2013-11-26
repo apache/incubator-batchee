@@ -72,4 +72,8 @@ public class DefaultBatchTransactionService implements TransactionManagementServ
         return timeout;
     }
 
+    @Override
+    public String toString() {
+        return getClass().getName();
+    }
 }

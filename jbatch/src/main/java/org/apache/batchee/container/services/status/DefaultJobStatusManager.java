@@ -132,4 +132,9 @@ public class DefaultJobStatusManager implements JobStatusManagerService {
         js.setRestartOn(restartOn);
         persistJobStatus(jobInstanceId, js);
     }
+
+    @Override
+    public String toString() {
+        return getClass().getName();
+    }
 }

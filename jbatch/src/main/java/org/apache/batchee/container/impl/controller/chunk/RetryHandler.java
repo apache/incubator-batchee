@@ -23,19 +23,15 @@ import org.apache.batchee.container.proxy.RetryWriteListenerProxy;
 import org.apache.batchee.jaxb.Chunk;
 import org.apache.batchee.jaxb.ExceptionClassFilter;
 
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 public class RetryHandler {
     private List<RetryProcessListenerProxy> _retryProcessListeners = null;
     private List<RetryReadListenerProxy> _retryReadListeners = null;
     private List<RetryWriteListenerProxy> _retryWriteListeners = null;
 
-    private Set<String> _retryNoRBIncludeExceptions = null;
-    private Set<String> _retryNoRBExcludeExceptions = null;
-    private Set<String> _retryIncludeExceptions = null;
-    private Set<String> _retryExcludeExceptions = null;
+    private ExceptionConfig retryNoRBConfig = new ExceptionConfig();
+    private ExceptionConfig retryConfig = new ExceptionConfig();
     private int _retryLimit = Integer.MIN_VALUE;
     private long _retryCount = 0;
     private Exception _retryException = null;
@@ -53,23 +49,17 @@ public class RetryHandler {
             throw new RuntimeException("NumberFormatException reading retry-limit", nfe);
         }
 
-        // Read the include/exclude exceptions.
-        _retryIncludeExceptions = new HashSet<String>();
-        _retryExcludeExceptions = new HashSet<String>();
-        _retryNoRBIncludeExceptions = new HashSet<String>();
-        _retryNoRBExcludeExceptions = new HashSet<String>();
-
         if (chunk.getRetryableExceptionClasses() != null) {
             if (chunk.getRetryableExceptionClasses().getIncludeList() != null) {
                 final List<ExceptionClassFilter.Include> includes = chunk.getRetryableExceptionClasses().getIncludeList();
                 for (final ExceptionClassFilter.Include include : includes) {
-                    _retryIncludeExceptions.add(include.getClazz().trim());
+                    retryConfig.getIncludes().add(include.getClazz().trim());
                 }
             }
             if (chunk.getRetryableExceptionClasses().getExcludeList() != null) {
                 final List<ExceptionClassFilter.Exclude> excludes = chunk.getRetryableExceptionClasses().getExcludeList();
                 for (final ExceptionClassFilter.Exclude exclude : excludes) {
-                    _retryExcludeExceptions.add(exclude.getClazz().trim());
+                    retryConfig.getExcludes().add(exclude.getClazz().trim());
                 }
             }
         }
@@ -78,13 +68,13 @@ public class RetryHandler {
             if (chunk.getNoRollbackExceptionClasses().getIncludeList() != null) {
                 final List<ExceptionClassFilter.Include> includes = chunk.getNoRollbackExceptionClasses().getIncludeList();
                 for (final ExceptionClassFilter.Include include : includes) {
-                    _retryNoRBIncludeExceptions.add(include.getClazz().trim());
+                    retryNoRBConfig.getIncludes().add(include.getClazz().trim());
                 }
             }
             if (chunk.getNoRollbackExceptionClasses().getExcludeList() != null) {
                 final List<ExceptionClassFilter.Exclude> excludes = chunk.getNoRollbackExceptionClasses().getExcludeList();
                 for (final ExceptionClassFilter.Exclude exclude : excludes) {
-                    _retryNoRBExcludeExceptions.add(exclude.getClazz().trim());
+                    retryNoRBConfig.getExcludes().add(exclude.getClazz().trim());
                 }
             }
         }
@@ -179,32 +169,11 @@ public class RetryHandler {
      * the given Exception is retryable.
      */
     private boolean isRetryable(final Exception e) {
-        return containsException(_retryIncludeExceptions, e) && !containsException(_retryExcludeExceptions, e);
+        return retryConfig.accept(e);
     }
 
     private boolean isNoRollbackException(final Exception e) {
-        return containsException(_retryNoRBIncludeExceptions, e) && !containsException(_retryNoRBExcludeExceptions, e);
-    }
-
-    /**
-     * Check whether given exception is in the specified exception list
-     */
-    private boolean containsException(final Set<String> retryList, final Exception e) {
-        boolean retVal = false;
-
-        final ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-        for (final String exClassName : retryList) {
-            try {
-                retVal = classLoader.loadClass(exClassName).isInstance(e);
-                if (retVal) {
-                    break;
-                }
-            } catch (final ClassNotFoundException cnf) {
-                // no-op
-            }
-        }
-
-        return retVal;
+        return retryNoRBConfig.accept(e);
     }
 
     /**

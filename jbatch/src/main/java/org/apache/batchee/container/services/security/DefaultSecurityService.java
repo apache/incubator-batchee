@@ -48,4 +48,9 @@ public class DefaultSecurityService implements SecurityService {
         defaultUser = batchConfig.getProperty("security.user", "jbatch");
         allowDefault = "true".equalsIgnoreCase(batchConfig.getProperty("security.anonymous-allowed", "false"));
     }
+
+    @Override
+    public String toString() {
+        return getClass().getName();
+    }
 }

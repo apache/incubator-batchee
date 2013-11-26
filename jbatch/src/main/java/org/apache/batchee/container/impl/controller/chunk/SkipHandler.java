@@ -23,9 +23,7 @@ import org.apache.batchee.container.proxy.SkipWriteListenerProxy;
 import org.apache.batchee.jaxb.Chunk;
 import org.apache.batchee.jaxb.ExceptionClassFilter;
 
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 public class SkipHandler {
 
@@ -37,8 +35,8 @@ public class SkipHandler {
     private List<SkipReadListenerProxy> _skipReadListener = null;
     private List<SkipWriteListenerProxy> _skipWriteListener = null;
 
-    private Set<String> _skipIncludeExceptions = null;
-    private Set<String> _skipExcludeExceptions = null;
+    private final ExceptionConfig config = new ExceptionConfig();
+
     private int _skipLimit = Integer.MIN_VALUE;
     private long _skipCount = 0;
 
@@ -57,20 +55,17 @@ public class SkipHandler {
 
         // Read the include/exclude exceptions.
 
-        _skipIncludeExceptions = new HashSet<String>();
-        _skipExcludeExceptions = new HashSet<String>();
-
         if (chunk.getSkippableExceptionClasses() != null && chunk.getSkippableExceptionClasses().getIncludeList() != null) {
             final List<ExceptionClassFilter.Include> includes = chunk.getSkippableExceptionClasses().getIncludeList();
             for (final ExceptionClassFilter.Include include : includes) {
-                _skipIncludeExceptions.add(include.getClazz().trim());
+                config.getIncludes().add(include.getClazz().trim());
             }
         }
 
         if (chunk.getSkippableExceptionClasses() != null && chunk.getSkippableExceptionClasses().getExcludeList() != null) {
             final List<ExceptionClassFilter.Exclude> excludes = chunk.getSkippableExceptionClasses().getExcludeList();
             for (final ExceptionClassFilter.Exclude exclude : excludes) {
-                _skipExcludeExceptions.add(exclude.getClazz().trim());
+                config.getExcludes().add(exclude.getClazz().trim());
             }
         }
     }
@@ -157,27 +152,8 @@ public class SkipHandler {
      * the given Exception is skippable.
      */
     private boolean isSkippable(final Exception e) {
-        return containsSkippable(_skipIncludeExceptions, e) && !containsSkippable(_skipExcludeExceptions, e);
+        return config.accept(e);
     }
-
-    /**
-     * Check whether given exception is in skippable exception list
-     */
-    private boolean containsSkippable(final Set<String> skipList, final Exception e) {
-        final ClassLoader tccl = Thread.currentThread().getContextClassLoader();
-        for (final String exClassName : skipList) {
-            try {
-                if (tccl.loadClass(exClassName).isInstance(e)) {
-                    return true;
-                }
-            } catch (final ClassNotFoundException cnf) {
-                // no-op
-            }
-        }
-
-        return false;
-    }
-
 
     /**
      * Check if the skip limit has been reached.
@@ -194,6 +170,4 @@ public class SkipHandler {
     public String toString() {
         return "SkipHandler{" + super.toString() + "}count:limit=" + _skipCount + ":" + _skipLimit;
     }
-
-
 }

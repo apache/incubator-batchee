@@ -651,4 +651,9 @@ public class MemoryPersistenceManager implements PersistenceManagerService {
             return o2.compareTo(o1);
         }
     }
+
+    @Override
+    public String toString() {
+        return getClass().getName();
+    }
 }

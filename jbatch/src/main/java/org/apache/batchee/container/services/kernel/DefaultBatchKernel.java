@@ -285,4 +285,9 @@ public class DefaultBatchKernel implements BatchKernelService {
     public boolean isExecutionRunning(final long executionId) {
         return executionId2jobControllerMap.containsKey(executionId);
     }
+
+    @Override
+    public String toString() {
+        return getClass().getName();
+    }
 }

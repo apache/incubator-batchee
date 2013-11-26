@@ -73,4 +73,9 @@ public class CDIBatchArtifactFactory extends DefaultBatchArtifactFactory impleme
         }
         return instance.getBeanManager();
     }
+
+    @Override
+    public String toString() {
+        return getClass().getName();
+    }
 }

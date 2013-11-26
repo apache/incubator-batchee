@@ -20,12 +20,13 @@ import org.apache.batchee.container.services.ServicesManager;
 import org.apache.batchee.jmx.BatchEEMBean;
 import org.apache.batchee.spi.PersistenceManagerService;
 import org.apache.batchee.util.Batches;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 import javax.batch.operations.JobOperator;
 import javax.batch.runtime.BatchRuntime;
+import javax.batch.runtime.JobInstance;
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
 import javax.management.openmbean.CompositeData;
@@ -48,8 +49,19 @@ public class JMXTest {
         on = new ObjectName(BatchEEMBean.DEFAULT_OBJECT_NAME);
 
         final JobOperator jobOperator = BatchRuntime.getJobOperator();
+        clearPersistence(jobOperator);
+
         id = jobOperator.start("jmx", new Properties() {{ setProperty("foo", "bar"); }});
         Batches.waitForEnd(jobOperator, id);
+    }
+
+    private static void clearPersistence(final JobOperator jobOperator) {
+        final PersistenceManagerService service = ServicesManager.service(PersistenceManagerService.class);
+        for (final String name : jobOperator.getJobNames()) {
+            for (final JobInstance id : jobOperator.getJobInstances(name, 0, Integer.MAX_VALUE)) {
+                service.cleanUp(id.getInstanceId());
+            }
+        }
     }
 
     @AfterClass
@@ -73,20 +85,18 @@ public class JMXTest {
     public void jobNames() throws Exception {
         final String[] names = String[].class.cast(attr("JobNames"));
         assertNotNull(names);
-        assertEquals(1, names.length);
+        assertEquals(names.length, 1);
         assertEquals("jmx", names[0]);
     }
 
     @Test
     public void jobInstanceCount() throws Exception {
-        final int count = Integer.class.cast(result("getJobInstanceCount", "jmx"));
-        assertEquals(1, count);
+        assertEquals(Integer.class.cast(result("getJobInstanceCount", "jmx")).intValue(), 1);
     }
 
     @Test
     public void runningExecutions() throws Exception {
-        final Long[] ids = Long[].class.cast(result("getRunningExecutions", "jmx"));
-        assertEquals(0, ids.length);
+        assertEquals(Long[].class.cast(result("getRunningExecutions", "jmx")).length, 0);
     }
 
     @Test

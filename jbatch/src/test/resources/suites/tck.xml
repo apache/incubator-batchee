@@ -15,15 +15,42 @@
   See the License for the specific language governing permissions and
   limitations under the License.
 -->
-<suite name="JSR352 TCK" verbose="2">
+<suite name="JSR352 TCK" verbose="1">
   <listeners>
     <listener class-name="org.apache.batchee.test.tck.lifecycle.ContainerLifecycle"/>
   </listeners>
 
   <test name="JSR352 TCK">
-    <packages>
-      <package name="com.ibm.jbatch.tck.tests.ee"/> <!-- EE -->
-      <package name="com.ibm.jbatch.tck.tests.jslxml"/> <!-- JSE -->
-    </packages>
+    <classes> <!-- using <classes /> since <packages /> validation algorithm is broken in TestNG  -->
+      <class name="com.ibm.jbatch.tck.tests.ee.TransactionTests"/>
+      <class name="com.ibm.jbatch.tck.tests.jslxml.ChunkTests">
+        <methods> <!-- BATCHEE-4 -->
+          <exclude name="testChunkSkipReadNoSkipChildEx"/>
+          <exclude name="testChunkSkipMultipleExceptions"/>
+        </methods>
+      </class>
+      <class name="com.ibm.jbatch.tck.tests.jslxml.BatchletRestartStateMachineTests"/>
+      <class name="com.ibm.jbatch.tck.tests.jslxml.ContextAndListenerTests"/>
+      <class name="com.ibm.jbatch.tck.tests.jslxml.ContextsGetIdTests"/>
+      <class name="com.ibm.jbatch.tck.tests.jslxml.DeciderTests"/>
+      <class name="com.ibm.jbatch.tck.tests.jslxml.ExecuteTests"/>
+      <class name="com.ibm.jbatch.tck.tests.jslxml.ExecutionTests"/>
+      <class name="com.ibm.jbatch.tck.tests.jslxml.FlowTransitioningTests"/>
+      <class name="com.ibm.jbatch.tck.tests.jslxml.JobAttributeRestartTests"/>
+      <class name="com.ibm.jbatch.tck.tests.jslxml.JobExecutableSequenceTests"/>
+      <class name="com.ibm.jbatch.tck.tests.jslxml.JobLevelPropertiesTests"/>
+      <class name="com.ibm.jbatch.tck.tests.jslxml.JobOperatorTests"/>
+      <class name="com.ibm.jbatch.tck.tests.jslxml.MetricsTests"/>
+      <class name="com.ibm.jbatch.tck.tests.jslxml.ParallelExecutionTests"/>
+      <class name="com.ibm.jbatch.tck.tests.jslxml.PropertySubstitutionTests"/>
+      <class name="com.ibm.jbatch.tck.tests.jslxml.RestartNotMostRecentTests"/>
+      <class name="com.ibm.jbatch.tck.tests.jslxml.RetryListenerTests"/>
+      <class name="com.ibm.jbatch.tck.tests.jslxml.SplitFlowTransitionLoopTests"/>
+      <class name="com.ibm.jbatch.tck.tests.jslxml.SplitTransitioningTests"/>
+      <class name="com.ibm.jbatch.tck.tests.jslxml.StartLimitTests"/>
+      <class name="com.ibm.jbatch.tck.tests.jslxml.StepExecutionTests"/>
+      <class name="com.ibm.jbatch.tck.tests.jslxml.StepLevelPropertiesTests"/>
+      <class name="com.ibm.jbatch.tck.tests.jslxml.StopOrFailOnExitStatusWithRestartTests"/>
+    </classes>
   </test>
 </suite>

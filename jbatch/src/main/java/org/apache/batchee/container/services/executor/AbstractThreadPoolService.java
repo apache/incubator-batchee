@@ -44,4 +44,9 @@ public abstract class AbstractThreadPoolService implements BatchThreadPoolServic
     public void executeTask(final Runnable work, final Object config) {
         executorService.execute(runnableLoaderAware(work));
     }
+
+    @Override
+    public String toString() {
+        return getClass().getName();
+    }
 }

@@ -72,4 +72,9 @@ public class DefaultJobXMLLoaderService implements JobXMLLoaderService {
     public void init(final Properties batchConfig) throws BatchContainerServiceException {
         // no-op
     }
+
+    @Override
+    public String toString() {
+        return getClass().getName();
+    }
 }

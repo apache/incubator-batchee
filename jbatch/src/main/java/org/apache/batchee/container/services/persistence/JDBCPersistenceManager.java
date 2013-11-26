@@ -1589,4 +1589,22 @@ public class JDBCPersistenceManager implements PersistenceManagerService {
         statement.executeUpdate();
         statement.close();
     }
+
+    @Override
+    public String toString() {
+        try {
+            return "JDBCPersistenceManager{" +
+                "dictionary=" + dictionary +
+                ", dataSource=" + dataSource +
+                ", jndiName='" + jndiName + '\'' +
+                ", driver='" + driver + '\'' +
+                ", schema='" + schema + '\'' +
+                ", url='" + url + '\'' +
+                ", user='" + user + '\'' +
+                ", pwd='" + pwd + '\'' +
+                '}';
+        } catch (final Throwable th) {
+            return "JDBCPersistenceManager{dictionary=" + dictionary + '}';
+        }
+    }
 }

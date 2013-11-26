@@ -136,7 +136,16 @@
                 <version>2.16</version>
                 <executions>
                     <execution>
-                        <id>in-memory</id>
+                        <id>batchee-tests</id>
+                        <goals>
+                            <goal>test</goal>
+                        </goals>
+                        <configuration>
+                            <skip>${maven.test.skip}</skip>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>tck-in-memory</id>
                         <goals>
                             <goal>test</goal>
                         </goals>
@@ -145,10 +154,17 @@
                             <systemProperties>
                                 <PersistenceManagerService>org.apache.batchee.container.services.persistence.MemoryPersistenceManager</PersistenceManagerService>
                             </systemProperties>
+                            <suiteXmlFiles>
+                                <suiteXmlFile>${tck.suite}</suiteXmlFile>
+                            </suiteXmlFiles>
+                            <additionalClasspathElements>
+                                <additionalClasspathElement>${tck.dir}/jsr352-tck-impl.jar</additionalClasspathElement>
+                                <additionalClasspathElement>${tck.dir}/jsr352-tck-SPI.jar</additionalClasspathElement>
+                            </additionalClasspathElements>
                         </configuration>
                     </execution>
                     <execution>
-                        <id>jdbc</id>
+                        <id>tck-jdbc</id>
                         <goals>
                             <goal>test</goal>
                         </goals>
@@ -157,10 +173,17 @@
                             <systemProperties>
                                 <PersistenceManagerService>org.apache.batchee.container.services.persistence.JDBCPersistenceManager</PersistenceManagerService>
                             </systemProperties>
+                            <suiteXmlFiles>
+                                <suiteXmlFile>${tck.suite}</suiteXmlFile>
+                            </suiteXmlFiles>
+                            <additionalClasspathElements>
+                                <additionalClasspathElement>${tck.dir}/jsr352-tck-impl.jar</additionalClasspathElement>
+                                <additionalClasspathElement>${tck.dir}/jsr352-tck-SPI.jar</additionalClasspathElement>
+                            </additionalClasspathElements>
                         </configuration>
                     </execution>
                     <execution>
-                        <id>jpa</id>
+                        <id>tck-jpa</id>
                         <goals>
                             <goal>test</goal>
                         </goals>
@@ -169,12 +192,26 @@
                             <systemProperties>
                                 <PersistenceManagerService>org.apache.batchee.container.services.persistence.JPAPersistenceService</PersistenceManagerService>
                             </systemProperties>
+                            <suiteXmlFiles>
+                                <suiteXmlFile>${tck.suite}</suiteXmlFile>
+                            </suiteXmlFiles>
+                            <additionalClasspathElements>
+                                <additionalClasspathElement>${tck.dir}/jsr352-tck-impl.jar</additionalClasspathElement>
+                                <additionalClasspathElement>${tck.dir}/jsr352-tck-SPI.jar</additionalClasspathElement>
+                            </additionalClasspathElements>
                         </configuration>
                     </execution>
                 </executions>
                 <configuration>
                     <skip>true</skip>
+                    <forkCount>1</forkCount>
+                    <reuseForks>false</reuseForks>
 
+                    <!--
+                    Global config for TCKs shared with batchee internal tests,
+                    that's not a big deal since internal tests doesn't use it
+                    and it avoids to spread it over all our executions
+                    -->
                     <systemProperties>
                         <batchee.service-manager.log>true</batchee.service-manager.log>
 
@@ -204,15 +241,6 @@
                         <ChunkTests.testChunkTimeBasedTimeLimit0.sleep>500</ChunkTests.testChunkTimeBasedTimeLimit0.sleep>
                         <ChunkTests.testChunkRestartTimeBasedDefaultCheckpoint.sleep>500</ChunkTests.testChunkRestartTimeBasedDefaultCheckpoint.sleep>
                     </systemProperties>
-
-                    <additionalClasspathElements>
-                        <additionalClasspathElement>${tck.dir}/jsr352-tck-impl.jar</additionalClasspathElement>
-                        <additionalClasspathElement>${tck.dir}/jsr352-tck-SPI.jar</additionalClasspathElement>
-                    </additionalClasspathElements>
-
-                    <suiteXmlFiles>
-                        <suiteXmlFile>src/test/resources/suites/tck.xml</suiteXmlFile>
-                    </suiteXmlFiles>
                 </configuration>
             </plugin>
 
@@ -233,6 +261,7 @@
     </build>
 
     <properties>
+        <tck.suite>${project.basedir}/src/test/resources/suites/tck.xml</tck.suite>
         <tck.unpack.dir>${project.build.directory}/tck</tck.unpack.dir>
         <tck.dir>${tck.unpack.dir}/jsr352-tck-1.0/artifacts</tck.dir>
     </properties>
