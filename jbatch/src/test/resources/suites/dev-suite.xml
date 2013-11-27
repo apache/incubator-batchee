@@ -25,9 +25,13 @@
 
   <test name="dev">
     <classes>
-      <class name="com.ibm.jbatch.tck.tests.jslxml.JobOperatorTests">
+      <class name="com.ibm.jbatch.tck.tests.jslxml.ChunkTests">
         <methods>
-          <include name="testJobOperatorAbandonJobDuringARestart" />
+          <include name="testChunkSkipReadNoSkipChildEx"/>
+          <!--
+          <include name="testChunkRetryMultipleExceptions"/>
+          <include name="testChunkSkipMultipleExceptions"/>
+          -->
         </methods>
       </class>
     </classes>

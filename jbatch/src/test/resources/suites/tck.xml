@@ -25,7 +25,7 @@
       <class name="com.ibm.jbatch.tck.tests.ee.TransactionTests"/>
       <class name="com.ibm.jbatch.tck.tests.jslxml.ChunkTests">
         <methods> <!-- BATCHEE-4 -->
-          <exclude name="testChunkSkipReadNoSkipChildEx"/>
+          <!--<exclude name="testChunkRetryMultipleExceptions"/>-->
           <exclude name="testChunkSkipMultipleExceptions"/>
         </methods>
       </class>
