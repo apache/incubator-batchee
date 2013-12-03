@@ -23,7 +23,7 @@
     <parent>
         <artifactId>batchee-extensions</artifactId>
         <groupId>org.apache.batchee</groupId>
-        <version>0.0.2-SNAPSHOT</version>
+        <version>0.1-incubating-SNAPSHOT</version>
     </parent>
 
     <artifactId>batchee-camel</artifactId>
