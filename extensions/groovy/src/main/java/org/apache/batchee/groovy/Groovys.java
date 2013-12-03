@@ -21,6 +21,7 @@ import groovy.lang.GroovyClassLoader;
 import javax.batch.operations.BatchRuntimeException;
 import javax.batch.runtime.context.JobContext;
 import javax.batch.runtime.context.StepContext;
+import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
@@ -74,7 +75,9 @@ public final class Groovys {
 
         public void release() throws IOException {
             loader.clearCache();
-            loader.close();
+            if (Closeable.class.isInstance(loader)) {
+                Closeable.class.cast(loader).close();
+            }
         }
 
         public T getInstance() {

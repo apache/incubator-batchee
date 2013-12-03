@@ -122,6 +122,7 @@
                             <goal>wget</goal>
                         </goals>
                         <configuration>
+                            <skip>${maven.test.skip}</skip>
                             <url>https://java.net/projects/jbatch/downloads/download/jsr352-tck-1.0.zip</url>
                             <unpack>true</unpack>
                             <outputDirectory>${tck.unpack.dir}</outputDirectory>
