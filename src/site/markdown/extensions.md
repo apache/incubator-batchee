@@ -949,7 +949,7 @@ Shortname: `jsefaXmlWriter`
 
 ###  `org.apache.batchee.jackson.JacksonJsonReader`
 
-Use JSefa to read a XML file.
+Use Jackson to read a JSon file.
 
 Sample:
 
@@ -977,7 +977,7 @@ Shortname: `jacksonJSonReader`
 
 ###  `org.apache.batchee.jackson.JacksonJSonWriter`
 
-Use JSefa to write a XML file.
+Use Jackson to write a JSon file.
 
 Sample:
 
@@ -1003,6 +1003,32 @@ Configuration (excepted for file see org.jsefa.flr.config.FlrConfiguration for d
 * fieldNameGeneratorClass: if skipRoot is not true or null it will be used to generate the field name (and force the root to be an object). "default" means use "item1", "item2", .... Otherwise set a qualified name `org.apache.batchee.jackson.FieldNameGenerator`.
 
 Shortname: `jacksonJSonWriter`
+
+### `org.apache.batchee.modelmapper.ModelMapperItemProcessor`
+
+Just a simple item processor mapping input to another type based on ModelMapper library.
+To customize the modelMapper just override `newMapper()` method.
+
+Sample:
+
+<pre class="prettyprint linenums"><![CDATA[
+<step id="step1">
+  <chunk>
+    <reader ref="..." />
+    <processor ref="org.apache.batchee.modelmapper.ModelMapperItemProcessor">
+      <properties>
+        <property name="destinationType" value="...." />
+      </properties>
+    </processor>
+    <writer ref="..." />
+  </chunk>
+</step>]]></pre>
+
+Configuration (excepted for file see org.jsefa.flr.config.FlrConfiguration for detail):
+
+* destinationType: the target type for the mapping (qualified name)
+
+Shortname: `modelMapperProcessor`
 
 ###  `org.apache.batchee.hazelcast.HazelcastLockBatchlet`
 

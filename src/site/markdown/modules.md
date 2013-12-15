@@ -219,3 +219,17 @@ Allows you to contol your batchees from Maven.
 
 Provides reader/writer based on jackson to read/write json.
 
+## ModelMapper
+### Dependency
+
+<pre class="prettyprint linenums"><![CDATA[
+<dependency>
+  <groupId>org.apache.batchee</groupId>
+  <artifactId>batchee-modelmapper</artifactId>
+  <version>${batchee.version}</version>
+</dependency>
+]]></pre>
+
+### Goal
+
+Provides an `ItemProcessor` mapping input bean to another one based on `ModelMapper`.
