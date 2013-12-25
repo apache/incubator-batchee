@@ -20,6 +20,8 @@ import org.testng.annotations.Test;
 
 import javax.batch.runtime.BatchStatus;
 import javax.batch.runtime.JobExecution;
+import javax.batch.runtime.StepExecution;
+import java.util.List;
 import java.util.Properties;
 
 import static org.testng.Assert.assertEquals;
@@ -39,5 +41,16 @@ public class JobLauncherTest {
             setProperty("duration", "500");
         }});
         assertEquals(BatchStatus.COMPLETED, execution.getBatchStatus());
+    }
+
+    @Test
+    public void steps() {
+        final JobLauncher launcher = new JobLauncher("sleep");
+        launcher.start(new Properties() {{
+            setProperty("duration", "10");
+        }});
+        final List<StepExecution> executions = launcher.getLastStepExecutions();
+        assertEquals(1, executions.size());
+        assertEquals("OK", executions.iterator().next().getExitStatus());
     }
 }

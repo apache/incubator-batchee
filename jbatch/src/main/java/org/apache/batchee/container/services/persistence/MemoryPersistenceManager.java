@@ -51,6 +51,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -161,7 +162,7 @@ public class MemoryPersistenceManager implements PersistenceManagerService {
 
         // sorting could be optimized a bit but is it necessary for this impl?
         Collections.sort(out);
-        Collections.reverse(out);
+        // Collections.reverse(out);
 
         if (out.size() > 0) {
             try {

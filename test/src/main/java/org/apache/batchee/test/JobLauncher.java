@@ -16,7 +16,11 @@
  */
 package org.apache.batchee.test;
 
+import javax.batch.operations.NoSuchJobException;
 import javax.batch.runtime.JobExecution;
+import javax.batch.runtime.JobInstance;
+import javax.batch.runtime.StepExecution;
+import java.util.List;
 import java.util.Properties;
 
 /**
@@ -34,6 +38,17 @@ public class JobLauncher {
     public JobExecution start(final Properties properties) {
         final long id = SYNCHRONOUS_JOB_OPERATOR.start(name, properties);
         return SYNCHRONOUS_JOB_OPERATOR.getJobExecution(id);
+    }
+
+    public List<StepExecution> getLastStepExecutions() {
+        final int jobInstanceCount = SYNCHRONOUS_JOB_OPERATOR.getJobInstanceCount(name);
+        List<JobInstance> instance;
+        try {
+            instance = SYNCHRONOUS_JOB_OPERATOR.getJobInstances(name, jobInstanceCount, 1);
+        } catch (final NoSuchJobException nsje) { // can depend how are indexed the job ids
+            instance = SYNCHRONOUS_JOB_OPERATOR.getJobInstances(name, jobInstanceCount - 1, 1);
+        }
+        return SYNCHRONOUS_JOB_OPERATOR.getStepExecutions(instance.iterator().next().getInstanceId());
     }
 
     public static JobExecution start(final String name, final Properties properties) {
