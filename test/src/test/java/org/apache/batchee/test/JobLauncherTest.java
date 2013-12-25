@@ -27,7 +27,15 @@ import static org.testng.Assert.assertEquals;
 public class JobLauncherTest {
     @Test
     public void start() {
-        final JobExecution execution = new JobLauncher().start("sleep", new Properties() {{
+        final JobExecution execution = JobLauncher.start("sleep", new Properties() {{
+            setProperty("duration", "500");
+        }});
+        assertEquals(BatchStatus.COMPLETED, execution.getBatchStatus());
+    }
+
+    @Test
+    public void quickStart() {
+        final JobExecution execution = new JobLauncher("sleep").start(new Properties() {{
             setProperty("duration", "500");
         }});
         assertEquals(BatchStatus.COMPLETED, execution.getBatchStatus());

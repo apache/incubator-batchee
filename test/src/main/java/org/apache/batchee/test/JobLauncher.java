@@ -23,15 +23,26 @@ import java.util.Properties;
  * A helper class test oriented.
  */
 public class JobLauncher {
-    private final SynchronousJobOperator synchronousJobOperator = new SynchronousJobOperator();
+    private static final SynchronousJobOperator SYNCHRONOUS_JOB_OPERATOR = new SynchronousJobOperator();
 
-    public JobExecution start(final String name, final Properties properties) {
-        final long id = synchronousJobOperator.start(name, properties);
-        return synchronousJobOperator.getJobExecution(id);
+    private final String name;
+
+    public JobLauncher(final String name) {
+        this.name = name;
+    }
+
+    public JobExecution start(final Properties properties) {
+        final long id = SYNCHRONOUS_JOB_OPERATOR.start(name, properties);
+        return SYNCHRONOUS_JOB_OPERATOR.getJobExecution(id);
+    }
+
+    public static JobExecution start(final String name, final Properties properties) {
+        final long id = SYNCHRONOUS_JOB_OPERATOR.start(name, properties);
+        return SYNCHRONOUS_JOB_OPERATOR.getJobExecution(id);
     }
 
     public JobExecution restart(final long id, final Properties properties) {
-        final long newId = synchronousJobOperator.restart(id, properties);
-        return synchronousJobOperator.getJobExecution(newId);
+        final long newId = SYNCHRONOUS_JOB_OPERATOR.restart(id, properties);
+        return SYNCHRONOUS_JOB_OPERATOR.getJobExecution(newId);
     }
 }
