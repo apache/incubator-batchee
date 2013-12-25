@@ -102,6 +102,7 @@
         <module>extensions</module>
         <module>gui</module>
         <module>tools</module>
+      <module>test</module>
     </modules>
 
     <dependencyManagement>
