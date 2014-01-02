@@ -103,6 +103,7 @@
         <module>gui</module>
         <module>tools</module>
       <module>test</module>
+      <module>cli</module>
     </modules>
 
     <dependencyManagement>
