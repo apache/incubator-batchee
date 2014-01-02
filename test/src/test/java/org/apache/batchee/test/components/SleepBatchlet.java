@@ -25,7 +25,7 @@ public class SleepBatchlet implements Batchlet {
 
     @Inject
     @BatchProperty
-    private String duration;
+    private String duration = "50";
 
     private volatile boolean stopped = false;
 
