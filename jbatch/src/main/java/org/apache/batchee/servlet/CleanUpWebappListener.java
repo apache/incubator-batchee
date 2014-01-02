@@ -36,7 +36,7 @@ public class CleanUpWebappListener implements ServletContextListener {
 
     @Override
     public void contextDestroyed(final ServletContextEvent sce) {
-        final BatchThreadPoolService threadPoolService = ServicesManager.service(BatchThreadPoolService.class);
+        final BatchThreadPoolService threadPoolService = ServicesManager.find().service(BatchThreadPoolService.class);
         if (CleanUpWebappListener.class.getClassLoader() == sce.getServletContext().getClassLoader()) {
             threadPoolService.shutdown();
 

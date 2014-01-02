@@ -22,6 +22,7 @@ import org.apache.batchee.container.navigator.ModelNavigator;
 import org.apache.batchee.container.proxy.ListenerFactory;
 import org.apache.batchee.container.services.InternalJobExecution;
 import org.apache.batchee.jaxb.JSLJob;
+import org.apache.batchee.spi.PersistenceManagerService;
 
 import javax.batch.runtime.BatchStatus;
 import javax.batch.runtime.JobInstance;
@@ -43,10 +44,10 @@ public class RuntimeJobExecution {
     private Integer partitionInstance = null;
     private Collection<Closeable> releasables = new ArrayList<Closeable>();
 
-    public RuntimeJobExecution(final JobInstance jobInstance, final long executionId) {
+    public RuntimeJobExecution(final JobInstance jobInstance, final long executionId, final PersistenceManagerService persistenceManagerService) {
         this.jobInstance = jobInstance;
         this.executionId = executionId;
-        this.operatorJobExecution = new JobExecutionImpl(executionId, jobInstance.getInstanceId());
+        this.operatorJobExecution = new JobExecutionImpl(executionId, jobInstance.getInstanceId(), persistenceManagerService);
     }
 
 

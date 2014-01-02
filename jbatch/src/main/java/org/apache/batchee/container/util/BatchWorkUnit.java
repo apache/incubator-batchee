@@ -21,6 +21,7 @@ import org.apache.batchee.container.exception.BatchContainerRuntimeException;
 import org.apache.batchee.container.impl.controller.JobController;
 import org.apache.batchee.container.impl.jobinstance.RuntimeJobExecution;
 import org.apache.batchee.container.services.BatchKernelService;
+import org.apache.batchee.container.services.ServicesManager;
 
 import javax.batch.runtime.BatchStatus;
 import java.io.PrintWriter;
@@ -39,16 +40,16 @@ public class BatchWorkUnit implements Runnable {
 
     protected boolean notifyCallbackWhenDone;
 
-    public BatchWorkUnit(final BatchKernelService batchKernel, final RuntimeJobExecution jobExecutionImpl) {
-        this(batchKernel, jobExecutionImpl, true);
+    public BatchWorkUnit(final ServicesManager manager, final RuntimeJobExecution jobExecutionImpl) {
+        this(manager, jobExecutionImpl, true);
     }
 
-    public BatchWorkUnit(final BatchKernelService batchKernel, final RuntimeJobExecution jobExecutionImpl,
+    public BatchWorkUnit(final ServicesManager manager, final RuntimeJobExecution jobExecutionImpl,
                          final boolean notifyCallbackWhenDone) {
-        this.setBatchKernel(batchKernel);
+        this.setBatchKernel(manager.service(BatchKernelService.class));
         this.setJobExecutionImpl(jobExecutionImpl);
         this.setNotifyCallbackWhenDone(notifyCallbackWhenDone);
-        this.controller = new JobController(jobExecutionImpl);
+        this.controller = new JobController(jobExecutionImpl, manager);
     }
 
     public ThreadRootController getController() {

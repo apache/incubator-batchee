@@ -20,6 +20,8 @@ import org.apache.batchee.container.impl.StepContextImpl;
 import org.apache.batchee.container.impl.controller.batchlet.BatchletStepController;
 import org.apache.batchee.container.impl.controller.chunk.ChunkStepController;
 import org.apache.batchee.container.impl.jobinstance.RuntimeJobExecution;
+import org.apache.batchee.container.services.BatchKernelService;
+import org.apache.batchee.container.services.ServicesManager;
 import org.apache.batchee.container.util.PartitionDataWrapper;
 import org.apache.batchee.jaxb.Batchlet;
 import org.apache.batchee.jaxb.Chunk;
@@ -34,17 +36,18 @@ import java.util.concurrent.BlockingQueue;
 public class ExecutionElementControllerFactory {
     public static BaseStepController getStepController(final RuntimeJobExecution jobExecutionImpl, final Step step,
                                                            final StepContextImpl stepContext, final long rootJobExecutionId,
-                                                           final BlockingQueue<PartitionDataWrapper> analyzerQueue) {
+                                                           final BlockingQueue<PartitionDataWrapper> analyzerQueue,
+                                                           final ServicesManager servicesManager) {
         final Partition partition = step.getPartition();
         if (partition != null) {
 
             if (partition.getMapper() != null) {
-                return new PartitionedStepController(jobExecutionImpl, step, stepContext, rootJobExecutionId);
+                return new PartitionedStepController(jobExecutionImpl, step, stepContext, rootJobExecutionId, servicesManager);
             }
 
             if (partition.getPlan() != null) {
                 if (partition.getPlan().getPartitions() != null) {
-                    return new PartitionedStepController(jobExecutionImpl, step, stepContext, rootJobExecutionId);
+                    return new PartitionedStepController(jobExecutionImpl, step, stepContext, rootJobExecutionId, servicesManager);
                 }
             }
         }
@@ -54,26 +57,26 @@ public class ExecutionElementControllerFactory {
             if (step.getChunk() != null) {
                 throw new IllegalArgumentException("Step contains both a batchlet and a chunk.  Aborting.");
             }
-            return new BatchletStepController(jobExecutionImpl, step, stepContext, rootJobExecutionId, analyzerQueue);
+            return new BatchletStepController(jobExecutionImpl, step, stepContext, rootJobExecutionId, analyzerQueue, servicesManager);
         } else {
             final Chunk chunk = step.getChunk();
             if (chunk == null) {
                 throw new IllegalArgumentException("Step does not contain either a batchlet or a chunk.  Aborting.");
             }
-            return new ChunkStepController(jobExecutionImpl, step, stepContext, rootJobExecutionId, analyzerQueue);
+            return new ChunkStepController(jobExecutionImpl, step, stepContext, rootJobExecutionId, analyzerQueue, servicesManager);
         }
     }
 
-    public static DecisionController getDecisionController(RuntimeJobExecution jobExecutionImpl, Decision decision) {
-        return new DecisionController(jobExecutionImpl, decision);
+    public static DecisionController getDecisionController(final ServicesManager servicesManager, final RuntimeJobExecution jobExecutionImpl, final Decision decision) {
+        return new DecisionController(jobExecutionImpl, decision, servicesManager);
     }
 
-    public static FlowController getFlowController(RuntimeJobExecution jobExecutionImpl, Flow flow, long rootJobExecutionId) {
-        return new FlowController(jobExecutionImpl, flow, rootJobExecutionId);
+    public static FlowController getFlowController(final ServicesManager servicesManager, final RuntimeJobExecution jobExecutionImpl, final Flow flow, final long rootJobExecutionId) {
+        return new FlowController(jobExecutionImpl, flow, rootJobExecutionId, servicesManager);
     }
 
-    public static SplitController getSplitController(RuntimeJobExecution jobExecutionImpl, Split split, long rootJobExecutionId) {
-        return new SplitController(jobExecutionImpl, split, rootJobExecutionId);
+    public static SplitController getSplitController(final BatchKernelService kernel, final RuntimeJobExecution jobExecutionImpl, final Split split, final long rootJobExecutionId) {
+        return new SplitController(jobExecutionImpl, split, rootJobExecutionId, kernel);
     }
 
     private ExecutionElementControllerFactory() {

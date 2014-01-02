@@ -19,18 +19,19 @@ package org.apache.batchee.container.util;
 import org.apache.batchee.container.impl.controller.FlowInSplitThreadRootController;
 import org.apache.batchee.container.impl.jobinstance.RuntimeFlowInSplitExecution;
 import org.apache.batchee.container.services.BatchKernelService;
+import org.apache.batchee.container.services.ServicesManager;
 
 import java.util.concurrent.BlockingQueue;
 
 public class BatchFlowInSplitWorkUnit extends BatchParallelWorkUnit {
     protected final BlockingQueue<BatchFlowInSplitWorkUnit> completedThreadQueue;
 
-    public BatchFlowInSplitWorkUnit(final BatchKernelService batchKernelService,
-                                    final RuntimeFlowInSplitExecution jobExecution,
-                                    final FlowInSplitBuilderConfig config) {
-        super(batchKernelService, jobExecution, true);
+    public BatchFlowInSplitWorkUnit(final RuntimeFlowInSplitExecution jobExecution,
+                                    final FlowInSplitBuilderConfig config,
+                                    final ServicesManager manager) {
+        super(jobExecution, true, manager);
         this.completedThreadQueue = config.getCompletedQueue();
-        this.controller = new FlowInSplitThreadRootController(jobExecution, config);
+        this.controller = new FlowInSplitThreadRootController(jobExecution, config, manager);
     }
 
     @Override

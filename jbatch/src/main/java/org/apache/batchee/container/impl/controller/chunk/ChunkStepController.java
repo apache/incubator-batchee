@@ -47,6 +47,7 @@ import org.apache.batchee.jaxb.ItemReader;
 import org.apache.batchee.jaxb.ItemWriter;
 import org.apache.batchee.jaxb.Property;
 import org.apache.batchee.jaxb.Step;
+import org.apache.batchee.spi.BatchArtifactFactory;
 import org.apache.batchee.spi.PersistenceManagerService;
 
 import javax.batch.api.chunk.CheckpointAlgorithm;
@@ -64,7 +65,8 @@ public class ChunkStepController extends SingleThreadedStepController {
     private final static String sourceClass = ChunkStepController.class.getName();
     private final static Logger logger = Logger.getLogger(sourceClass);
 
-    private final PersistenceManagerService persistenceManagerService = ServicesManager.service(PersistenceManagerService.class);
+    private final PersistenceManagerService persistenceManagerService;
+    private final BatchArtifactFactory artifactFactory;
 
     private Chunk chunk = null;
     private ItemReaderProxy readerProxy = null;
@@ -84,8 +86,11 @@ public class ChunkStepController extends SingleThreadedStepController {
     private boolean rollbackRetry = false;
 
     public ChunkStepController(final RuntimeJobExecution jobExecutionImpl, final Step step, final StepContextImpl stepContext,
-                               final long rootJobExecutionId, final BlockingQueue<PartitionDataWrapper> analyzerStatusQueue) {
-        super(jobExecutionImpl, step, stepContext, rootJobExecutionId, analyzerStatusQueue);
+                               final long rootJobExecutionId, final BlockingQueue<PartitionDataWrapper> analyzerStatusQueue,
+                               final ServicesManager servicesManager) {
+        super(jobExecutionImpl, step, stepContext, rootJobExecutionId, analyzerStatusQueue, servicesManager);
+        this.persistenceManagerService = servicesManager.service(PersistenceManagerService.class);
+        this.artifactFactory = servicesManager.service(BatchArtifactFactory.class);
     }
 
     /**
@@ -472,7 +477,6 @@ public class ChunkStepController extends SingleThreadedStepController {
         int timeInterval = ChunkHelper.getTimeLimit(chunk);
         boolean checkPointed = true;
         boolean rollback = false;
-        Throwable caughtThrowable = null;
 
         // begin new transaction at first iteration or after a checkpoint commit
 
@@ -498,7 +502,7 @@ public class ChunkStepController extends SingleThreadedStepController {
                         positionWriterAtCheckpoint();
                         checkpointManager = new CheckpointManager(readerProxy, writerProxy,
                             getCheckpointAlgorithm(itemCount, timeInterval), jobExecutionImpl
-                            .getJobInstance().getInstanceId(), step.getId());
+                            .getJobInstance().getInstanceId(), step.getId(), persistenceManagerService);
                     }
                 }
 
@@ -581,7 +585,6 @@ public class ChunkStepController extends SingleThreadedStepController {
 
             }
         } catch (final Exception e) {
-            caughtThrowable = e;
             logger.log(Level.SEVERE, "Failure in Read-Process-Write Loop", e);
             // Only try to call onError() if we have an Exception, but not an Error.
             for (ChunkListenerProxy chunkProxy : chunkListeners) {
@@ -591,18 +594,18 @@ public class ChunkStepController extends SingleThreadedStepController {
                     logger.log(Level.SEVERE, e1.getMessage(), e1);
                 }
             }
+            rollback(e);
         } catch (final Throwable t) {
-            caughtThrowable = t;
-            logger.log(Level.SEVERE, t.getMessage(), t);
-        } finally {
-            if (caughtThrowable != null) {
-                transactionManager.setRollbackOnly();
-                readerProxy.close();
-                writerProxy.close();
-                transactionManager.rollback();
-                throw new BatchContainerRuntimeException("Failure in Read-Process-Write Loop", caughtThrowable);
-            }
+            rollback(t);
         }
+    }
+
+    private void rollback(final Throwable t) {
+        transactionManager.setRollbackOnly();
+        readerProxy.close();
+        writerProxy.close();
+        transactionManager.rollback();
+        throw new BatchContainerRuntimeException("Failure in Read-Process-Write Loop", t);
     }
 
     protected void invokeCoreStep() throws BatchContainerServiceException {
@@ -637,7 +640,7 @@ public class ChunkStepController extends SingleThreadedStepController {
             final ItemReader itemReader = chunk.getReader();
             final List<Property> itemReaderProps = itemReader.getProperties() == null ? null : itemReader.getProperties().getPropertyList();
             final InjectionReferences injectionRef = new InjectionReferences(jobExecutionImpl.getJobContext(), stepContext, itemReaderProps);
-            readerProxy = ProxyFactory.createItemReaderProxy(itemReader.getRef(), injectionRef, stepContext, jobExecutionImpl);
+            readerProxy = ProxyFactory.createItemReaderProxy(artifactFactory, itemReader.getRef(), injectionRef, stepContext, jobExecutionImpl);
         }
 
         {
@@ -645,7 +648,7 @@ public class ChunkStepController extends SingleThreadedStepController {
             if (itemProcessor != null) {
                 final List<Property> itemProcessorProps = itemProcessor.getProperties() == null ? null : itemProcessor.getProperties().getPropertyList();
                 final InjectionReferences injectionRef = new InjectionReferences(jobExecutionImpl.getJobContext(), stepContext, itemProcessorProps);
-                processorProxy = ProxyFactory.createItemProcessorProxy(itemProcessor.getRef(), injectionRef, stepContext, jobExecutionImpl);
+                processorProxy = ProxyFactory.createItemProcessorProxy(artifactFactory, itemProcessor.getRef(), injectionRef, stepContext, jobExecutionImpl);
             }
         }
 
@@ -653,7 +656,7 @@ public class ChunkStepController extends SingleThreadedStepController {
             final ItemWriter itemWriter = chunk.getWriter();
             final List<Property> itemWriterProps = itemWriter.getProperties() == null ? null : itemWriter.getProperties().getPropertyList();
             final InjectionReferences injectionRef = new InjectionReferences(jobExecutionImpl.getJobContext(), stepContext, itemWriterProps);
-            writerProxy = ProxyFactory.createItemWriterProxy(itemWriter.getRef(), injectionRef, stepContext, jobExecutionImpl);
+            writerProxy = ProxyFactory.createItemWriterProxy(artifactFactory, itemWriter.getRef(), injectionRef, stepContext, jobExecutionImpl);
         }
 
         {
@@ -665,7 +668,7 @@ public class ChunkStepController extends SingleThreadedStepController {
             }
 
             final InjectionReferences injectionRef = new InjectionReferences(jobExecutionImpl.getJobContext(), stepContext, propList);
-            checkpointProxy = CheckpointAlgorithmFactory.getCheckpointAlgorithmProxy(step, injectionRef, stepContext, jobExecutionImpl);
+            checkpointProxy = CheckpointAlgorithmFactory.getCheckpointAlgorithmProxy(artifactFactory, step, injectionRef, stepContext, jobExecutionImpl);
         }
 
         {
@@ -689,7 +692,7 @@ public class ChunkStepController extends SingleThreadedStepController {
                 chkptAlg = checkpointProxy;
             }
 
-            checkpointManager = new CheckpointManager(readerProxy, writerProxy, chkptAlg, jobExecutionImpl.getJobInstance().getInstanceId(), step.getId());
+            checkpointManager = new CheckpointManager(readerProxy, writerProxy, chkptAlg, jobExecutionImpl.getJobInstance().getInstanceId(), step.getId(), persistenceManagerService);
 
             skipHandler = new SkipHandler(chunk);
             skipHandler.addSkipProcessListener(skipProcessListeners);

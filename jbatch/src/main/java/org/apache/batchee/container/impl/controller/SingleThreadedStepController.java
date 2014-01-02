@@ -23,11 +23,13 @@ import org.apache.batchee.container.proxy.InjectionReferences;
 import org.apache.batchee.container.proxy.PartitionCollectorProxy;
 import org.apache.batchee.container.proxy.ProxyFactory;
 import org.apache.batchee.container.proxy.StepListenerProxy;
+import org.apache.batchee.container.services.ServicesManager;
 import org.apache.batchee.container.util.PartitionDataWrapper;
 import org.apache.batchee.container.util.PartitionDataWrapper.PartitionEventType;
 import org.apache.batchee.jaxb.Collector;
 import org.apache.batchee.jaxb.Property;
 import org.apache.batchee.jaxb.Step;
+import org.apache.batchee.spi.BatchArtifactFactory;
 
 import java.io.Serializable;
 import java.util.List;
@@ -41,11 +43,17 @@ import java.util.concurrent.BlockingQueue;
  * separate main thread with controller).
  */
 public abstract class SingleThreadedStepController extends BaseStepController implements Controller {
+    private final BatchArtifactFactory factory;
+
     // Collector only used from partition threads, not main thread
     protected PartitionCollectorProxy collectorProxy = null;
 
-    protected SingleThreadedStepController(RuntimeJobExecution jobExecutionImpl, Step step, StepContextImpl stepContext, long rootJobExecutionId, BlockingQueue<PartitionDataWrapper> analyzerStatusQueue) {
-        super(jobExecutionImpl, step, stepContext, rootJobExecutionId, analyzerStatusQueue);
+    protected SingleThreadedStepController(final RuntimeJobExecution jobExecutionImpl, final Step step,
+                                           final StepContextImpl stepContext, final long rootJobExecutionId,
+                                           final BlockingQueue<PartitionDataWrapper> analyzerStatusQueue,
+                                           final ServicesManager servicesManager) {
+        super(jobExecutionImpl, step, stepContext, rootJobExecutionId, analyzerStatusQueue, servicesManager);
+        factory = servicesManager.service(BatchArtifactFactory.class);
     }
 
     List<StepListenerProxy> stepListeners = null;
@@ -67,7 +75,7 @@ public abstract class SingleThreadedStepController extends BaseStepController im
                  * contexts may be null
                  */
                 injectionRef = new InjectionReferences(jobExecutionImpl.getJobContext(), stepContext, propList);
-                this.collectorProxy = ProxyFactory.createPartitionCollectorProxy(collector.getRef(), injectionRef, this.stepContext, jobExecutionImpl);
+                this.collectorProxy = ProxyFactory.createPartitionCollectorProxy(factory, collector.getRef(), injectionRef, this.stepContext, jobExecutionImpl);
             }
         }
     }

@@ -25,12 +25,13 @@ import org.apache.batchee.container.proxy.InjectionReferences;
 import org.apache.batchee.container.proxy.JobListenerProxy;
 import org.apache.batchee.container.proxy.ListenerFactory;
 import org.apache.batchee.container.services.JobStatusManagerService;
-import org.apache.batchee.spi.PersistenceManagerService;
 import org.apache.batchee.container.services.ServicesManager;
 import org.apache.batchee.container.status.ExecutionStatus;
 import org.apache.batchee.container.status.ExtendedBatchStatus;
 import org.apache.batchee.container.util.PartitionDataWrapper;
 import org.apache.batchee.jaxb.JSLJob;
+import org.apache.batchee.spi.BatchArtifactFactory;
+import org.apache.batchee.spi.PersistenceManagerService;
 
 import javax.batch.runtime.BatchStatus;
 import java.io.PrintWriter;
@@ -52,22 +53,25 @@ public abstract class JobThreadRootController implements ThreadRootController {
     protected final ModelNavigator<JSLJob> jobNavigator;
     protected final JobStatusManagerService jobStatusService;
     protected final PersistenceManagerService persistenceService;
+    protected final ServicesManager manager;
 
     private ExecutionTransitioner transitioner;
     private BlockingQueue<PartitionDataWrapper> analyzerQueue;
 
-    public JobThreadRootController(final RuntimeJobExecution jobExecution, final long rootJobExecutionId) {
+    public JobThreadRootController(final RuntimeJobExecution jobExecution, final long rootJobExecutionId,
+                                   final ServicesManager servicesManager) {
         this.jobExecution = jobExecution;
         this.jobContext = jobExecution.getJobContext();
         this.rootJobExecutionId = rootJobExecutionId;
         this.jobInstanceId = jobExecution.getInstanceId();
-        this.jobStatusService = ServicesManager.service(JobStatusManagerService.class);
-        this.persistenceService = ServicesManager.service(PersistenceManagerService.class);
+        this.jobStatusService = servicesManager.service(JobStatusManagerService.class);
+        this.persistenceService = servicesManager.service(PersistenceManagerService.class);
         this.jobNavigator = jobExecution.getJobNavigator();
+        this.manager = servicesManager;
 
         final JSLJob jobModel = jobExecution.getJobNavigator().getRootModelElement();
         final InjectionReferences injectionRef = new InjectionReferences(jobContext, null, null);
-        listenerFactory = new ListenerFactory(jobModel, injectionRef, jobExecution);
+        listenerFactory = new ListenerFactory(servicesManager.service(BatchArtifactFactory.class), jobModel, injectionRef, jobExecution);
         jobExecution.setListenerFactory(listenerFactory);
     }
 
@@ -75,8 +79,9 @@ public abstract class JobThreadRootController implements ThreadRootController {
      * By not passing the rootJobExecutionId, we are "orphaning" the subjob execution and making it not findable from the parent.
      * This is exactly what we want for getStepExecutions()... we don't want it to get extraneous entries for the partitions.
      */
-    public JobThreadRootController(final RuntimeJobExecution jobExecution, final BlockingQueue<PartitionDataWrapper> analyzerQueue) {
-        this(jobExecution, jobExecution.getExecutionId());
+    public JobThreadRootController(final RuntimeJobExecution jobExecution, final BlockingQueue<PartitionDataWrapper> analyzerQueue,
+                                   final ServicesManager servicesManager) {
+        this(jobExecution, jobExecution.getExecutionId(), servicesManager);
         this.analyzerQueue = analyzerQueue;
     }
 
@@ -96,7 +101,7 @@ public abstract class JobThreadRootController implements ThreadRootController {
                 // The BIG loop transitioning
                 // within the job !!!
                 // --------------------
-                transitioner = new ExecutionTransitioner(jobExecution, rootJobExecutionId, jobNavigator, analyzerQueue);
+                transitioner = new ExecutionTransitioner(jobExecution, rootJobExecutionId, jobNavigator, analyzerQueue, manager);
                 retVal = transitioner.doExecutionLoop();
                 ExtendedBatchStatus extBatchStatus = retVal.getExtendedBatchStatus();
                 switch (extBatchStatus) {

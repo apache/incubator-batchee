@@ -60,13 +60,13 @@ public class SplitController implements ExecutionElementController {
 
     protected Split split;
 
-    public SplitController(RuntimeJobExecution jobExecution, Split split, long rootJobExecutionId) {
+    public SplitController(final RuntimeJobExecution jobExecution, final Split split, final long rootJobExecutionId,
+                           final BatchKernelService kernelService) {
         this.jobExecution = jobExecution;
         this.jobContext = jobExecution.getJobContext();
         this.rootJobExecutionId = rootJobExecutionId;
         this.split = split;
-
-        batchKernel = ServicesManager.service(BatchKernelService.class);
+        this.batchKernel = kernelService;
     }
 
     @Override

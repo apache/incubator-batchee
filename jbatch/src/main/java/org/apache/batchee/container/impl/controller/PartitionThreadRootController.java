@@ -17,14 +17,15 @@
 package org.apache.batchee.container.impl.controller;
 
 import org.apache.batchee.container.impl.jobinstance.RuntimeJobExecution;
+import org.apache.batchee.container.services.ServicesManager;
 import org.apache.batchee.container.util.PartitionsBuilderConfig;
 
 /**
  * Currently there's no special function on top of the subjob required of the partition.
  */
 public class PartitionThreadRootController extends JobThreadRootController {
-    public PartitionThreadRootController(RuntimeJobExecution jobExecution, PartitionsBuilderConfig config) {
-        super(jobExecution, config.getAnalyzerQueue());
+    public PartitionThreadRootController(final RuntimeJobExecution jobExecution, final PartitionsBuilderConfig config, final ServicesManager servicesManager) {
+        super(jobExecution, config.getAnalyzerQueue(), servicesManager);
     }
 
 }

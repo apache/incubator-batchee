@@ -17,6 +17,7 @@
 package org.apache.batchee.container.impl.controller;
 
 import org.apache.batchee.container.impl.jobinstance.RuntimeFlowInSplitExecution;
+import org.apache.batchee.container.services.ServicesManager;
 import org.apache.batchee.container.status.ExecutionStatus;
 import org.apache.batchee.container.status.ExtendedBatchStatus;
 import org.apache.batchee.container.util.FlowInSplitBuilderConfig;
@@ -25,8 +26,8 @@ public class FlowInSplitThreadRootController extends JobThreadRootController {
     // Careful, we have a separately named reference to the same object in the parent class
     private RuntimeFlowInSplitExecution flowInSplitExecution;
 
-    public FlowInSplitThreadRootController(final RuntimeFlowInSplitExecution flowInSplitExecution, final FlowInSplitBuilderConfig config) {
-        super(flowInSplitExecution, config.getRootJobExecutionId());
+    public FlowInSplitThreadRootController(final RuntimeFlowInSplitExecution flowInSplitExecution, final FlowInSplitBuilderConfig config, final ServicesManager manager) {
+        super(flowInSplitExecution, config.getRootJobExecutionId(), manager);
         this.flowInSplitExecution = flowInSplitExecution;
     }
 

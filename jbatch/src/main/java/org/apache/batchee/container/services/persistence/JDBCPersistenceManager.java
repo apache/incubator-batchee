@@ -934,7 +934,7 @@ public class JDBCPersistenceManager implements PersistenceManagerService {
 
                 final String jobName = rs.getString(dictionary.jobInstanceColumns(3));
 
-                final JobExecutionImpl jobEx = new JobExecutionImpl(jobExecutionId, instanceId);
+                final JobExecutionImpl jobEx = new JobExecutionImpl(jobExecutionId, instanceId, this);
                 jobEx.setCreateTime(createtime);
                 jobEx.setStartTime(starttime);
                 jobEx.setEndTime(endtime);
@@ -979,7 +979,7 @@ public class JDBCPersistenceManager implements PersistenceManagerService {
                 final String exitStatus = rs.getString(dictionary.jobExecutionColumns(4));
                 final String jobName = rs.getString(dictionary.jobInstanceColumns(3));
 
-                final JobExecutionImpl jobEx = new JobExecutionImpl(jobExecutionId, jobInstanceId);
+                final JobExecutionImpl jobEx = new JobExecutionImpl(jobExecutionId, jobInstanceId, this);
                 jobEx.setCreateTime(createtime);
                 jobEx.setStartTime(starttime);
                 jobEx.setEndTime(endtime);
@@ -1154,7 +1154,7 @@ public class JDBCPersistenceManager implements PersistenceManagerService {
     public RuntimeJobExecution createJobExecution(final JobInstance jobInstance, final Properties jobParameters, final BatchStatus batchStatus) {
         final Timestamp now = new Timestamp(System.currentTimeMillis());
         final long newExecutionId = createRuntimeJobExecutionEntry(jobInstance, jobParameters, batchStatus, now);
-        final RuntimeJobExecution jobExecution = new RuntimeJobExecution(jobInstance, newExecutionId);
+        final RuntimeJobExecution jobExecution = new RuntimeJobExecution(jobInstance, newExecutionId, this);
         jobExecution.setBatchStatus(batchStatus.name());
         jobExecution.setCreateTime(now);
         jobExecution.setLastUpdateTime(now);
@@ -1195,7 +1195,7 @@ public class JDBCPersistenceManager implements PersistenceManagerService {
     public RuntimeFlowInSplitExecution createFlowInSplitExecution(final JobInstance jobInstance, final BatchStatus batchStatus) {
         final Timestamp now = new Timestamp(System.currentTimeMillis());
         final long newExecutionId = createRuntimeJobExecutionEntry(jobInstance, null, batchStatus, now);
-        final RuntimeFlowInSplitExecution flowExecution = new RuntimeFlowInSplitExecution(jobInstance, newExecutionId);
+        final RuntimeFlowInSplitExecution flowExecution = new RuntimeFlowInSplitExecution(jobInstance, newExecutionId, this);
         flowExecution.setBatchStatus(batchStatus.name());
         flowExecution.setCreateTime(now);
         flowExecution.setLastUpdateTime(now);

@@ -24,6 +24,7 @@ import org.apache.batchee.jaxb.Listener;
 import org.apache.batchee.jaxb.Listeners;
 import org.apache.batchee.jaxb.Property;
 import org.apache.batchee.jaxb.Step;
+import org.apache.batchee.spi.BatchArtifactFactory;
 
 import javax.batch.api.chunk.listener.ChunkListener;
 import javax.batch.api.chunk.listener.ItemProcessListener;
@@ -46,29 +47,30 @@ import java.util.concurrent.ConcurrentHashMap;
 
 
 public class ListenerFactory {
-    private List<ListenerInfo> jobLevelListenerInfo = null;
-
-    private Map<String, List<ListenerInfo>> stepLevelListenerInfo = new ConcurrentHashMap<String, List<ListenerInfo>>();
+    private final BatchArtifactFactory factory;
+    private final List<ListenerInfo> jobLevelListenerInfo;
+    private final Map<String, List<ListenerInfo>> stepLevelListenerInfo = new ConcurrentHashMap<String, List<ListenerInfo>>();
 
     /*
      * Build job-level ListenerInfo(s) up-front, but build step-level ones
      * lazily.
      */
-    public ListenerFactory(final JSLJob jobModel, final InjectionReferences injectionRefs, final RuntimeJobExecution execution) {
+    public ListenerFactory(final BatchArtifactFactory factory, final JSLJob jobModel, final InjectionReferences injectionRefs, final RuntimeJobExecution execution) {
         jobLevelListenerInfo = new ArrayList<ListenerInfo>();
+        this.factory = factory;
 
         Listeners jobLevelListeners = jobModel.getListeners();
 
-        jobLevelListenerInfo.addAll(globalListeners("org.apache.batchee.job.listeners.before", injectionRefs, execution));
+        jobLevelListenerInfo.addAll(globalListeners(factory, "org.apache.batchee.job.listeners.before", injectionRefs, execution));
         if (jobLevelListeners != null) {
             for (final Listener listener : jobLevelListeners.getListenerList()) {
-                jobLevelListenerInfo.add(buildListenerInfo(listener, injectionRefs, execution));
+                jobLevelListenerInfo.add(buildListenerInfo(factory, listener, injectionRefs, execution));
             }
         }
-        jobLevelListenerInfo.addAll(globalListeners("org.apache.batchee.job.listeners.after", injectionRefs, execution));
+        jobLevelListenerInfo.addAll(globalListeners(factory, "org.apache.batchee.job.listeners.after", injectionRefs, execution));
     }
 
-    private static Collection<ListenerInfo> globalListeners(final String key, final InjectionReferences injectionRefs, final RuntimeJobExecution execution) {
+    private static Collection<ListenerInfo> globalListeners(final BatchArtifactFactory factory, final String key, final InjectionReferences injectionRefs, final RuntimeJobExecution execution) {
         final String globalListeners = ServicesManager.value(key, null);
         if (globalListeners != null) {
             final String[] refs = globalListeners.split(",");
@@ -78,7 +80,7 @@ public class ListenerFactory {
                 final Listener listener = new Listener();
                 listener.setRef(ref);
 
-                list.add(buildListenerInfo(listener, injectionRefs, execution));
+                list.add(buildListenerInfo(factory, listener, injectionRefs, execution));
             }
 
             return list;
@@ -91,7 +93,7 @@ public class ListenerFactory {
      * 
      * @JobListener, even if that is the only type of listener annotation found.
      */
-    private List<ListenerInfo> getStepListenerInfo(final Step step, final InjectionReferences injectionRefs, final RuntimeJobExecution execution) {
+    private List<ListenerInfo> getStepListenerInfo(final BatchArtifactFactory factory, final Step step, final InjectionReferences injectionRefs, final RuntimeJobExecution execution) {
         List<ListenerInfo> stepListenerInfoList = stepLevelListenerInfo.get(step.getId());
         if (stepListenerInfoList == null) {
             synchronized (this) {
@@ -100,28 +102,28 @@ public class ListenerFactory {
                     stepListenerInfoList = new ArrayList<ListenerInfo>();
                     stepLevelListenerInfo.put(step.getId(), stepListenerInfoList);
 
-                    stepListenerInfoList.addAll(globalListeners("org.apache.batchee.step.listeners.before", injectionRefs, execution));
+                    stepListenerInfoList.addAll(globalListeners(factory, "org.apache.batchee.step.listeners.before", injectionRefs, execution));
 
                     final Listeners stepLevelListeners = step.getListeners();
                     if (stepLevelListeners != null) {
                         for (final Listener listener : stepLevelListeners.getListenerList()) {
-                            stepListenerInfoList.add(buildListenerInfo(listener, injectionRefs, execution));
+                            stepListenerInfoList.add(buildListenerInfo(factory, listener, injectionRefs, execution));
                         }
                     }
 
-                    stepListenerInfoList.addAll(globalListeners("org.apache.batchee.step.listeners.after", injectionRefs, execution));
+                    stepListenerInfoList.addAll(globalListeners(factory, "org.apache.batchee.step.listeners.after", injectionRefs, execution));
                 }
             }
         }
         return stepListenerInfoList;
     }
 
-    private static ListenerInfo buildListenerInfo(final Listener listener, final InjectionReferences injectionRefs, final RuntimeJobExecution execution) {
+    private static ListenerInfo buildListenerInfo(final BatchArtifactFactory factory, final Listener listener, final InjectionReferences injectionRefs, final RuntimeJobExecution execution) {
         final String id = listener.getRef();
         final List<Property> propList = (listener.getProperties() == null) ? null : listener.getProperties().getPropertyList();
 
         injectionRefs.setProps(propList);
-        final Object listenerArtifact = ProxyFactory.loadArtifact(id, injectionRefs, execution);
+        final Object listenerArtifact = ProxyFactory.loadArtifact(factory, id, injectionRefs, execution);
         if (listenerArtifact == null) {
             throw new IllegalArgumentException("Load of artifact id: " + id + " returned <null>.");
         }
@@ -140,7 +142,7 @@ public class ListenerFactory {
     }
 
     public List<ChunkListenerProxy> getChunkListeners(final Step step, final InjectionReferences injectionRefs, final StepContextImpl stepContext, final RuntimeJobExecution execution) {
-        final List<ListenerInfo> stepListenerInfo = getStepListenerInfo(step, injectionRefs, execution);
+        final List<ListenerInfo> stepListenerInfo = getStepListenerInfo(factory, step, injectionRefs, execution);
         final List<ChunkListenerProxy> retVal = new ArrayList<ChunkListenerProxy>();
         for (final ListenerInfo li : stepListenerInfo) {
             if (li.isChunkListener()) {
@@ -154,7 +156,7 @@ public class ListenerFactory {
     }
 
     public List<ItemProcessListenerProxy> getItemProcessListeners(final Step step, final InjectionReferences injectionRefs, final StepContextImpl stepContext, final RuntimeJobExecution execution) {
-        final List<ListenerInfo> stepListenerInfo = getStepListenerInfo(step, injectionRefs, execution);
+        final List<ListenerInfo> stepListenerInfo = getStepListenerInfo(factory, step, injectionRefs, execution);
         final List<ItemProcessListenerProxy> retVal = new ArrayList<ItemProcessListenerProxy>();
         for (final ListenerInfo li : stepListenerInfo) {
             if (li.isItemProcessListener()) {
@@ -168,7 +170,7 @@ public class ListenerFactory {
     }
 
     public List<ItemReadListenerProxy> getItemReadListeners(final Step step, final InjectionReferences injectionRefs, final StepContextImpl stepContext, final RuntimeJobExecution execution) {
-        final List<ListenerInfo> stepListenerInfo = getStepListenerInfo(step, injectionRefs, execution);
+        final List<ListenerInfo> stepListenerInfo = getStepListenerInfo(factory, step, injectionRefs, execution);
         final List<ItemReadListenerProxy> retVal = new ArrayList<ItemReadListenerProxy>();
         for (final ListenerInfo li : stepListenerInfo) {
             if (li.isItemReadListener()) {
@@ -182,7 +184,7 @@ public class ListenerFactory {
     }
 
     public List<ItemWriteListenerProxy> getItemWriteListeners(final Step step, final InjectionReferences injectionRefs, final StepContextImpl stepContext, final RuntimeJobExecution execution) {
-        final List<ListenerInfo> stepListenerInfo = getStepListenerInfo(step, injectionRefs, execution);
+        final List<ListenerInfo> stepListenerInfo = getStepListenerInfo(factory, step, injectionRefs, execution);
         final List<ItemWriteListenerProxy> retVal = new ArrayList<ItemWriteListenerProxy>();
         for (final ListenerInfo li : stepListenerInfo) {
             if (li.isItemWriteListener()) {
@@ -196,7 +198,7 @@ public class ListenerFactory {
     }
 
     public List<RetryProcessListenerProxy> getRetryProcessListeners(final Step step, final InjectionReferences injectionRefs, final StepContextImpl stepContext, final RuntimeJobExecution execution) {
-        final List<ListenerInfo> stepListenerInfo = getStepListenerInfo(step, injectionRefs, execution);
+        final List<ListenerInfo> stepListenerInfo = getStepListenerInfo(factory, step, injectionRefs, execution);
         final List<RetryProcessListenerProxy> retVal = new ArrayList<RetryProcessListenerProxy>();
         for (final ListenerInfo li : stepListenerInfo) {
             if (li.isRetryProcessListener()) {
@@ -210,7 +212,7 @@ public class ListenerFactory {
     }
 
     public List<RetryReadListenerProxy> getRetryReadListeners(final Step step, final InjectionReferences injectionRefs, final StepContextImpl stepContext, final RuntimeJobExecution execution) {
-        final List<ListenerInfo> stepListenerInfo = getStepListenerInfo(step, injectionRefs, execution);
+        final List<ListenerInfo> stepListenerInfo = getStepListenerInfo(factory, step, injectionRefs, execution);
         final List<RetryReadListenerProxy> retVal = new ArrayList<RetryReadListenerProxy>();
         for (final ListenerInfo li : stepListenerInfo) {
             if (li.isRetryReadListener()) {
@@ -224,7 +226,7 @@ public class ListenerFactory {
     }
 
     public List<RetryWriteListenerProxy> getRetryWriteListeners(final Step step, final InjectionReferences injectionRefs, final StepContextImpl stepContext, final RuntimeJobExecution execution) {
-        final List<ListenerInfo> stepListenerInfo = getStepListenerInfo(step, injectionRefs, execution);
+        final List<ListenerInfo> stepListenerInfo = getStepListenerInfo(factory, step, injectionRefs, execution);
         final List<RetryWriteListenerProxy> retVal = new ArrayList<RetryWriteListenerProxy>();
         for (final ListenerInfo li : stepListenerInfo) {
             if (li.isRetryWriteListener()) {
@@ -238,7 +240,7 @@ public class ListenerFactory {
     }
 
     public List<SkipProcessListenerProxy> getSkipProcessListeners(final Step step, final InjectionReferences injectionRefs, final StepContextImpl stepContext, final RuntimeJobExecution execution) {
-        final List<ListenerInfo> stepListenerInfo = getStepListenerInfo(step, injectionRefs, execution);
+        final List<ListenerInfo> stepListenerInfo = getStepListenerInfo(factory, step, injectionRefs, execution);
         final List<SkipProcessListenerProxy> retVal = new ArrayList<SkipProcessListenerProxy>();
         for (final ListenerInfo li : stepListenerInfo) {
             if (li.isSkipProcessListener()) {
@@ -252,7 +254,7 @@ public class ListenerFactory {
     }
 
     public List<SkipReadListenerProxy> getSkipReadListeners(final Step step, final InjectionReferences injectionRefs, final StepContextImpl stepContext, final RuntimeJobExecution execution) {
-        final List<ListenerInfo> stepListenerInfo = getStepListenerInfo(step, injectionRefs, execution);
+        final List<ListenerInfo> stepListenerInfo = getStepListenerInfo(factory, step, injectionRefs, execution);
         final List<SkipReadListenerProxy> retVal = new ArrayList<SkipReadListenerProxy>();
         for (final ListenerInfo li : stepListenerInfo) {
             if (li.isSkipReadListener()) {
@@ -266,7 +268,7 @@ public class ListenerFactory {
     }
 
     public List<SkipWriteListenerProxy> getSkipWriteListeners(final Step step, final InjectionReferences injectionRefs, final StepContextImpl stepContext, final RuntimeJobExecution execution) {
-        final List<ListenerInfo> stepListenerInfo = getStepListenerInfo(step, injectionRefs, execution);
+        final List<ListenerInfo> stepListenerInfo = getStepListenerInfo(factory, step, injectionRefs, execution);
         final List<SkipWriteListenerProxy> retVal = new ArrayList<SkipWriteListenerProxy>();
         for (final ListenerInfo li : stepListenerInfo) {
             if (li.isSkipWriteListener()) {
@@ -280,7 +282,7 @@ public class ListenerFactory {
     }
 
     public List<StepListenerProxy> getStepListeners(final Step step, final InjectionReferences injectionRefs, final StepContextImpl stepContext, final RuntimeJobExecution execution) {
-        final List<ListenerInfo> stepListenerInfo = getStepListenerInfo(step, injectionRefs, execution);
+        final List<ListenerInfo> stepListenerInfo = getStepListenerInfo(factory, step, injectionRefs, execution);
         final List<StepListenerProxy> retVal = new ArrayList<StepListenerProxy>();
         for (final ListenerInfo li : stepListenerInfo) {
             if (li.isStepListener()) {

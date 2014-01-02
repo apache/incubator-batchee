@@ -23,12 +23,13 @@ import org.apache.batchee.container.jsl.ExecutionElement;
 import org.apache.batchee.container.proxy.DeciderProxy;
 import org.apache.batchee.container.proxy.InjectionReferences;
 import org.apache.batchee.container.proxy.ProxyFactory;
-import org.apache.batchee.spi.PersistenceManagerService;
 import org.apache.batchee.container.services.ServicesManager;
 import org.apache.batchee.container.status.ExecutionStatus;
 import org.apache.batchee.container.status.ExtendedBatchStatus;
 import org.apache.batchee.jaxb.Decision;
 import org.apache.batchee.jaxb.Property;
+import org.apache.batchee.spi.BatchArtifactFactory;
+import org.apache.batchee.spi.PersistenceManagerService;
 
 import javax.batch.runtime.StepExecution;
 import java.util.List;
@@ -41,11 +42,13 @@ public class DecisionController implements ExecutionElementController {
     private StepExecution[] previousStepExecutions = null;
 
     private final PersistenceManagerService persistenceService;
+    private final BatchArtifactFactory factory;
 
-    public DecisionController(final RuntimeJobExecution jobExecution, final Decision decision) {
+    public DecisionController(final RuntimeJobExecution jobExecution, final Decision decision, final ServicesManager manager) {
         this.jobExecution = jobExecution;
         this.decision = decision;
-        this.persistenceService = ServicesManager.service(PersistenceManagerService.class);
+        this.persistenceService = manager.service(PersistenceManagerService.class);
+        this.factory = manager.service(BatchArtifactFactory.class);
     }
 
     @Override
@@ -61,7 +64,7 @@ public class DecisionController implements ExecutionElementController {
         //so two of these contexts will always be null
         final InjectionReferences injectionRef = new InjectionReferences(jobExecution.getJobContext(), null, propList);
 
-        final DeciderProxy deciderProxy = ProxyFactory.createDeciderProxy(deciderId, injectionRef, jobExecution);
+        final DeciderProxy deciderProxy = ProxyFactory.createDeciderProxy(factory, deciderId, injectionRef, jobExecution);
 
         final String exitStatus = deciderProxy.decide(this.previousStepExecutions);
 

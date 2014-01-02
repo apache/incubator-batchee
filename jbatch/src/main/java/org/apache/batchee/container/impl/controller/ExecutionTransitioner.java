@@ -27,6 +27,8 @@ import org.apache.batchee.container.jsl.IllegalTransitionException;
 import org.apache.batchee.container.jsl.Transition;
 import org.apache.batchee.container.jsl.TransitionElement;
 import org.apache.batchee.container.navigator.ModelNavigator;
+import org.apache.batchee.container.services.BatchKernelService;
+import org.apache.batchee.container.services.ServicesManager;
 import org.apache.batchee.container.status.ExecutionStatus;
 import org.apache.batchee.container.status.ExtendedBatchStatus;
 import org.apache.batchee.container.util.PartitionDataWrapper;
@@ -44,6 +46,7 @@ import java.util.List;
 import java.util.concurrent.BlockingQueue;
 
 public class ExecutionTransitioner {
+    private final ServicesManager manager;
     private RuntimeJobExecution jobExecution;
     private long rootJobExecutionId;
     private ModelNavigator<?> modelNavigator;
@@ -60,19 +63,24 @@ public class ExecutionTransitioner {
 
     private List<Long> stepExecIds;
 
-    public ExecutionTransitioner(RuntimeJobExecution jobExecution, long rootJobExecutionId, ModelNavigator<?> modelNavigator) {
+    public ExecutionTransitioner(final RuntimeJobExecution jobExecution, final long rootJobExecutionId, final ModelNavigator<?> modelNavigator,
+                                 final ServicesManager servicesManager) {
         this.jobExecution = jobExecution;
         this.rootJobExecutionId = rootJobExecutionId;
         this.modelNavigator = modelNavigator;
         this.jobContext = jobExecution.getJobContext();
+        this.manager = servicesManager;
     }
 
-    public ExecutionTransitioner(RuntimeJobExecution jobExecution, long rootJobExecutionId, ModelNavigator<JSLJob> jobNavigator, BlockingQueue<PartitionDataWrapper> analyzerQueue) {
+    public ExecutionTransitioner(final RuntimeJobExecution jobExecution, final long rootJobExecutionId,
+                                 final ModelNavigator<JSLJob> jobNavigator, final BlockingQueue<PartitionDataWrapper> analyzerQueue,
+                                 final ServicesManager manager) {
         this.jobExecution = jobExecution;
         this.rootJobExecutionId = rootJobExecutionId;
         this.modelNavigator = jobNavigator;
         this.jobContext = jobExecution.getJobContext();
         this.analyzerQueue = analyzerQueue;
+        this.manager = manager;
     }
 
     public ExecutionStatus doExecutionLoop() {
@@ -163,19 +171,19 @@ public class ExecutionTransitioner {
 
         if (currentExecutionElement instanceof Decision) {
             final Decision decision = (Decision) currentExecutionElement;
-            elementController = ExecutionElementControllerFactory.getDecisionController(jobExecution, decision);
+            elementController = ExecutionElementControllerFactory.getDecisionController(manager, jobExecution, decision);
             final DecisionController decisionController = (DecisionController) elementController;
             decisionController.setPreviousStepExecutions(previousExecutionElement, previousElementController);
         } else if (currentExecutionElement instanceof Flow) {
             final Flow flow = (Flow) currentExecutionElement;
-            elementController = ExecutionElementControllerFactory.getFlowController(jobExecution, flow, rootJobExecutionId);
+            elementController = ExecutionElementControllerFactory.getFlowController(manager, jobExecution, flow, rootJobExecutionId);
         } else if (currentExecutionElement instanceof Split) {
             final Split split = (Split) currentExecutionElement;
-            elementController = ExecutionElementControllerFactory.getSplitController(jobExecution, split, rootJobExecutionId);
+            elementController = ExecutionElementControllerFactory.getSplitController(manager.service(BatchKernelService.class), jobExecution, split, rootJobExecutionId);
         } else if (currentExecutionElement instanceof Step) {
             final Step step = (Step) currentExecutionElement;
             final StepContextImpl stepContext = new StepContextImpl(step.getId());
-            elementController = ExecutionElementControllerFactory.getStepController(jobExecution, step, stepContext, rootJobExecutionId, analyzerQueue);
+            elementController = ExecutionElementControllerFactory.getStepController(jobExecution, step, stepContext, rootJobExecutionId, analyzerQueue, manager);
         } else {
             elementController = null;
         }

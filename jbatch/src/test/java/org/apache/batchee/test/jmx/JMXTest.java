@@ -56,7 +56,7 @@ public class JMXTest {
     }
 
     private static void clearPersistence(final JobOperator jobOperator) {
-        final PersistenceManagerService service = ServicesManager.service(PersistenceManagerService.class);
+        final PersistenceManagerService service = ServicesManager.find().service(PersistenceManagerService.class);
         for (final String name : jobOperator.getJobNames()) {
             for (final JobInstance id : jobOperator.getJobInstances(name, 0, Integer.MAX_VALUE)) {
                 service.cleanUp(id.getInstanceId());
@@ -66,7 +66,7 @@ public class JMXTest {
 
     @AfterClass
     public static void deleteJob() throws Exception {
-        ServicesManager.service(PersistenceManagerService.class).cleanUp(id);
+        ServicesManager.find().service(PersistenceManagerService.class).cleanUp(id);
     }
 
     private static Object attr(final String name) throws Exception {

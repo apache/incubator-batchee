@@ -19,7 +19,6 @@ package org.apache.batchee.container.impl;
 import org.apache.batchee.container.services.InternalJobExecution;
 import org.apache.batchee.spi.PersistenceManagerService;
 import org.apache.batchee.spi.PersistenceManagerService.TimestampType;
-import org.apache.batchee.container.services.ServicesManager;
 
 import javax.batch.runtime.BatchStatus;
 import java.sql.Timestamp;
@@ -27,7 +26,7 @@ import java.util.Date;
 import java.util.Properties;
 
 public class JobExecutionImpl implements InternalJobExecution {
-    private static final PersistenceManagerService PERSISTENCE_MANAGER_SERVICE = ServicesManager.service(PersistenceManagerService.class);
+    private final PersistenceManagerService persistenceManagerService;
 
     private long executionID = 0L;
     private long instanceID = 0L;
@@ -50,7 +49,8 @@ public class JobExecutionImpl implements InternalJobExecution {
         this.jobContext = jobContext;
     }
 
-    public JobExecutionImpl(long executionId, long instanceId) {
+    public JobExecutionImpl(final long executionId, final long instanceId, final PersistenceManagerService persistenceManagerService) {
+        this.persistenceManagerService = persistenceManagerService;
         this.executionID = executionId;
         this.instanceID = instanceId;
     }
@@ -61,7 +61,7 @@ public class JobExecutionImpl implements InternalJobExecution {
             return this.jobContext.getBatchStatus();
         } else {
             // old job, retrieve from the backend
-            final String name = PERSISTENCE_MANAGER_SERVICE.jobOperatorQueryJobExecutionBatchStatus(executionID);
+            final String name = persistenceManagerService.jobOperatorQueryJobExecutionBatchStatus(executionID);
             if (name != null) {
                 return BatchStatus.valueOf(name);
             }
@@ -71,7 +71,7 @@ public class JobExecutionImpl implements InternalJobExecution {
 
     @Override
     public Date getCreateTime() {
-        final Timestamp ts = PERSISTENCE_MANAGER_SERVICE.jobOperatorQueryJobExecutionTimestamp(executionID, TimestampType.CREATE);
+        final Timestamp ts = persistenceManagerService.jobOperatorQueryJobExecutionTimestamp(executionID, TimestampType.CREATE);
         if (ts != null) {
             createTime = ts;
         }
@@ -84,7 +84,7 @@ public class JobExecutionImpl implements InternalJobExecution {
 
     @Override
     public Date getEndTime() {
-        final Timestamp ts = PERSISTENCE_MANAGER_SERVICE.jobOperatorQueryJobExecutionTimestamp(executionID, TimestampType.END);
+        final Timestamp ts = persistenceManagerService.jobOperatorQueryJobExecutionTimestamp(executionID, TimestampType.END);
         if (ts != null) {
             endTime = ts;
         }
@@ -106,7 +106,7 @@ public class JobExecutionImpl implements InternalJobExecution {
             return this.jobContext.getExitStatus();
         }
 
-        final String persistenceExitStatus = PERSISTENCE_MANAGER_SERVICE.jobOperatorQueryJobExecutionExitStatus(executionID);
+        final String persistenceExitStatus = persistenceManagerService.jobOperatorQueryJobExecutionExitStatus(executionID);
         if (persistenceExitStatus != null) {
             exitStatus = persistenceExitStatus;
         }
@@ -116,7 +116,7 @@ public class JobExecutionImpl implements InternalJobExecution {
 
     @Override
     public Date getLastUpdatedTime() {
-        final Timestamp ts = PERSISTENCE_MANAGER_SERVICE.jobOperatorQueryJobExecutionTimestamp(executionID, TimestampType.LAST_UPDATED);
+        final Timestamp ts = persistenceManagerService.jobOperatorQueryJobExecutionTimestamp(executionID, TimestampType.LAST_UPDATED);
         if (ts != null) {
             this.updateTime = ts;
         }
@@ -129,7 +129,7 @@ public class JobExecutionImpl implements InternalJobExecution {
 
     @Override
     public Date getStartTime() {
-        final Timestamp ts = PERSISTENCE_MANAGER_SERVICE.jobOperatorQueryJobExecutionTimestamp(executionID, TimestampType.STARTED);
+        final Timestamp ts = persistenceManagerService.jobOperatorQueryJobExecutionTimestamp(executionID, TimestampType.STARTED);
         if (ts != null) {
             startTime = ts;
         }

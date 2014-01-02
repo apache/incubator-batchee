@@ -38,14 +38,15 @@ public class CheckpointManager {
 
     public CheckpointManager(final ItemReaderProxy reader, final ItemWriterProxy writer,
                              final CheckpointAlgorithm chkptAlg,
-                             final long jobInstanceID, final String stepId) {
+                             final long jobInstanceID, final String stepId,
+                             final PersistenceManagerService persistenceManagerService) {
         this.readerProxy = reader;
         this.writerProxy = writer;
         this.checkpointAlgorithm = chkptAlg;
         this.stepId = stepId;
         this.jobInstanceID = jobInstanceID;
 
-        this.persistenceManagerService = ServicesManager.service(PersistenceManagerService.class);
+        this.persistenceManagerService = persistenceManagerService;
     }
 
     public boolean applyCheckPointPolicy() {

@@ -17,13 +17,14 @@
 package org.apache.batchee.container.impl.controller;
 
 import org.apache.batchee.container.impl.jobinstance.RuntimeJobExecution;
+import org.apache.batchee.container.services.ServicesManager;
 
 public class JobController extends JobThreadRootController {
-    private JobController(final RuntimeJobExecution jobExecution, final long rootJobExecutionId) {
-        super(jobExecution, rootJobExecutionId);
+    private JobController(final RuntimeJobExecution jobExecution, final long rootJobExecutionId, final ServicesManager manager) {
+        super(jobExecution, rootJobExecutionId, manager);
     }
 
-    public JobController(final RuntimeJobExecution jobExecution) {
-        this(jobExecution, jobExecution.getExecutionId());
+    public JobController(final RuntimeJobExecution jobExecution, final ServicesManager manager) {
+        this(jobExecution, jobExecution.getExecutionId(), manager);
     }
 }

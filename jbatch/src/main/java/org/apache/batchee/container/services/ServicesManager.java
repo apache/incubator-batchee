@@ -40,10 +40,7 @@ import org.apache.batchee.spi.TransactionManagementService;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.lang.reflect.Proxy;
+import java.lang.reflect.Constructor;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
@@ -82,8 +79,8 @@ public class ServicesManager implements BatchContainerConstants {
         servicesManagerLocator = locator;
     }
 
-    public static <T extends BatchService> T service(final Class<T> api) {
-        return api.cast(Proxy.newProxyInstance(ServicesManager.class.getClassLoader(), new Class<?>[]{ api }, new ServiceHandler<T>(api)));
+    public static ServicesManager find() {
+        return servicesManagerLocator.find();
     }
 
     public static String value(final String key, final String defaultValue) {
@@ -149,7 +146,7 @@ public class ServicesManager implements BatchContainerConstants {
         }
     }
 
-    private <T extends BatchService> T getService(final Class<T> clazz) throws BatchContainerServiceException {
+    public <T extends BatchService> T service(final Class<T> clazz) throws BatchContainerServiceException {
         T service = clazz.cast(serviceRegistry.get(clazz.getName()));
         if (service == null) {
             // Probably don't want to be loading two on two different threads so lock the whole table.
@@ -192,34 +189,21 @@ public class ServicesManager implements BatchContainerConstants {
         return service;
     }
 
-    private static <T> T load(final Class<T> expected, final String className) throws Exception {
+    private <T> T load(final Class<T> expected, final String className) throws Exception {
         final Class<?> cls = Class.forName(className);
         if (cls != null) {
+            try {
+                final Constructor<?> constructor = cls.getConstructor(ServicesManager.class);
+                return expected.cast(constructor.newInstance(this));
+            } catch (final Throwable th) {
+                // try no arg constructor
+            }
             if (cls.getConstructor() != null) {
                 return expected.cast(cls.newInstance());
             }
             throw new BatchContainerRuntimeException("Service class " + className + " should  have a default constructor defined");
         }
         throw new Exception("Exception loading Service class " + className + " make sure it exists");
-    }
-
-    // just an handler getting the right service instance using the ServicesManagerLocator
-    private static class ServiceHandler<T extends BatchService> implements InvocationHandler {
-        private final Class<T> service;
-
-        public ServiceHandler(final Class<T> api) {
-            this.service = api;
-        }
-
-        @Override
-        public Object invoke(final Object proxy, final Method method, final Object[] args) throws Throwable {
-            final T instance = servicesManagerLocator.find().getService(service);
-            try {
-                return method.invoke(instance, args);
-            } catch (final InvocationTargetException ite) {
-                throw ite.getCause();
-            }
-        }
     }
 }
 

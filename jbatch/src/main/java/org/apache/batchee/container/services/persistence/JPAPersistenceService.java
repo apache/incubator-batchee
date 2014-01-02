@@ -344,7 +344,7 @@ public class JPAPersistenceService implements PersistenceManagerService {
 
             final List<InternalJobExecution> result = new ArrayList<InternalJobExecution>(list.size());
             for (final JobExecutionEntity entity : list) {
-                final JobExecutionImpl jobEx = new JobExecutionImpl(entity.getExecutionId(), jobInstanceId);
+                final JobExecutionImpl jobEx = new JobExecutionImpl(entity.getExecutionId(), jobInstanceId, this);
                 jobEx.setCreateTime(entity.getCreateTime());
                 jobEx.setStartTime(entity.getStartTime());
                 jobEx.setEndTime(entity.getEndTime());
@@ -390,7 +390,7 @@ public class JPAPersistenceService implements PersistenceManagerService {
         try {
             final JobExecutionEntity instance = em.find(JobExecutionEntity.class, jobExecutionId);
 
-            final JobExecutionImpl jobEx = new JobExecutionImpl(jobExecutionId, instance.getInstance().getJobInstanceId());
+            final JobExecutionImpl jobEx = new JobExecutionImpl(jobExecutionId, instance.getInstance().getJobInstanceId(), this);
             jobEx.setCreateTime(instance.getCreateTime());
             jobEx.setStartTime(instance.getStartTime());
             jobEx.setEndTime(instance.getEndTime());
@@ -496,7 +496,7 @@ public class JPAPersistenceService implements PersistenceManagerService {
                 em.persist(instance);
                 txProvider.commit(tx);
 
-                final RuntimeFlowInSplitExecution jobExecution = new RuntimeFlowInSplitExecution(jobInstance, instance.getExecutionId());
+                final RuntimeFlowInSplitExecution jobExecution = new RuntimeFlowInSplitExecution(jobInstance, instance.getExecutionId(), this);
                 jobExecution.setBatchStatus(batchStatus.name());
                 jobExecution.setCreateTime(instance.getCreateTime());
                 jobExecution.setLastUpdateTime(instance.getCreateTime());
@@ -561,7 +561,7 @@ public class JPAPersistenceService implements PersistenceManagerService {
                 em.persist(execution);
                 txProvider.commit(tx);
 
-                final RuntimeJobExecution jobExecution = new RuntimeJobExecution(jobInstance, execution.getExecutionId());
+                final RuntimeJobExecution jobExecution = new RuntimeJobExecution(jobInstance, execution.getExecutionId(), this);
                 jobExecution.setBatchStatus(batchStatus.name());
                 jobExecution.setCreateTime(execution.getCreateTime());
                 jobExecution.setLastUpdateTime(execution.getCreateTime());

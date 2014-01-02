@@ -23,6 +23,7 @@ import org.apache.batchee.container.impl.jobinstance.RuntimeFlowInSplitExecution
 import org.apache.batchee.container.impl.jobinstance.RuntimeJobExecution;
 import org.apache.batchee.container.services.BatchKernelService;
 import org.apache.batchee.container.services.InternalJobExecution;
+import org.apache.batchee.container.services.JobStatusManagerService;
 import org.apache.batchee.container.services.ServicesManager;
 import org.apache.batchee.container.util.BatchFlowInSplitWorkUnit;
 import org.apache.batchee.container.util.BatchPartitionWorkUnit;
@@ -56,10 +57,12 @@ public class DefaultBatchKernel implements BatchKernelService {
 
     private final BatchThreadPoolService executorService;
     private final PersistenceManagerService persistenceService;
+    private final ServicesManager servicesManager;
 
-    public DefaultBatchKernel() {
-        executorService = ServicesManager.service(BatchThreadPoolService.class);
-        persistenceService = ServicesManager.service(PersistenceManagerService.class);
+    public DefaultBatchKernel(final ServicesManager servicesManager) {
+        this.servicesManager = servicesManager;
+        executorService = servicesManager.service(BatchThreadPoolService.class);
+        persistenceService = servicesManager.service(PersistenceManagerService.class);
     }
 
     @Override
@@ -69,11 +72,11 @@ public class DefaultBatchKernel implements BatchKernelService {
 
     @Override
     public InternalJobExecution startJob(final String jobXML, final Properties jobParameters) throws JobStartException {
-        final RuntimeJobExecution jobExecution = JobExecutionHelper.startJob(jobXML, jobParameters);
+        final RuntimeJobExecution jobExecution = JobExecutionHelper.startJob(servicesManager, jobXML, jobParameters);
 
         // TODO - register with status manager
 
-        final BatchWorkUnit batchWork = new BatchWorkUnit(this, jobExecution);
+        final BatchWorkUnit batchWork = new BatchWorkUnit(servicesManager, jobExecution);
         registerCurrentInstanceAndExecution(jobExecution, batchWork.getController());
 
         executorService.executeTask(batchWork, null);
@@ -93,8 +96,8 @@ public class DefaultBatchKernel implements BatchKernelService {
 
     @Override
     public InternalJobExecution restartJob(final long executionId, final Properties jobOverrideProps) throws JobRestartException, JobExecutionAlreadyCompleteException, JobExecutionNotMostRecentException, NoSuchJobExecutionException {
-        final RuntimeJobExecution jobExecution = JobExecutionHelper.restartJob(executionId, jobOverrideProps);
-        final BatchWorkUnit batchWork = new BatchWorkUnit(this, jobExecution);
+        final RuntimeJobExecution jobExecution = JobExecutionHelper.restartJob(servicesManager, executionId, jobOverrideProps);
+        final BatchWorkUnit batchWork = new BatchWorkUnit(servicesManager, jobExecution);
 
         registerCurrentInstanceAndExecution(jobExecution, batchWork.getController());
 
@@ -124,7 +127,7 @@ public class DefaultBatchKernel implements BatchKernelService {
     }
 
     public InternalJobExecution getJobExecution(final long executionId) throws NoSuchJobExecutionException {
-        return JobExecutionHelper.getPersistedJobOperatorJobExecution(executionId);
+        return JobExecutionHelper.getPersistedJobOperatorJobExecution(servicesManager.service(PersistenceManagerService.class), executionId);
     }
 
     @Override
@@ -139,7 +142,7 @@ public class DefaultBatchKernel implements BatchKernelService {
 
     @Override
     public JobInstance getJobInstance(final long executionId) {
-        return JobExecutionHelper.getJobInstance(executionId);
+        return JobExecutionHelper.getJobInstance(servicesManager.service(JobStatusManagerService.class), executionId);
     }
 
 
@@ -158,10 +161,10 @@ public class DefaultBatchKernel implements BatchKernelService {
         int instance = 0;
         for (final JSLJob parallelJob : jobModels) {
             final Properties partitionProps = (partitionPropertiesArray == null) ? null : partitionPropertiesArray[instance];
-            final RuntimeJobExecution jobExecution = JobExecutionHelper.startPartition(parallelJob, partitionProps);
+            final RuntimeJobExecution jobExecution = JobExecutionHelper.startPartition(servicesManager, parallelJob, partitionProps);
             jobExecution.setPartitionInstance(instance);
 
-            final BatchPartitionWorkUnit batchWork = new BatchPartitionWorkUnit(this, jobExecution, config);
+            final BatchPartitionWorkUnit batchWork = new BatchPartitionWorkUnit(jobExecution, config, servicesManager);
 
             registerCurrentInstanceAndExecution(jobExecution, batchWork.getController());
 
@@ -190,13 +193,13 @@ public class DefaultBatchKernel implements BatchKernelService {
                 final long execId = getMostRecentExecutionId(parallelJob);
                 final RuntimeJobExecution jobExecution;
                 try {
-                    jobExecution = JobExecutionHelper.restartPartition(execId, parallelJob, partitionProps);
+                    jobExecution = JobExecutionHelper.restartPartition(servicesManager, execId, parallelJob, partitionProps);
                     jobExecution.setPartitionInstance(instance);
                 } catch (final NoSuchJobExecutionException e) {
                     throw new IllegalStateException("Caught NoSuchJobExecutionException but this is an internal JobExecution so this shouldn't have happened: execId =" + execId, e);
                 }
 
-                final BatchPartitionWorkUnit batchWork = new BatchPartitionWorkUnit(this, jobExecution, config);
+                final BatchPartitionWorkUnit batchWork = new BatchPartitionWorkUnit(jobExecution, config, servicesManager);
                 registerCurrentInstanceAndExecution(jobExecution, batchWork.getController());
 
                 batchWorkUnits.add(batchWork);
@@ -219,8 +222,8 @@ public class DefaultBatchKernel implements BatchKernelService {
     public BatchFlowInSplitWorkUnit buildNewFlowInSplitWorkUnit(final FlowInSplitBuilderConfig config) {
         final JSLJob parallelJob = config.getJobModel();
 
-        final RuntimeFlowInSplitExecution execution = JobExecutionHelper.startFlowInSplit(parallelJob);
-        final BatchFlowInSplitWorkUnit batchWork = new BatchFlowInSplitWorkUnit(this, execution, config);
+        final RuntimeFlowInSplitExecution execution = JobExecutionHelper.startFlowInSplit(servicesManager, parallelJob);
+        final BatchFlowInSplitWorkUnit batchWork = new BatchFlowInSplitWorkUnit(execution, config, servicesManager);
 
         registerCurrentInstanceAndExecution(execution, batchWork.getController());
         return batchWork;
@@ -256,12 +259,12 @@ public class DefaultBatchKernel implements BatchKernelService {
         final long execId = getMostRecentExecutionId(jobModel);
         final RuntimeFlowInSplitExecution jobExecution;
         try {
-            jobExecution = JobExecutionHelper.restartFlowInSplit(execId, jobModel);
+            jobExecution = JobExecutionHelper.restartFlowInSplit(servicesManager, execId, jobModel);
         } catch (final NoSuchJobExecutionException e) {
             throw new IllegalStateException("Caught NoSuchJobExecutionException but this is an internal JobExecution so this shouldn't have happened: execId =" + execId, e);
         }
 
-        final BatchFlowInSplitWorkUnit batchWork = new BatchFlowInSplitWorkUnit(this, jobExecution, config);
+        final BatchFlowInSplitWorkUnit batchWork = new BatchFlowInSplitWorkUnit(jobExecution, config, servicesManager);
 
         registerCurrentInstanceAndExecution(jobExecution, batchWork.getController());
         return batchWork;

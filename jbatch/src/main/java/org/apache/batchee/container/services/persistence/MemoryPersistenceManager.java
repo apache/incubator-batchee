@@ -51,7 +51,6 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -324,7 +323,7 @@ public class MemoryPersistenceManager implements PersistenceManagerService {
         final Structures.ExecutionInstanceData executionInstanceData = createRuntimeJobExecutionEntry(jobInstance, jobParameters, batchStatus, now);
         executionInstanceData.execution.setJobName(jobInstance.getJobName());
 
-        final RuntimeJobExecution jobExecution = new RuntimeJobExecution(jobInstance, executionInstanceData.execution.getExecutionId());
+        final RuntimeJobExecution jobExecution = new RuntimeJobExecution(jobInstance, executionInstanceData.execution.getExecutionId(), this);
         jobExecution.setBatchStatus(batchStatus.name());
         jobExecution.setCreateTime(now);
         jobExecution.setLastUpdateTime(now);
@@ -335,7 +334,7 @@ public class MemoryPersistenceManager implements PersistenceManagerService {
     private Structures.ExecutionInstanceData createRuntimeJobExecutionEntry(final JobInstance jobInstance, final Properties jobParameters, final BatchStatus batchStatus, final Timestamp now) {
         final Structures.ExecutionInstanceData executionInstanceData = new Structures.ExecutionInstanceData();
         final long id = data.executionInstanceIdGenerator.getAndIncrement();
-        executionInstanceData.execution = new JobExecutionImpl(id, jobInstance.getInstanceId());
+        executionInstanceData.execution = new JobExecutionImpl(id, jobInstance.getInstanceId(), this);
         executionInstanceData.execution.setExecutionId(id);
         executionInstanceData.execution.setInstanceId(jobInstance.getInstanceId());
         executionInstanceData.execution.setBatchStatus(batchStatus.name());
@@ -608,7 +607,7 @@ public class MemoryPersistenceManager implements PersistenceManagerService {
     public RuntimeFlowInSplitExecution createFlowInSplitExecution(final JobInstance jobInstance, final BatchStatus batchStatus) {
         final Timestamp now = new Timestamp(System.currentTimeMillis());
         final Structures.ExecutionInstanceData executionInstanceData = createRuntimeJobExecutionEntry(jobInstance, null, batchStatus, now);
-        final RuntimeFlowInSplitExecution flowExecution = new RuntimeFlowInSplitExecution(jobInstance, executionInstanceData.execution.getExecutionId());
+        final RuntimeFlowInSplitExecution flowExecution = new RuntimeFlowInSplitExecution(jobInstance, executionInstanceData.execution.getExecutionId(), this);
         flowExecution.setBatchStatus(batchStatus.name());
         flowExecution.setCreateTime(now);
         flowExecution.setLastUpdateTime(now);

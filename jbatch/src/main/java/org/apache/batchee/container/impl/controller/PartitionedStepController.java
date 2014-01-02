@@ -26,6 +26,7 @@ import org.apache.batchee.container.proxy.PartitionMapperProxy;
 import org.apache.batchee.container.proxy.PartitionReducerProxy;
 import org.apache.batchee.container.proxy.ProxyFactory;
 import org.apache.batchee.container.proxy.StepListenerProxy;
+import org.apache.batchee.container.services.ServicesManager;
 import org.apache.batchee.container.util.BatchPartitionPlan;
 import org.apache.batchee.container.util.BatchPartitionWorkUnit;
 import org.apache.batchee.container.util.BatchWorkUnit;
@@ -39,6 +40,7 @@ import org.apache.batchee.jaxb.PartitionMapper;
 import org.apache.batchee.jaxb.PartitionReducer;
 import org.apache.batchee.jaxb.Property;
 import org.apache.batchee.jaxb.Step;
+import org.apache.batchee.spi.BatchArtifactFactory;
 
 import javax.batch.api.partition.PartitionPlan;
 import javax.batch.api.partition.PartitionReducer.PartitionStatus;
@@ -80,8 +82,12 @@ public class PartitionedStepController extends BaseStepController {
 
     BlockingQueue<BatchPartitionWorkUnit> completedWorkQueue = null;
 
-    protected PartitionedStepController(final RuntimeJobExecution jobExecutionImpl, final Step step, StepContextImpl stepContext, long rootJobExecutionId) {
-        super(jobExecutionImpl, step, stepContext, rootJobExecutionId);
+    private final BatchArtifactFactory factory;
+
+    protected PartitionedStepController(final RuntimeJobExecution jobExecutionImpl, final Step step, final StepContextImpl stepContext,
+                                        final long rootJobExecutionId, final ServicesManager servicesManager) {
+        super(jobExecutionImpl, step, stepContext, rootJobExecutionId, servicesManager);
+        factory = servicesManager.service(BatchArtifactFactory.class);
     }
 
     @Override
@@ -96,7 +102,7 @@ public class PartitionedStepController extends BaseStepController {
             if (parallelBatchWorkUnits != null) {
                 for (BatchWorkUnit subJob : parallelBatchWorkUnits) {
                     try {
-                        BATCH_KERNEL.stopJob(subJob.getJobExecutionImpl().getExecutionId());
+                        kernelService.stopJob(subJob.getJobExecutionImpl().getExecutionId());
                     } catch (Exception e) {
                         // TODO - Is this what we want to know.
                         // Blow up if it happens to force the issue.
@@ -128,7 +134,7 @@ public class PartitionedStepController extends BaseStepController {
             // Set all the contexts associated with this controller.
             // Some of them may be null
             final InjectionReferences injectionRef = new InjectionReferences(jobExecutionImpl.getJobContext(), stepContext, propertyList);
-            final PartitionMapperProxy partitionMapperProxy = ProxyFactory.createPartitionMapperProxy(partitionMapper.getRef(), injectionRef, stepContext, jobExecutionImpl);
+            final PartitionMapperProxy partitionMapperProxy = ProxyFactory.createPartitionMapperProxy(factory, partitionMapper.getRef(), injectionRef, stepContext, jobExecutionImpl);
 
 
             final PartitionPlan mapperPlan = partitionMapperProxy.mapPartitions();
@@ -280,9 +286,9 @@ public class PartitionedStepController extends BaseStepController {
             PartitionsBuilderConfig config = new PartitionsBuilderConfig(subJobs, partitionProperties, analyzerStatusQueue, completedWorkQueue, jobExecutionImpl.getExecutionId());
             // Then build all the subjobs but do not start them yet
             if (stepStatus.getStartCount() > 1 && !plan.getPartitionsOverride()) {
-                parallelBatchWorkUnits = BATCH_KERNEL.buildOnRestartParallelPartitions(config);
+                parallelBatchWorkUnits = kernelService.buildOnRestartParallelPartitions(config);
             } else {
-                parallelBatchWorkUnits = BATCH_KERNEL.buildNewParallelPartitions(config);
+                parallelBatchWorkUnits = kernelService.buildNewParallelPartitions(config);
             }
 
             // NOTE:  At this point I might not have as many work units as I had partitions, since some may have already completed.
@@ -304,9 +310,9 @@ public class PartitionedStepController extends BaseStepController {
         for (int i = 0; i < this.threads && i < numTotalForThisExecution; i++, numCurrentSubmitted++) {
             final BatchWorkUnit workUnit = parallelBatchWorkUnits.get(i);
             if (stepStatus.getStartCount() > 1 && !plan.getPartitionsOverride()) {
-                BATCH_KERNEL.restartGeneratedJob(workUnit);
+                kernelService.restartGeneratedJob(workUnit);
             } else {
-                BATCH_KERNEL.startGeneratedJob(workUnit);
+                kernelService.startGeneratedJob(workUnit);
             }
         }
 
@@ -336,9 +342,9 @@ public class PartitionedStepController extends BaseStepController {
             if (numCurrentCompleted < numTotalForThisExecution) {
                 if (numCurrentSubmitted < numTotalForThisExecution) {
                     if (stepStatus.getStartCount() > 1) {
-                        BATCH_KERNEL.startGeneratedJob(parallelBatchWorkUnits.get(numCurrentSubmitted++));
+                        kernelService.startGeneratedJob(parallelBatchWorkUnits.get(numCurrentSubmitted++));
                     } else {
-                        BATCH_KERNEL.restartGeneratedJob(parallelBatchWorkUnits.get(numCurrentSubmitted++));
+                        kernelService.restartGeneratedJob(parallelBatchWorkUnits.get(numCurrentSubmitted++));
                     }
                 }
             } else {
@@ -388,14 +394,14 @@ public class PartitionedStepController extends BaseStepController {
         if (analyzer != null) {
             final List<Property> propList = analyzer.getProperties() == null ? null : analyzer.getProperties().getPropertyList();
             injectionRef = new InjectionReferences(jobExecutionImpl.getJobContext(), stepContext, propList);
-            analyzerProxy = ProxyFactory.createPartitionAnalyzerProxy(analyzer.getRef(), injectionRef, stepContext, jobExecutionImpl);
+            analyzerProxy = ProxyFactory.createPartitionAnalyzerProxy(factory, analyzer.getRef(), injectionRef, stepContext, jobExecutionImpl);
         }
 
         final PartitionReducer partitionReducer = step.getPartition().getReducer();
         if (partitionReducer != null) {
             final List<Property> propList = partitionReducer.getProperties() == null ? null : partitionReducer.getProperties().getPropertyList();
             injectionRef = new InjectionReferences(jobExecutionImpl.getJobContext(), stepContext, propList);
-            partitionReducerProxy = ProxyFactory.createPartitionReducerProxy(partitionReducer.getRef(), injectionRef, stepContext, jobExecutionImpl);
+            partitionReducerProxy = ProxyFactory.createPartitionReducerProxy(factory, partitionReducer.getRef(), injectionRef, stepContext, jobExecutionImpl);
         }
 
     }

@@ -27,11 +27,7 @@
     <classes>
       <class name="com.ibm.jbatch.tck.tests.jslxml.ChunkTests">
         <methods>
-          <include name="testChunkSkipReadNoSkipChildEx"/>
-          <!--
-          <include name="testChunkRetryMultipleExceptions"/>
-          <include name="testChunkSkipMultipleExceptions"/>
-          -->
+          <include name="testChunkOnErrorListener"/>
         </methods>
       </class>
     </classes>

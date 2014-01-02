@@ -16,13 +16,15 @@
  */
 package org.apache.batchee.container.impl.jobinstance;
 
+import org.apache.batchee.container.services.ServicesManager;
 import org.apache.batchee.container.status.ExecutionStatus;
+import org.apache.batchee.spi.PersistenceManagerService;
 
 import javax.batch.runtime.JobInstance;
 
 public class RuntimeFlowInSplitExecution extends RuntimeJobExecution {
-    public RuntimeFlowInSplitExecution(final JobInstance jobInstance, final long executionId) {
-        super(jobInstance, executionId);
+    public RuntimeFlowInSplitExecution(final JobInstance jobInstance, final long executionId, final PersistenceManagerService manager) {
+        super(jobInstance, executionId, manager);
     }
 
     private ExecutionStatus flowStatus;

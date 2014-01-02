@@ -22,6 +22,7 @@ import org.apache.batchee.container.impl.JobContextImpl;
 import org.apache.batchee.container.impl.jobinstance.RuntimeJobExecution;
 import org.apache.batchee.container.navigator.ModelNavigator;
 import org.apache.batchee.container.navigator.NavigatorFactory;
+import org.apache.batchee.container.services.ServicesManager;
 import org.apache.batchee.container.status.ExecutionStatus;
 import org.apache.batchee.container.status.ExtendedBatchStatus;
 import org.apache.batchee.jaxb.Flow;
@@ -32,6 +33,7 @@ import java.util.List;
 public class FlowController implements ExecutionElementController {
     private final RuntimeJobExecution jobExecution;
     private final JobContextImpl jobContext;
+    private final ServicesManager manager;
 
     protected ModelNavigator<Flow> flowNavigator;
 
@@ -40,18 +42,19 @@ public class FlowController implements ExecutionElementController {
 
     private ExecutionTransitioner transitioner;
 
-    public FlowController(final RuntimeJobExecution jobExecution, final Flow flow, final long rootJobExecutionId) {
+    public FlowController(final RuntimeJobExecution jobExecution, final Flow flow, final long rootJobExecutionId, final ServicesManager manager) {
         this.jobExecution = jobExecution;
         this.jobContext = jobExecution.getJobContext();
         this.flowNavigator = NavigatorFactory.createFlowNavigator(flow);
         this.flow = flow;
         this.rootJobExecutionId = rootJobExecutionId;
+        this.manager = manager;
     }
 
     @Override
     public ExecutionStatus execute() {
         if (!jobContext.getBatchStatus().equals(BatchStatus.STOPPING)) {
-            transitioner = new ExecutionTransitioner(jobExecution, rootJobExecutionId, flowNavigator);
+            transitioner = new ExecutionTransitioner(jobExecution, rootJobExecutionId, flowNavigator, manager);
             return transitioner.doExecutionLoop();
         }
         return new ExecutionStatus(ExtendedBatchStatus.JOB_OPERATOR_STOPPING);

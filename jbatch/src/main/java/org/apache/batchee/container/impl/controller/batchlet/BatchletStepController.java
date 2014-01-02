@@ -23,29 +23,34 @@ import org.apache.batchee.container.impl.jobinstance.RuntimeJobExecution;
 import org.apache.batchee.container.proxy.BatchletProxy;
 import org.apache.batchee.container.proxy.InjectionReferences;
 import org.apache.batchee.container.proxy.ProxyFactory;
+import org.apache.batchee.container.services.ServicesManager;
 import org.apache.batchee.container.util.PartitionDataWrapper;
 import org.apache.batchee.jaxb.Batchlet;
 import org.apache.batchee.jaxb.Property;
 import org.apache.batchee.jaxb.Step;
+import org.apache.batchee.spi.BatchArtifactFactory;
 
 import javax.batch.runtime.BatchStatus;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
 
 public class BatchletStepController extends SingleThreadedStepController {
+    private final BatchArtifactFactory factory;
     private BatchletProxy batchletProxy;
 
     public BatchletStepController(final RuntimeJobExecution jobExecutionImpl, final Step step,
                                   final StepContextImpl stepContext, final long rootJobExecutionId,
-                                  final BlockingQueue<PartitionDataWrapper> analyzerStatusQueue) {
-        super(jobExecutionImpl, step, stepContext, rootJobExecutionId, analyzerStatusQueue);
+                                  final BlockingQueue<PartitionDataWrapper> analyzerStatusQueue,
+                                  final ServicesManager manager) {
+        super(jobExecutionImpl, step, stepContext, rootJobExecutionId, analyzerStatusQueue, manager);
+        factory = manager.service(BatchArtifactFactory.class);
     }
 
     private void invokeBatchlet(final Batchlet batchlet) throws BatchContainerServiceException {
         final String batchletId = batchlet.getRef();
         final List<Property> propList = (batchlet.getProperties() == null) ? null : batchlet.getProperties().getPropertyList();
         final InjectionReferences injectionRef = new InjectionReferences(jobExecutionImpl.getJobContext(), stepContext, propList);
-        batchletProxy = ProxyFactory.createBatchletProxy(batchletId, injectionRef, stepContext, jobExecutionImpl);
+        batchletProxy = ProxyFactory.createBatchletProxy(factory, batchletId, injectionRef, stepContext, jobExecutionImpl);
 
         if (!wasStopIssued()) {
             final String processRetVal = batchletProxy.process();

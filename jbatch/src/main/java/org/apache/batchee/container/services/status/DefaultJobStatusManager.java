@@ -18,16 +18,20 @@ package org.apache.batchee.container.services.status;
 
 import org.apache.batchee.container.exception.BatchContainerServiceException;
 import org.apache.batchee.container.services.JobStatusManagerService;
-import org.apache.batchee.spi.PersistenceManagerService;
 import org.apache.batchee.container.services.ServicesManager;
 import org.apache.batchee.container.status.JobStatus;
 import org.apache.batchee.container.status.StepStatus;
+import org.apache.batchee.spi.PersistenceManagerService;
 
 import javax.batch.runtime.BatchStatus;
 import java.util.Properties;
 
 public class DefaultJobStatusManager implements JobStatusManagerService {
     private PersistenceManagerService persistenceManager;
+
+    public DefaultJobStatusManager(final ServicesManager servicesManager) {
+        this.persistenceManager = servicesManager.service(PersistenceManagerService.class);
+    }
 
     @Override
     public JobStatus createJobStatus(long jobInstanceId) throws BatchContainerServiceException {
@@ -117,7 +121,7 @@ public class DefaultJobStatusManager implements JobStatusManagerService {
 
     @Override
     public void init(final Properties batchConfig) throws BatchContainerServiceException {
-        persistenceManager = ServicesManager.service(PersistenceManagerService.class);
+        // no-op
     }
 
     /*
