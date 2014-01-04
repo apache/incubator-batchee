@@ -30,7 +30,7 @@ public class Executions extends JobOperatorCommand {
     private long id;
 
     @Override
-    public void run() {
+    public void doRun() {
         final List<JobExecution> executions = operator().getJobExecutions(new JobInstanceImpl(id));
         if (!executions.isEmpty()) {
             info("Executions of " + executions.iterator().next().getJobName() + " for instance " + id);

@@ -42,7 +42,8 @@ public class BatchEECLI {
         final Cli<Runnable> parser = builder.build();
 
         try {
-            parser.parse(args).run();
+            final Runnable cmd = parser.parse(args);
+            cmd.run();
         } catch (final ParseException e) {
             parser.parse("help").run();
         }

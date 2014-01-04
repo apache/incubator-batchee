@@ -39,7 +39,7 @@ public abstract class StartableCommand extends JobOperatorCommand {
     protected List<String> properties;
 
     @Override
-    public void run() {
+    public void doRun() {
         final JobOperator operator = operator();
         final long id = doStart(operator);
         if (wait) {

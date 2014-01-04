@@ -30,7 +30,7 @@ import java.util.Set;
 @Command(name = "running", description = "list running batches")
 public class Running extends JobOperatorCommand {
     @Override
-    public void run() {
+    public void doRun() {
         final JobOperator operator = operator();
         final Set<String> names = operator.getJobNames();
         if (names == null || names.isEmpty()) {

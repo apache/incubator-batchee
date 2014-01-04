@@ -14,19 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.batchee.cli.command;
+package org.apache.batchee.cli.lifecycle;
 
-import io.airlift.command.Command;
-import io.airlift.command.Option;
-
-@Command(name = "abandon", description = "abandon a batch from its id")
-public class Abandon extends JobOperatorCommand {
-    @Option(name = "-id", description = "id of the batch to abandon", required = true)
-    private long id;
-
-    @Override
-    public void doRun() {
-        operator().abandon(id);
-        info("Abandonned batch " + id);
-    }
+/**
+ * Handle before/after hooks for each command.
+ *
+ * @param <T> the state type
+ */
+public interface Lifecycle<T> {
+    T start();
+    void stop(T state);
 }

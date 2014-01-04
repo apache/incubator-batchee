@@ -25,7 +25,7 @@ public class Stop extends JobOperatorCommand {
     private long id;
 
     @Override
-    public void run() {
+    public void doRun() {
         operator().stop(id);
         info("Stopped batch " + id);
     }

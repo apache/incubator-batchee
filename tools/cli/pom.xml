@@ -61,6 +61,27 @@
       <version>3.1</version>
     </dependency>
 
+    <!-- for lifecycles -->
+    <dependency>
+      <groupId>org.apache.geronimo.specs</groupId>
+      <artifactId>geronimo-ejb_3.1_spec</artifactId>
+      <version>1.0.2</version>
+      <optional>true</optional>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.deltaspike.cdictrl</groupId>
+      <artifactId>deltaspike-cdictrl-api</artifactId>
+      <version>0.5</version>
+      <optional>true</optional>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-context</artifactId>
+      <version>4.0.0.RELEASE</version>
+      <optional>true</optional>
+    </dependency>
+
+
     <dependency>
       <groupId>org.testng</groupId>
       <artifactId>testng</artifactId>

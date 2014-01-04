@@ -35,7 +35,7 @@ public class Instances extends JobOperatorCommand {
     private int count = 100;
 
     @Override
-    public void run() {
+    public void doRun() {
         final JobOperator operator = operator();
         final long total = operator.getJobInstanceCount(name);
         info(name + " has " + total + " job instances");

@@ -16,6 +16,7 @@
  */
 package org.apache.batchee.cli;
 
+import org.apache.batchee.cli.lifecycle.Lifecycle;
 import org.apache.batchee.util.Batches;
 import org.junit.Rule;
 import org.junit.Test;
@@ -26,6 +27,7 @@ import javax.batch.runtime.BatchRuntime;
 
 import static org.apache.batchee.cli.BatchEECLI.main;
 import static org.hamcrest.CoreMatchers.containsString;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
 public class MainTest {
@@ -149,5 +151,26 @@ public class MainTest {
         assertThat(stdout.getLog(), containsString("COMPLETED"));
 
         Batches.waitForEnd(jobOperator, id);
+    }
+
+    @Test
+    public void lifecycle() {
+        // whatever child of JobOperatorCommand so using running which is simple
+        main(new String[]{ "running", "-lifecycle", MyLifecycle.class.getName() });
+        assertEquals("start stop", MyLifecycle.result);
+    }
+
+    public static class MyLifecycle implements Lifecycle<String> {
+        private static String result;
+
+        @Override
+        public String start() {
+            return "start";
+        }
+
+        @Override
+        public void stop(final String state) {
+            result = state + " stop";
+        }
     }
 }

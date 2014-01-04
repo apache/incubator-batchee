@@ -18,7 +18,6 @@ package org.apache.batchee.container.services.factory;
 
 import org.apache.batchee.container.cdi.BatchCDIInjectionExtension;
 import org.apache.batchee.container.exception.BatchContainerServiceException;
-import org.apache.batchee.spi.BatchArtifactFactory;
 
 import javax.enterprise.context.Dependent;
 import javax.enterprise.context.spi.CreationalContext;
@@ -29,7 +28,7 @@ import java.io.IOException;
 import java.util.Properties;
 import java.util.Set;
 
-public class CDIBatchArtifactFactory extends DefaultBatchArtifactFactory implements BatchArtifactFactory {
+public class CDIBatchArtifactFactory extends DefaultBatchArtifactFactory {
     @Override
     public Instance load(final String batchId) {
         try {

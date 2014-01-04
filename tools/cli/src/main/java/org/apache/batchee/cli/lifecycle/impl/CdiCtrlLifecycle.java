@@ -14,19 +14,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.batchee.cli.command;
+package org.apache.batchee.cli.lifecycle.impl;
 
-import io.airlift.command.Command;
-import io.airlift.command.Option;
+import org.apache.deltaspike.cdise.api.CdiContainer;
+import org.apache.deltaspike.cdise.api.CdiContainerLoader;
 
-@Command(name = "abandon", description = "abandon a batch from its id")
-public class Abandon extends JobOperatorCommand {
-    @Option(name = "-id", description = "id of the batch to abandon", required = true)
-    private long id;
+public class CdiCtrlLifecycle extends LifecycleBase<CdiContainer> {
+    @Override
+    public CdiContainer start() {
+        final CdiContainer cdiContainer = CdiContainerLoader.getCdiContainer();
+        cdiContainer.boot(configuration("cdictrl"));
+        cdiContainer.getContextControl().startContexts();
+        return cdiContainer;
+    }
 
     @Override
-    public void doRun() {
-        operator().abandon(id);
-        info("Abandonned batch " + id);
+    public void stop(final CdiContainer cdiContainer) {
+        cdiContainer.getContextControl().stopContexts();
+        cdiContainer.shutdown();
     }
 }

@@ -163,13 +163,18 @@ public class ServicesManager implements BatchContainerConstants {
     }
 
     private <T extends BatchService> T loadService(final Class<T> serviceType) {
+        final Object existing = batchRuntimeConfig.get(serviceType.getName());
+        if (serviceType.isInstance(existing)) {
+            return serviceType.cast(existing);
+        }
+
         T service = null;
-        String className = batchRuntimeConfig.getProperty(serviceType.getSimpleName());
+        String className = batchRuntimeConfig.getProperty(serviceType.getSimpleName()); // short name first
         try {
             if (className != null) {
                 service = load(serviceType, className);
             } else {
-                className = batchRuntimeConfig.getProperty(serviceType.getName());
+                className = String.class.cast(existing);
                 if (className != null) {
                     service = load(serviceType, className);
                 }

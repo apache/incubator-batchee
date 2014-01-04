@@ -47,7 +47,7 @@ public class DefaultBatchArtifactFactory implements BatchArtifactFactory, XMLStr
     @Override
     public Instance load(final String batchId) {
         final ClassLoader tccl = Thread.currentThread().getContextClassLoader();
-        final ArtifactMap artifactMap = createArtifactsMap(tccl);
+        final ArtifactLocator artifactMap = createArtifactsLocator(tccl);
 
         Object loadedArtifact = artifactMap.getArtifactById(batchId);
         if (loadedArtifact == null) {
@@ -72,7 +72,7 @@ public class DefaultBatchArtifactFactory implements BatchArtifactFactory, XMLStr
         return new Instance(loadedArtifact, null);
     }
 
-    private ArtifactMap createArtifactsMap(final ClassLoader tccl) {
+    protected ArtifactLocator createArtifactsLocator(final ClassLoader tccl) {
         final ArtifactMap artifactMap = new ArtifactMap();
         initArtifactMapFromClassLoader(artifactMap, tccl, BATCH_XML);
         initArtifactMapFromClassLoader(artifactMap, tccl, BATCHEE_XML);
@@ -183,7 +183,11 @@ public class DefaultBatchArtifactFactory implements BatchArtifactFactory, XMLStr
         }
     }
 
-    private class ArtifactMap {
+    protected static interface ArtifactLocator {
+        Object getArtifactById(String id);
+    }
+
+    private class ArtifactMap implements ArtifactLocator {
         private Map<String, Class<?>> idToArtifactClassMap = new HashMap<String, Class<?>>();
 
         // Maps to a list of types not a single type since there's no reason a single artifact couldn't be annotated
@@ -219,7 +223,8 @@ public class DefaultBatchArtifactFactory implements BatchArtifactFactory, XMLStr
             }
         }
 
-        private Object getArtifactById(final String id) {
+        @Override
+        public Object getArtifactById(final String id) {
             Object artifactInstance = null;
 
             try {
@@ -241,6 +246,5 @@ public class DefaultBatchArtifactFactory implements BatchArtifactFactory, XMLStr
     @Override
     public void init(final Properties batchConfig) throws BatchContainerServiceException {
         // no-op
-
     }
 }
