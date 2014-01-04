@@ -21,7 +21,7 @@
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
-    <artifactId>batchee-parent</artifactId>
+    <artifactId>batchee-tools</artifactId>
     <groupId>org.apache.batchee</groupId>
     <version>0.1-incubating-SNAPSHOT</version>
   </parent>
@@ -46,9 +46,19 @@
       <version>${project.version}</version>
     </dependency>
     <dependency>
+      <groupId>org.apache.batchee</groupId>
+      <artifactId>batchee-jaxrs-client</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
       <groupId>io.airlift</groupId>
       <artifactId>airline</artifactId>
       <version>0.6</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-lang3</artifactId>
+      <version>3.1</version>
     </dependency>
 
     <dependency>

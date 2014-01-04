@@ -17,44 +17,16 @@
 package org.apache.batchee.cli.command;
 
 import io.airlift.command.Command;
+import io.airlift.command.Option;
 
-import javax.batch.operations.JobOperator;
-import javax.batch.operations.NoSuchJobException;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-@Command(name = "status", description = "list running batches")
+@Command(name = "stop", description = "stop a batch from its id")
 public class Stop extends JobOperatorCommand {
+    @Option(name = "-id", description = "id of the batch to stop", required = true)
+    private long id;
+
     @Override
     public void run() {
-        final JobOperator operator = operator();
-        final Set<String> names = operator.getJobNames();
-        if (names == null || names.isEmpty()) {
-            info("No job started");
-        } else {
-            final Map<String, List<Long>> runnings = new HashMap<String, List<Long>>();
-            for (final String name : names) {
-                try {
-                    final List<Long> running = operator.getRunningExecutions(name);
-                    if (running != null) {
-                        runnings.put(name, running);
-                    }
-                } catch (final NoSuchJobException nsje) {
-                    // no-op
-                }
-            }
-
-            if (runnings.isEmpty()) {
-                info("No job started");
-            } else {
-                for (final Map.Entry<String, List<Long>> entry : runnings.entrySet()) {
-                    final List<Long> running = entry.getValue();
-                    info(entry.getKey() + " -> " + Arrays.toString(running.toArray(new Long[running.size()])));
-                }
-            }
-        }
+        operator().stop(id);
+        info("Stopped batch " + id);
     }
 }

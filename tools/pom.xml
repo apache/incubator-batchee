@@ -32,5 +32,6 @@
 
     <modules>
         <module>maven-plugin</module>
+        <module>cli</module>
     </modules>
 </project>

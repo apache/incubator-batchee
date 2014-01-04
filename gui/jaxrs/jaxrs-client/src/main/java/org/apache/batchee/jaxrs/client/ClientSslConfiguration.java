@@ -124,4 +124,32 @@ public class ClientSslConfiguration {
         }
         return Thread.currentThread().getContextClassLoader().getResourceAsStream(path);
     }
+
+    public void setKeystoreType(final String keystoreType) {
+        this.keystoreType = keystoreType;
+    }
+
+    public void setKeystorePath(final String keystorePath) {
+        this.keystorePath = keystorePath;
+    }
+
+    public void setSslContextType(final String sslContextType) {
+        this.sslContextType = sslContextType;
+    }
+
+    public void setKeyManagerType(final String keyManagerType) {
+        this.keyManagerType = keyManagerType;
+    }
+
+    public void setKeyManagerPath(final String keyManagerPath) {
+        this.keyManagerPath = keyManagerPath;
+    }
+
+    public void setTrustManagerAlgorithm(final String trustManagerAlgorithm) {
+        this.trustManagerAlgorithm = trustManagerAlgorithm;
+    }
+
+    public void setTrustManagerProvider(final String trustManagerProvider) {
+        this.trustManagerProvider = trustManagerProvider;
+    }
 }

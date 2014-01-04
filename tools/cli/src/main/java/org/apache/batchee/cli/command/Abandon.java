@@ -19,14 +19,14 @@ package org.apache.batchee.cli.command;
 import io.airlift.command.Command;
 import io.airlift.command.Option;
 
-@Command(name = "stop", description = "stop a batch from its id")
+@Command(name = "abandon", description = "abandon a batch from its id")
 public class Abandon extends JobOperatorCommand {
-    @Option(name = "-id", description = "id of the batch to stop", required = true)
+    @Option(name = "-id", description = "id of the batch to abandon", required = true)
     private long id;
 
     @Override
     public void run() {
-        operator().stop(id);
-        info("Stopped batch " + id);
+        operator().abandon(id);
+        info("Abandonned batch " + id);
     }
 }

@@ -20,16 +20,12 @@ import javax.batch.api.AbstractBatchlet;
 import javax.batch.api.BatchProperty;
 import javax.inject.Inject;
 
-public class LongSample extends AbstractBatchlet {
-    @Inject
-    @BatchProperty
-    private String status = "OK";
+import static java.lang.Thread.sleep;
 
+public class LongSample extends AbstractBatchlet {
     @Override
     public String process() throws Exception {
-        if ("fail".equals(status)) {
-            throw new IllegalStateException();
-        }
-        return status;
+        sleep(1000);
+        return "ok";
     }
 }

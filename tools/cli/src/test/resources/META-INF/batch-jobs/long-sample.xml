@@ -13,12 +13,8 @@
   See the License for the specific language governing permissions and
   limitations under the License.
 -->
-<job id="sample" xmlns="http://xmlns.jcp.org/xml/ns/javaee" version="1.0">
+<job id="long-sample" xmlns="http://xmlns.jcp.org/xml/ns/javaee" version="1.0">
   <step id="sample-step">
-    <batchlet ref="org.apache.batchee.cli.component.Sample">
-      <properties>
-        <property name="status" value="#{jobParameters['status']}" />
-      </properties>
-    </batchlet>
+    <batchlet ref="org.apache.batchee.cli.component.LongSample" />
   </step>
 </job>

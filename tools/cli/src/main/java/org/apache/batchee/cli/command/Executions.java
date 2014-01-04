@@ -18,18 +18,30 @@ package org.apache.batchee.cli.command;
 
 import io.airlift.command.Command;
 import io.airlift.command.Option;
+import org.apache.batchee.container.impl.JobInstanceImpl;
+import org.apache.commons.lang3.StringUtils;
 
-import javax.batch.operations.JobOperator;
+import javax.batch.runtime.JobExecution;
+import java.util.List;
 
-@Command(name = "start", description = "start a batch")
-public class Executions extends StartableCommand {
-    @Option(name = "-name", description = "name of the batch to start", required = true)
-    private String name;
+@Command(name = "executions", description = "list executions")
+public class Executions extends JobOperatorCommand {
+    @Option(name = "-id", description = "instance id", required = true)
+    private long id;
 
     @Override
-    protected long doStart(final JobOperator operator) {
-        final long id = operator.start(name, toProperties(properties));
-        info("Batch '" + name + "' started with id #" + id);
-        return id;
+    public void run() {
+        final List<JobExecution> executions = operator().getJobExecutions(new JobInstanceImpl(id));
+        if (!executions.isEmpty()) {
+            info("Executions of " + executions.iterator().next().getJobName() + " for instance " + id);
+        }
+
+        info("execution id\t|\tbatch status\t|\texit status\t|\tstart time\t|\tend time");
+        for (final JobExecution exec : executions) {
+            info(String.format("%12d\t|\t%s\t|\t%s\t|\t%tc\t|\t%tc",
+                    exec.getExecutionId(),
+                    StringUtils.leftPad(exec.getBatchStatus() != null ? exec.getBatchStatus().toString() : "null", 12),
+                    StringUtils.leftPad(exec.getExitStatus(), 11), exec.getStartTime(), exec.getEndTime()));
+        }
     }
 }

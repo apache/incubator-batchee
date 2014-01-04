@@ -19,15 +19,25 @@ package org.apache.batchee.cli;
 import io.airlift.command.Cli;
 import io.airlift.command.Help;
 import io.airlift.command.ParseException;
+import org.apache.batchee.cli.command.Abandon;
+import org.apache.batchee.cli.command.Executions;
+import org.apache.batchee.cli.command.Instances;
 import org.apache.batchee.cli.command.Restart;
+import org.apache.batchee.cli.command.Running;
 import org.apache.batchee.cli.command.Start;
+import org.apache.batchee.cli.command.Status;
+import org.apache.batchee.cli.command.Stop;
 
 public class BatchEECLI {
     public static void main(final String[] args) {
         final Cli.CliBuilder<Runnable> builder = Cli.<Runnable>builder("batchee")
                 .withDescription("the stupid content tracker")
                 .withDefaultCommand(Help.class)
-                .withCommands(Help.class, Start.class, Restart.class);
+                .withCommands(Help.class,
+                        Start.class, Restart.class,
+                        Status.class, Running.class,
+                        Stop.class, Abandon.class,
+                        Instances.class, Executions.class);
 
         final Cli<Runnable> parser = builder.build();
 

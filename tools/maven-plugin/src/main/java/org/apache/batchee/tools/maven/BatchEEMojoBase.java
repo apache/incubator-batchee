@@ -46,12 +46,6 @@ public abstract class BatchEEMojoBase extends AbstractMojo {
     @Parameter(property = "batchee.job-operator")
     private String jobOperatorClass;
 
-    /**
-     * The json provider to use to unmarshall responses in remote mode
-     */
-    @Parameter(property = "batchee.json-provider", defaultValue = "com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider")
-    private String jsonProvider;
-
     protected volatile JobOperator operator = null;
 
     protected JobOperator getOrCreateOperator() {

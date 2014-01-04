@@ -48,6 +48,7 @@ public class JobInstanceImpl implements JobInstance, Serializable {
         this.jobName = jobName;
     }
 
+    @Override
     public String getJobName() {
         return jobName;
     }

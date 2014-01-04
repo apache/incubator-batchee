@@ -17,42 +17,38 @@
 package org.apache.batchee.cli.command;
 
 import io.airlift.command.Command;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.batch.operations.JobOperator;
 import javax.batch.operations.NoSuchJobException;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import javax.batch.runtime.JobExecution;
+import javax.batch.runtime.JobInstance;
+import java.util.LinkedList;
 import java.util.Set;
 
-@Command(name = "running", description = "list running batches")
+@Command(name = "status", description = "list last batches statuses")
 public class Status extends JobOperatorCommand {
     @Override
     public void run() {
         final JobOperator operator = operator();
         final Set<String> names = operator.getJobNames();
         if (names == null || names.isEmpty()) {
-            info("No job started");
+            info("No job");
         } else {
-            final Map<String, List<Long>> runnings = new HashMap<String, List<Long>>();
+            info("     Name   \t|\texecution id\t|\tbatch status\t|\texit status\t|\tstart time\t|\tend time");
             for (final String name : names) {
                 try {
-                    final List<Long> running = operator.getRunningExecutions(name);
-                    if (running != null) {
-                        runnings.put(name, running);
-                    }
+                    final JobExecution exec = new LinkedList<JobExecution>(
+                            operator.getJobExecutions(
+                                new LinkedList<JobInstance>(
+                                    operator.getJobInstances(name, operator.getJobInstanceCount(name) - 1, 2)).getLast())).getLast();
+                    info(String.format("%s\t|\t%12d\t|\t%s\t|\t%s\t|\t%tc\t|\t%tc",
+                            StringUtils.leftPad(name, 12),
+                            exec.getExecutionId(),
+                            StringUtils.leftPad(exec.getBatchStatus() != null ? exec.getBatchStatus().toString() : "null", 12),
+                            StringUtils.leftPad(exec.getExitStatus(), 11), exec.getStartTime(), exec.getEndTime()));
                 } catch (final NoSuchJobException nsje) {
                     // no-op
-                }
-            }
-
-            if (runnings.isEmpty()) {
-                info("No job started");
-            } else {
-                for (final Map.Entry<String, List<Long>> entry : runnings.entrySet()) {
-                    final List<Long> running = entry.getValue();
-                    info(entry.getKey() + " -> " + Arrays.toString(running.toArray(new Long[running.size()])));
                 }
             }
         }

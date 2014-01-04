@@ -82,10 +82,6 @@ public abstract class StartableCommand extends JobOperatorCommand {
         return (status != null ? status.name() : "null");
     }
 
-    protected void info(final String text) {
-        System.out.println(text);
-    }
-
     protected static Properties toProperties(final List<String> properties) {
         final Properties props = new Properties();
         if (properties != null) {
