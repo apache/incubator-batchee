@@ -27,7 +27,7 @@
   </parent>
 
   <artifactId>batchee-cli</artifactId>
-  <name>BatchEE :: CLI</name>
+  <name>BatchEE :: Tools :: CLI</name>
 
   <dependencies>
     <dependency>
@@ -54,11 +54,22 @@
       <groupId>io.airlift</groupId>
       <artifactId>airline</artifactId>
       <version>0.6</version>
+      <exclusions>
+        <exclusion>
+          <groupId>javax.inject</groupId>
+          <artifactId>javax.inject</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-lang3</artifactId>
       <version>3.1</version>
+    </dependency>
+    <dependency>
+      <groupId>commons-io</groupId>
+      <artifactId>commons-io</artifactId>
+      <version>2.4</version>
     </dependency>
 
     <!-- for lifecycles -->
@@ -92,4 +103,41 @@
       <version>1.4.0</version>
     </dependency>
   </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-shade-plugin</artifactId>
+        <version>2.2</version>
+        <executions>
+          <execution>
+            <phase>package</phase>
+            <goals>
+              <goal>shade</goal>
+            </goals>
+            <configuration>
+              <createDependencyReducedPom>false</createDependencyReducedPom>
+              <artifactSet>
+                <excludes>
+                  <exclude>org.springframework:*</exclude>
+                  <exclude>org.apache.geronimo.specs:geronimo-ejb_3.1_spec</exclude>
+                  <exclude>org.apache.deltaspike.cdictrl:deltaspike-cdictrl-api</exclude>
+                  <exclude>org.testng:*</exclude>
+                  <exclude>org.junit:*</exclude>
+                  <exclude>org.hamcrest:*</exclude>
+                  <exclude>com.github.stefanbirkner:*</exclude>
+                </excludes>
+              </artifactSet>
+              <transformers>
+                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                  <mainClass>org.apache.batchee.cli.BatchEECLI</mainClass>
+                </transformer>
+              </transformers>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
 </project>

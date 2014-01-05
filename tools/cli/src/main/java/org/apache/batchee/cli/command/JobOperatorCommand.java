@@ -17,21 +17,24 @@
 package org.apache.batchee.cli.command;
 
 import io.airlift.command.Option;
+import org.apache.batchee.cli.classloader.ChildFirstURLClassLoader;
 import org.apache.batchee.cli.lifecycle.Lifecycle;
+import org.apache.batchee.cli.zip.Zips;
 import org.apache.batchee.container.exception.BatchContainerRuntimeException;
 import org.apache.batchee.jaxrs.client.BatchEEJAXRSClientFactory;
 import org.apache.batchee.jaxrs.client.ClientConfiguration;
 import org.apache.batchee.jaxrs.client.ClientSecurity;
 import org.apache.batchee.jaxrs.client.ClientSslConfiguration;
+import org.apache.commons.io.FileUtils;
 
 import javax.batch.operations.JobOperator;
 import javax.batch.runtime.BatchRuntime;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FilenameFilter;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.URLClassLoader;
 import java.util.Collection;
 import java.util.LinkedList;
 
@@ -46,6 +49,8 @@ import static java.lang.Thread.currentThread;
  *       by folders to be able to run them contextual using this command.
 */
 public abstract class JobOperatorCommand implements Runnable {
+    // Remote config
+
     @Option(name = "-url", description = "when using JAXRS the batchee resource url")
     private String baseUrl = null;
 
@@ -88,11 +93,19 @@ public abstract class JobOperatorCommand implements Runnable {
     @Option(name = "-trustManagerProvider", description = "when using JAXRS the trustManagerProvider")
     private String trustManagerProvider = null;
 
+    // local config
+
     @Option(name = "-lifecycle", description = "the lifecycle class to use")
     private String lifecycle = null;
 
     @Option(name = "-libs", description = "folder containing additional libraries, the folder is added too to the loader")
     private String libs = null;
+
+    @Option(name = "-archive", description = "a bar archive")
+    private String archive = null;
+
+    @Option(name = "-work", description = "work directory (default to java.io.tmp)")
+    private String work = System.getProperty("batchee.home", System.getProperty("java.io.tmpdir")) + "/batchee";
 
     @Option(name = "-shared-libs", description = "folder containing shared libraries, the folder is added too to the loader")
     private String sharedLibs = null;
@@ -187,24 +200,73 @@ public abstract class JobOperatorCommand implements Runnable {
         }
     }
 
+    // TODO: import URLClassLoaderFirst instead of URLClassLoader
     private ClassLoader createLoader(final ClassLoader parent) throws MalformedURLException {
-        if (libs == null) {
-            return parent;
-        }
+        final Collection<URL> urls = new LinkedList<URL>();
 
-        final File folder = new File(libs);
-        if (!folder.exists()) {
-            return parent;
+        if (libs != null) {
+            final File folder = new File(libs);
+            if (folder.exists()) {
+                addFolder(folder, urls);
+            }
         }
 
         // we add libs/*.jar and libs/xxx/*.jar to be able to sort libs but only one level to keep it simple
-        final Collection<URL> urls = new LinkedList<URL>();
-        addFolder(folder, urls);
-        if (sharedLibs != null) { // add it later to let specific libs be taken before
-            addFolder(new File(sharedLibs), urls);
+        if (archive != null) {
+            final File bar = new File(archive);
+            final File exploded;
+            if (bar.exists()) {
+                if (bar.isFile()) { // bar to unzip
+                    exploded = new File(work, bar.getName());
+                } else if (bar.isDirectory()) { // already unpacked
+                    exploded = bar;
+                } else {
+                    throw new IllegalArgumentException("unsupported archive type for: '" + archive + "'");
+                }
+
+                final File timestamp = new File(exploded, "timestamp.txt");
+
+                long ts = Long.MIN_VALUE;
+                if (exploded.exists()) {
+                    if (timestamp.exists()) {
+                        try {
+                            ts = Long.parseLong(FileUtils.readFileToString(timestamp).trim());
+                        } catch (final IOException e) {
+                            ts = Long.MIN_VALUE;
+                        }
+                    }
+                }
+
+                if (ts == Long.MIN_VALUE || ts < bar.lastModified()) {
+                    explode(bar, exploded, timestamp, bar.lastModified());
+                }
+
+                // bar archives are split accross 3 folders
+                addFolder(new File(exploded, "batch/jobs"), urls);
+                addFolder(new File(exploded, "batch/classes"), urls);
+                addFolder(new File(exploded, "libs"), urls);
+            } else {
+                throw new IllegalArgumentException("'" + archive + "' doesn't exist");
+            }
         }
 
-        return new URLClassLoader(urls.toArray(new URL[urls.size()]), parent);
+        final ClassLoader sharedClassLoader = createSharedClassLoader(parent);
+        if (libs == null && archive == null) {
+            return sharedClassLoader;
+        }
+        return new ChildFirstURLClassLoader(urls.toArray(new URL[urls.size()]), sharedClassLoader);
+    }
+
+    private ClassLoader createSharedClassLoader(final ClassLoader parent) throws MalformedURLException {
+        final ClassLoader usedParent;
+        if (sharedLibs != null) { // add it later to let specific libs be taken before
+            final Collection<URL> sharedUrls = new LinkedList<URL>();
+            addFolder(new File(sharedLibs), sharedUrls);
+            usedParent = new ChildFirstURLClassLoader(sharedUrls.toArray(new URL[sharedUrls.size()]), parent);
+        } else {
+            usedParent = parent;
+        }
+        return usedParent;
     }
 
     private void addFolder(File folder, Collection<URL> urls) throws MalformedURLException {
@@ -230,6 +292,16 @@ public abstract class JobOperatorCommand implements Runnable {
             }
         }
         urls.add(folder.toURI().toURL());
+    }
+
+    private static void explode(final File source, final File target, final File timestampFile, final long time) {
+        try {
+            FileUtils.deleteDirectory(target);
+            Zips.unzip(source, target);
+            FileUtils.write(timestampFile, Long.toString(time));
+        } catch (final IOException e) {
+            // no-op
+        }
     }
 
     private static class JarFilter implements FilenameFilter {
