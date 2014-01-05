@@ -52,7 +52,7 @@ public abstract class JobOperatorCommand implements Runnable {
     // Remote config
 
     @Option(name = "-url", description = "when using JAXRS the batchee resource url")
-    private String baseUrl = null;
+    protected String baseUrl = null;
 
     @Option(name = "-json", description = "when using JAXRS the json provider")
     private String jsonProvider = null;

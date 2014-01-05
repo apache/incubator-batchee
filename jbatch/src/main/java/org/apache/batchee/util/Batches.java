@@ -40,6 +40,10 @@ public class Batches {
             } catch (final InterruptedException e) {
                 return;
             }
-        } while (!BATCH_END_STATUSES.contains(jobOperator.getJobExecution(id).getBatchStatus()));
+        } while (!isDone(jobOperator, id));
+    }
+
+    public static boolean isDone(final JobOperator jobOperator, final long id) {
+        return BATCH_END_STATUSES.contains(jobOperator.getJobExecution(id).getBatchStatus());
     }
 }

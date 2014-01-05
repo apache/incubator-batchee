@@ -25,7 +25,7 @@ import static java.lang.Thread.sleep;
 public class LongSample extends AbstractBatchlet {
     @Override
     public String process() throws Exception {
-        sleep(1000);
+        sleep(1500);
         return "ok";
     }
 }

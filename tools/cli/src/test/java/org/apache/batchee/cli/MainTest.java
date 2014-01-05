@@ -81,14 +81,29 @@ public class MainTest {
     }
 
     @Test
-    public void stop() {
-        final JobOperator jobOperator = BatchRuntime.getJobOperator();
-        final long id = jobOperator.start("long-sample", null);
+    public void stop() { // abandon is the same
+        final Thread start = new Thread() {
+            @Override
+            public void run() {
+                main(new String[]{ "start", "-name", "long-sample", "-socket", "1236", "-wait", "false" });
+            }
+        };
+        start.run();
 
-        main(new String[]{"stop", "-id", Long.toString(id)});
+        final String str = "Batch 'long-sample' started with id #";
+
+        final String out = stdout.getLog();
+        int idx;
+        do {
+            idx = out.indexOf(str);
+        } while (idx < 0);
+        final int end = out.indexOf(System.getProperty("line.separator"));
+        final long id = Long.parseLong(out.substring(idx + str.length(), end));
+
+        main(new String[]{"stop", "-id", Long.toString(id), "-socket", "1236"});
         assertThat(stdout.getLog(), containsString("Stopped"));
 
-        Batches.waitForEnd(jobOperator, id);
+        Batches.waitForEnd(id);
     }
 
     @Test

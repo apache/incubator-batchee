@@ -20,13 +20,22 @@ import io.airlift.command.Command;
 import io.airlift.command.Option;
 
 @Command(name = "stop", description = "stop a batch from its id")
-public class Stop extends JobOperatorCommand {
+public class Stop extends SocketCommand {
     @Option(name = "-id", description = "id of the batch to stop", required = true)
     private long id;
 
     @Override
-    public void doRun() {
+    protected String command() {
+        return "stop " + id + " " + wait;
+    }
+
+    @Override
+    protected void defaultRun() {
         operator().stop(id);
+    }
+
+    @Override
+    protected void postCommand() {
         info("Stopped batch " + id);
     }
 }

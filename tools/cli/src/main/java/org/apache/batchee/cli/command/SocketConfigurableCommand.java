@@ -16,26 +16,12 @@
  */
 package org.apache.batchee.cli.command;
 
-import io.airlift.command.Command;
 import io.airlift.command.Option;
 
-@Command(name = "abandon", description = "abandon a batch from its id")
-public class Abandon extends SocketCommand {
-    @Option(name = "-id", description = "id of the batch to abandon", required = true)
-    private long id;
+public abstract class SocketConfigurableCommand extends JobOperatorCommand {
+    @Option(name = "-wait", description = "should wait the end of the batch", arity = 1)
+    protected boolean wait = true;
 
-    @Override
-    protected void postCommand() {
-        info("Abandonned batch " + id);
-    }
-
-    @Override
-    protected String command() {
-        return "abandon " + id  + " " + wait;
-    }
-
-    @Override
-    protected void defaultRun() {
-        operator().abandon(id);
-    }
+    @Option(name = "-socket", description = "socket listening for stop/abandon commands")
+    protected int adminSocket = -1;
 }

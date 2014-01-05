@@ -17,23 +17,24 @@
 package org.apache.batchee.cli.command;
 
 import io.airlift.command.Arguments;
-import io.airlift.command.Option;
 import org.apache.batchee.util.Batches;
+import org.apache.commons.io.IOUtils;
 
 import javax.batch.operations.JobOperator;
 import javax.batch.runtime.BatchStatus;
 import javax.batch.runtime.JobExecution;
 import javax.batch.runtime.StepExecution;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.net.ServerSocket;
+import java.net.Socket;
 import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
-public abstract class StartableCommand extends JobOperatorCommand {
+public abstract class StartableCommand extends SocketConfigurableCommand {
     private static final String LINE = "=========================";
-
-    @Option(name = "-wait", description = "should wait the end of the batch")
-    protected boolean wait = true;
 
     @Arguments(description = "properties to pass to the batch")
     protected List<String> properties;
@@ -41,10 +42,34 @@ public abstract class StartableCommand extends JobOperatorCommand {
     @Override
     public void doRun() {
         final JobOperator operator = operator();
-        final long id = doStart(operator);
+
+        final AdminThread adminThread;
+        if (adminSocket > 0) {
+            adminThread = new AdminThread(operator, adminSocket);
+            adminThread.setName("batchee-admin-thread");
+            adminThread.start();
+        } else {
+            info("Admin mode deactivated, use -socket to activate it");
+            adminThread = null;
+        }
+
+        final long id;
+        try {
+            id = doStart(operator);
+        } catch (final Exception e) {
+            if (adminThread != null && adminThread.getServerSocket() != null) {
+                IOUtils.closeQuietly(adminThread.getServerSocket());
+            }
+            e.printStackTrace();
+            return;
+        }
+
         if (wait) {
             Batches.waitForEnd(operator, id);
             report(operator, id);
+        }
+        if (adminThread != null) {
+            adminThread.setId(id);
         }
     }
 
@@ -95,5 +120,69 @@ public abstract class StartableCommand extends JobOperatorCommand {
             }
         }
         return props;
+    }
+
+    private static class AdminThread extends Thread {
+        private final JobOperator operator;
+        private final int adminSocketPort;
+        private ServerSocket serverSocket = null;
+        private long id = Integer.MIN_VALUE;
+
+        public AdminThread(final JobOperator operator, final int adminSocket) {
+            this.operator = operator;
+            this.adminSocketPort = adminSocket;
+        }
+
+        @Override
+        public void run() {
+            try {
+                serverSocket = new ServerSocket(adminSocketPort);
+                while (Integer.MIN_VALUE == id || !Batches.isDone(operator, id)) {
+                    final Socket client = serverSocket.accept();
+                    final OutputStream outputStream = client.getOutputStream();
+                    synchronized (this) { // no need to support N clients
+                        try {
+                            final String[] command = IOUtils.toString(client.getInputStream()).trim().split(" ");
+                            if (command.length >= 2) {
+                                final long id = Long.parseLong(command[1]);
+                                try {
+                                    if ("stop".equals(command[0])) {
+                                        operator.stop(id);
+                                    } else if ("abandon".equals(command[0])) {
+                                        operator.abandon(id);
+                                    }
+                                } catch (final Exception e) {
+                                    // no-op
+                                }
+
+                                if (command.length >= 3 && Boolean.parseBoolean(command[2])) {
+                                    Batches.waitForEnd(id);
+                                }
+
+                                // let the client close if waiting
+                                outputStream.write(0);
+                            } else { // error
+                                outputStream.write(-1);
+                            }
+                            outputStream.flush();
+                        } finally {
+                            IOUtils.closeQuietly(client);
+                        }
+                    }
+                }
+            } catch (final IOException e) {
+                e.printStackTrace();
+            } finally {
+                IOUtils.closeQuietly(serverSocket);
+            }
+        }
+
+        public ServerSocket getServerSocket() {
+            return serverSocket;
+        }
+
+        public void setId(final long id) {
+            this.id = id;
+        }
     }
 }
