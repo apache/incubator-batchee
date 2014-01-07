@@ -20,12 +20,14 @@ import org.apache.batchee.container.exception.BatchContainerRuntimeException;
 import org.apache.batchee.container.exception.IllegalBatchPropertyException;
 import org.apache.batchee.container.proxy.InjectionReferences;
 import org.apache.batchee.jaxb.Property;
+import org.apache.xbean.propertyeditor.PropertyEditors;
 
 import javax.batch.api.BatchProperty;
 import javax.batch.runtime.context.JobContext;
 import javax.batch.runtime.context.StepContext;
 import javax.inject.Inject;
 import java.lang.reflect.Field;
+import java.lang.reflect.Type;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.HashMap;
@@ -64,7 +66,10 @@ public class DependencyInjections {
             // the field otherwise the default value will remain
             try {
                 if (!(propValue == null)) {
-                    batchProperty.getValue().set(artifact, propValue);
+                    final Field field = batchProperty.getValue();
+                    final Type genericType = field.getGenericType();
+                    final Class<?> type = field.getType();
+                    field.set(artifact, convertTo(propValue, genericType, type));
                 }
             } catch (IllegalArgumentException e) {
                 throw new IllegalBatchPropertyException("The given property value is not an instance of the declared field.", e);
@@ -74,6 +79,15 @@ public class DependencyInjections {
 
         }
 
+    }
+
+    public static <T> T convertTo(final String propValue, final Type genericType, final Class<T> type) {
+        if (String.class.equals(type)) {
+            return (T) propValue;
+        } else if (type == null ||PropertyEditors.canConvert(type)) {
+            return (T) PropertyEditors.getValue(genericType, propValue);
+        }
+        throw new IllegalArgumentException("Can't find a converter for type " + type);
     }
 
 
