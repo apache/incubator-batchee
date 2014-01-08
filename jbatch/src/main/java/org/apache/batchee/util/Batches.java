@@ -16,6 +16,8 @@
  */
 package org.apache.batchee.util;
 
+import org.apache.batchee.container.impl.JobOperatorImpl;
+
 import javax.batch.operations.JobOperator;
 import javax.batch.runtime.BatchRuntime;
 import javax.batch.runtime.BatchStatus;
@@ -34,6 +36,12 @@ public class Batches {
     }
 
     public static void waitForEnd(final JobOperator jobOperator, final long id) {
+        if (JobOperatorImpl.class.isInstance(jobOperator)) {
+            JobOperatorImpl.class.cast(jobOperator).waitFor(id);
+            return;
+        }
+
+        // else polling
         do {
             try {
                 Thread.sleep(100);
@@ -41,6 +49,10 @@ public class Batches {
                 return;
             }
         } while (!isDone(jobOperator, id));
+    }
+
+    public static boolean isDone(final BatchStatus status) {
+        return BATCH_END_STATUSES.contains(status);
     }
 
     public static boolean isDone(final JobOperator jobOperator, final long id) {

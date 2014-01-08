@@ -19,6 +19,7 @@ package org.apache.batchee.container.services;
 
 import org.apache.batchee.container.exception.BatchContainerRuntimeException;
 import org.apache.batchee.container.exception.BatchContainerServiceException;
+import org.apache.batchee.container.services.callback.SimpleJobExecutionCallbackService;
 import org.apache.batchee.container.services.executor.DefaultThreadPoolService;
 import org.apache.batchee.container.services.factory.CDIBatchArtifactFactory;
 import org.apache.batchee.container.services.factory.DefaultBatchArtifactFactory;
@@ -33,6 +34,7 @@ import org.apache.batchee.container.util.BatchContainerConstants;
 import org.apache.batchee.spi.BatchArtifactFactory;
 import org.apache.batchee.spi.BatchService;
 import org.apache.batchee.spi.BatchThreadPoolService;
+import org.apache.batchee.spi.JobExecutionCallbackService;
 import org.apache.batchee.spi.JobXMLLoaderService;
 import org.apache.batchee.spi.PersistenceManagerService;
 import org.apache.batchee.spi.SecurityService;
@@ -62,6 +64,7 @@ public class ServicesManager implements BatchContainerConstants {
         SERVICE_IMPL_CLASS_NAMES.put(BatchKernelService.class.getName(), DefaultBatchKernel.class.getName());
         SERVICE_IMPL_CLASS_NAMES.put(JobXMLLoaderService.class.getName(), DefaultJobXMLLoaderService.class.getName());
         SERVICE_IMPL_CLASS_NAMES.put(SecurityService.class.getName(), DefaultSecurityService.class.getName());
+        SERVICE_IMPL_CLASS_NAMES.put(JobExecutionCallbackService.class.getName(), SimpleJobExecutionCallbackService.class.getName());
         try {
             Thread.currentThread().getContextClassLoader().loadClass("javax.enterprise.inject.spi.BeanManager");
             SERVICE_IMPL_CLASS_NAMES.put(BatchArtifactFactory.class.getName(), CDIBatchArtifactFactory.class.getName());

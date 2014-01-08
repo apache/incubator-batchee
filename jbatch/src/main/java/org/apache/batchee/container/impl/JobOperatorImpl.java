@@ -25,6 +25,7 @@ import org.apache.batchee.container.status.JobStatus;
 import org.apache.batchee.jmx.BatchEE;
 import org.apache.batchee.jmx.BatchEEMBean;
 import org.apache.batchee.jmx.BatchEEMBeanImpl;
+import org.apache.batchee.spi.JobExecutionCallbackService;
 import org.apache.batchee.spi.JobXMLLoaderService;
 import org.apache.batchee.spi.PersistenceManagerService;
 import org.apache.batchee.spi.SecurityService;
@@ -106,6 +107,7 @@ public class JobOperatorImpl implements JobOperator {
     private final JobXMLLoaderService xmlLoaderService;
     private final JobStatusManagerService statusManagerService;
     private final SecurityService securityService;
+    private final JobExecutionCallbackService callbackService;
 
     public JobOperatorImpl() {
         final ServicesManager servicesManager = ServicesManager.find();
@@ -114,6 +116,7 @@ public class JobOperatorImpl implements JobOperator {
         xmlLoaderService = servicesManager.service(JobXMLLoaderService.class);
         statusManagerService = servicesManager.service(JobStatusManagerService.class);
         securityService = servicesManager.service(SecurityService.class);
+        callbackService = servicesManager.service(JobExecutionCallbackService.class);
     }
 
     @Override
@@ -379,5 +382,9 @@ public class JobOperatorImpl implements JobOperator {
         }
 
         kernelService.stopJob(executionId);
+    }
+
+    public void waitFor(final long id) {
+        callbackService.waitFor(id);
     }
 }

@@ -32,6 +32,7 @@ import org.apache.batchee.container.util.FlowInSplitBuilderConfig;
 import org.apache.batchee.container.util.PartitionsBuilderConfig;
 import org.apache.batchee.jaxb.JSLJob;
 import org.apache.batchee.spi.BatchThreadPoolService;
+import org.apache.batchee.spi.JobExecutionCallbackService;
 import org.apache.batchee.spi.PersistenceManagerService;
 
 import javax.batch.operations.JobExecutionAlreadyCompleteException;
@@ -58,11 +59,13 @@ public class DefaultBatchKernel implements BatchKernelService {
     private final BatchThreadPoolService executorService;
     private final PersistenceManagerService persistenceService;
     private final ServicesManager servicesManager;
+    private final JobExecutionCallbackService jobExecutionCallback;
 
     public DefaultBatchKernel(final ServicesManager servicesManager) {
         this.servicesManager = servicesManager;
-        executorService = servicesManager.service(BatchThreadPoolService.class);
-        persistenceService = servicesManager.service(PersistenceManagerService.class);
+        this.executorService = servicesManager.service(BatchThreadPoolService.class);
+        this.persistenceService = servicesManager.service(PersistenceManagerService.class);
+        this.jobExecutionCallback = servicesManager.service(JobExecutionCallbackService.class);
     }
 
     @Override
@@ -119,6 +122,8 @@ public class DefaultBatchKernel implements BatchKernelService {
                 // no-op
             }
         }
+
+        jobExecutionCallback.onJobExecutionDone(jobExecution);
 
         // AJM: ah - purge jobExecution from map here and flush to DB?
         // edit: no long want a 2 tier for the jobexecution...do want it for step execution

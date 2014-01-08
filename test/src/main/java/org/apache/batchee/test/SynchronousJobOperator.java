@@ -61,6 +61,17 @@ public class SynchronousJobOperator implements JobOperator {
     }
 
     private void waitEnd(final long id) { // copy of Batches class but avoids to be linked to BatchEE
+        try {
+            final Class<?> batcheeOpClass = Thread.currentThread().getContextClassLoader().loadClass("org.apache.batchee.container.impl.JobOperatorImpl");
+            if (batcheeOpClass.isInstance(delegate)) {
+                batcheeOpClass.getMethod("waitFor", long.class).invoke(delegate, id);
+                return;
+            }
+            return;
+        } catch (final Exception e) {
+            // no-op
+        }
+
         do {
             try {
                 Thread.sleep(20);
