@@ -46,6 +46,16 @@
       <artifactId>batchee-jaxrs-client</artifactId>
       <version>${project.version}</version>
     </dependency>
+    <dependency>
+      <groupId>net.sf.jung</groupId>
+      <artifactId>jung-graph-impl</artifactId>
+      <version>${jung.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>net.sf.jung</groupId>
+      <artifactId>jung-visualization</artifactId>
+      <version>${jung.version}</version>
+    </dependency>
 
     <dependency>
       <groupId>org.apache.maven</groupId>
@@ -99,5 +109,6 @@
 
   <properties>
     <maven.version>3.0.5</maven.version>
+    <jung.version>2.0.1</jung.version>
   </properties>
 </project>
