@@ -200,7 +200,6 @@ public abstract class JobOperatorCommand implements Runnable {
         }
     }
 
-    // TODO: import URLClassLoaderFirst instead of URLClassLoader
     private ClassLoader createLoader(final ClassLoader parent) throws MalformedURLException {
         final Collection<URL> urls = new LinkedList<URL>();
 
