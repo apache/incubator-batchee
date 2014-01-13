@@ -17,6 +17,7 @@
 package org.apache.batchee.test.tck.lifecycle;
 
 import org.apache.derby.jdbc.EmbeddedDriver;
+import org.apache.openejb.loader.SystemInstance;
 import org.apache.openejb.testng.PropertiesBuilder;
 import org.testng.ITestContext;
 import org.testng.ITestListener;
@@ -61,6 +62,11 @@ public class ContainerLifecycle implements ITestListener {
     @Override
     public void onStart(final ITestContext iTestContext) {
         final String loggerName = "test-lifecycle";
+
+        if (!SystemInstance.isInitialized()) {
+            logger = Logger.getLogger(loggerName);
+            return;
+        }
 
         container = EJBContainer.createEJBContainer(new PropertiesBuilder()
             .p("openejb.jul.forceReload", Boolean.TRUE.toString())
