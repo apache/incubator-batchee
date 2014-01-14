@@ -250,9 +250,6 @@ public class DiagramMojo extends AbstractMojo {
         viewer.setPreferredSize(diagramLayout.getSize());
         viewer.setSize(diagramLayout.getSize());
 
-        // creating a realized window to be sure the viewer will be able to draw correctly the graph
-        final JFrame window = createWindow(viewer, diagram.getName());
-
         // saving it too
         if (!output.exists() && !output.mkdirs()) {
             throw new MojoExecutionException("Can't create '" + output.getPath() + "'");
@@ -261,6 +258,7 @@ public class DiagramMojo extends AbstractMojo {
 
         // viewing the window if necessary
         if (view) {
+            final JFrame window = createWindow(viewer, diagram.getName());
             final CountDownLatch latch = new CountDownLatch(1);
             window.setVisible(true);
             window.addWindowListener(new WindowAdapter() {
@@ -275,8 +273,6 @@ public class DiagramMojo extends AbstractMojo {
             } catch (final InterruptedException e) {
                 getLog().error("can't await window close event", e);
             }
-        } else {
-            window.dispose();
         }
     }
 
