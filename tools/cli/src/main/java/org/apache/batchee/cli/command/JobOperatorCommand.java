@@ -148,6 +148,8 @@ public abstract class JobOperatorCommand implements Runnable {
 
     @Override
     public final void run() {
+        System.setProperty("org.apache.batchee.init.verbose.sysout", "true");
+
         final ClassLoader oldLoader = currentThread().getContextClassLoader();
         final ClassLoader loader;
         try {
