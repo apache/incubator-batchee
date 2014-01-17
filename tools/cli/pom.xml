@@ -118,6 +118,8 @@
             </goals>
             <configuration>
               <createDependencyReducedPom>false</createDependencyReducedPom>
+              <shadedArtifactAttached>true</shadedArtifactAttached>
+              <shadedClassifierName>bundle</shadedClassifierName>
               <artifactSet>
                 <excludes>
                   <exclude>org.springframework:*</exclude>
