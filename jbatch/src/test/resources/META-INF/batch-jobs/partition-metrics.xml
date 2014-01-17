@@ -13,8 +13,32 @@
   See the License for the specific language governing permissions and
   limitations under the License.
 -->
-<job id="jmx" version="1.0" xmlns="http://xmlns.jcp.org/xml/ns/javaee">
-  <step id="jmx-step">
-    <batchlet ref="org.apache.batchee.test.mock.BatchletMock"/>
+<job id="partition-metrics" version="1.0" xmlns="http://xmlns.jcp.org/xml/ns/javaee">
+  <step id="part-step">
+    <chunk>
+      <reader ref="org.apache.batchee.test.metric.PartitionMetricsTest$Reader">
+        <properties>
+          <property name="idx" value="#{partitionPlan['idx']}" />
+        </properties>
+      </reader>
+      <writer ref="org.apache.batchee.test.metric.PartitionMetricsTest$Writer" />
+
+      <skippable-exception-classes>
+        <include class="java.io.FileNotFoundException" />
+      </skippable-exception-classes>
+      <retryable-exception-classes>
+        <include class="java.lang.IllegalArgumentException" />
+      </retryable-exception-classes>
+    </chunk>
+    <partition>
+      <plan partitions="2" threads="2">
+        <properties partition="0">
+          <property name="idx" value="1" />
+        </properties>
+        <properties partition="1">
+          <property name="idx" value="2" />
+        </properties>
+      </plan>
+    </partition>
   </step>
 </job>

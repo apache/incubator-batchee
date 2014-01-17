@@ -74,7 +74,7 @@ public abstract class BaseStepController implements ExecutionElementController {
     protected long rootJobExecutionId;
 
     protected final BatchKernelService kernelService;
-    private final PersistenceManagerService persistenceManagerService;
+    protected final PersistenceManagerService persistenceManagerService;
     private final JobStatusManagerService statusManagerService;
 
     protected TransactionManagerAdapter transactionManager = null;

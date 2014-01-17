@@ -144,6 +144,6 @@
     <properties>
         <arquillian.version>1.0.3.Final</arquillian.version>
         <cxf.version>2.6.9</cxf.version>
-        <tomcat.version>7.0.42</tomcat.version>
+        <tomcat.version>7.0.50</tomcat.version>
     </properties>
 </project>

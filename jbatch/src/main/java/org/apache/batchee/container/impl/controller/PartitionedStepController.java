@@ -49,6 +49,8 @@ import javax.batch.operations.JobExecutionNotMostRecentException;
 import javax.batch.operations.JobRestartException;
 import javax.batch.operations.JobStartException;
 import javax.batch.runtime.BatchStatus;
+import javax.batch.runtime.Metric;
+import javax.batch.runtime.StepExecution;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -361,7 +363,16 @@ public class PartitionedStepController extends BaseStepController {
         boolean rollback = false;
 
         for (final BatchWorkUnit subJob : completedWork) {
-            BatchStatus batchStatus = subJob.getJobExecutionImpl().getJobContext().getBatchStatus();
+            final List<StepExecution> steps = persistenceManagerService.getStepExecutionsForJobExecution(subJob.getJobExecutionImpl().getExecutionId());
+            if (steps.size() != 1) {
+                // TODO: possible?
+            } else {
+                for (final Metric metric : steps.iterator().next().getMetrics()) {
+                    stepContext.getMetric(metric.getType()).incValueBy(metric.getValue());
+                }
+            }
+
+            final BatchStatus batchStatus = subJob.getJobExecutionImpl().getJobContext().getBatchStatus();
             if (batchStatus.equals(BatchStatus.FAILED)) {
                 rollback = true;
 

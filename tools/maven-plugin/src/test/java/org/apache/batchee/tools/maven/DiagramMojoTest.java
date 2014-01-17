@@ -37,9 +37,9 @@ public class DiagramMojoTest {
         mojo.view = false;
         mojo.width = 640;
         mojo.height = 480;
-        mojo.adjust = false;
+        mojo.adjust = true;
         mojo.format = "png";
-        // mojo.layout = "spring200";
+        mojo.layout = "spring170";
         mojo.execute();
 
         assertTrue(target.exists());

@@ -40,8 +40,10 @@ import edu.uci.ics.jung.visualization.renderers.BasicEdgeLabelRenderer;
 import edu.uci.ics.jung.visualization.renderers.Renderer;
 import edu.uci.ics.jung.visualization.transform.shape.GraphicsDecorator;
 import org.apache.batchee.container.jsl.ExecutionElement;
+import org.apache.batchee.container.jsl.IllegalTransitionException;
 import org.apache.batchee.container.jsl.JobModelResolver;
 import org.apache.batchee.container.jsl.TransitionElement;
+import org.apache.batchee.container.navigator.JobNavigator;
 import org.apache.batchee.jaxb.End;
 import org.apache.batchee.jaxb.Fail;
 import org.apache.batchee.jaxb.Flow;
@@ -151,6 +153,13 @@ public class DiagramMojo extends AbstractMojo {
     private void visitBatch(final JSLJob job, final Diagram diagram) throws MojoExecutionException {
         final Map<String, Node> nodes = new HashMap<String, Node>();
 
+        String first = null;
+        try {
+            first = new JobNavigator(job).getFirstExecutionElement(null).getId();
+        } catch (final Exception e) {
+            // no-op
+        }
+
         // create nodes
         final List<ExecutionElement> executionElements = job.getExecutionElements();
         final Collection<ExecutionElement> allElements = new HashSet<ExecutionElement>();
@@ -158,7 +167,11 @@ public class DiagramMojo extends AbstractMojo {
 
         // create edges
         for (final ExecutionElement element : allElements) {
-            final Node source = nodes.get(element.getId());
+            final String id = element.getId();
+            final Node source = nodes.get(id);
+            if (id.equals(first)) {
+                source.root();
+            }
 
             if (Step.class.isInstance(element)) {
                 final String next = Step.class.cast(element).getNextFromAttribute();
@@ -353,10 +366,12 @@ public class DiagramMojo extends AbstractMojo {
 
         OutputStream os = null;
         try {
-            os = new FileOutputStream(new File(output, (outputFileName != null ? outputFileName : name) + "." + format));
+            final File file = new File(output, (outputFileName != null ? outputFileName : name) + "." + format);
+            os = new FileOutputStream(file);
             if (!ImageIO.write(bi, format, os)) {
                 throw new MojoExecutionException("can't save picture " + name + "." + format);
             }
+            getLog().info("Saved " + file.getAbsolutePath());
         } catch (final IOException e) {
             throw new MojoExecutionException("can't save the diagram", e);
         } finally {
@@ -417,10 +432,15 @@ public class DiagramMojo extends AbstractMojo {
 
         private final String text;
         private final Type type;
+        private boolean root = false;
 
         private Node(final String text, final Type type) {
             this.text = text;
             this.type = type;
+        }
+
+        public void root() {
+            root = true;
         }
     }
 
@@ -489,15 +509,16 @@ public class DiagramMojo extends AbstractMojo {
     private static class VertexFillPaintTransformer implements Transformer<Node, Paint> {
         @Override
         public Paint transform(final Node node) {
-            /*
+            if (node.root) {
+                return Color.GREEN;
+            }
+
             switch (node.type) {
                 case SINK:
                     return Color.RED;
                 default:
-                    return Color.BLUE;
+                    return Color.WHITE;
             }
-            */
-            return Color.WHITE;
         }
     }
 

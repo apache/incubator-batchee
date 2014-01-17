@@ -29,6 +29,8 @@
         <property name="fail" value="false" />
       </properties>
     </batchlet>
+    <next on="fine" to="sd-chunk" />
+    <end on="*" exit-status="STOP-ON-2" />
   </step>
   <step id="sd-chunk">
     <chunk>
@@ -47,7 +49,7 @@
     </chunk>
     <next on="restart" to="sd1" />
     <stop on="error" exit-status="ERROR"/>
-    <stop on="restart2" exit-status="RESTART" restart="sd2"/>
+    <stop on="restart2" exit-status="RESTART" restart="sd-chunk"/>
     <end on="finish" exit-status="DONE" />
     <fail on="failed" exit-status="FAILED" />
   </step>
