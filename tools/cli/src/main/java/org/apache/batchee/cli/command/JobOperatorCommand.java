@@ -213,6 +213,7 @@ public abstract class JobOperatorCommand implements Runnable {
         }
 
         // we add libs/*.jar and libs/xxx/*.jar to be able to sort libs but only one level to keep it simple
+        File resources = null;
         if (archive != null) {
             final File bar = new File(archive);
             final File exploded;
@@ -243,9 +244,9 @@ public abstract class JobOperatorCommand implements Runnable {
                 }
 
                 // bar archives are split accross 3 folders
-                addFolder(new File(exploded, "batch/jobs"), urls);
-                addFolder(new File(exploded, "batch/classes"), urls);
-                addFolder(new File(exploded, "libs"), urls);
+                addFolder(new File(exploded, "BATCH-INF/classes"), urls);
+                addFolder(new File(exploded, "BATCH-INF/lib"), urls);
+                resources = new File(exploded, "BATCH-INF");
             } else {
                 throw new IllegalArgumentException("'" + archive + "' doesn't exist");
             }
@@ -255,7 +256,12 @@ public abstract class JobOperatorCommand implements Runnable {
         if (libs == null && archive == null) {
             return sharedClassLoader;
         }
-        return new ChildFirstURLClassLoader(urls.toArray(new URL[urls.size()]), sharedClassLoader);
+
+        final ChildFirstURLClassLoader classLoader = new ChildFirstURLClassLoader(urls.toArray(new URL[urls.size()]), sharedClassLoader);
+        if (resources != null && resources.exists()) {
+            classLoader.addResource(resources);
+        }
+        return classLoader;
     }
 
     private ClassLoader createSharedClassLoader(final ClassLoader parent) throws MalformedURLException {

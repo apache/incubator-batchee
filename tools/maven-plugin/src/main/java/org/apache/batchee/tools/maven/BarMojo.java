@@ -32,14 +32,20 @@ import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.MavenProjectHelper;
+import org.codehaus.plexus.archiver.ArchiveEntry;
 import org.codehaus.plexus.archiver.Archiver;
+import org.codehaus.plexus.archiver.ArchiverException;
+import org.codehaus.plexus.archiver.ResourceIterator;
 import org.codehaus.plexus.archiver.jar.JarArchiver;
 import org.codehaus.plexus.archiver.util.DefaultFileSet;
 import org.codehaus.plexus.components.io.fileselectors.FileInfo;
 import org.codehaus.plexus.components.io.fileselectors.FileSelector;
+import org.codehaus.plexus.components.io.resources.PlexusIoFileResource;
+import org.codehaus.plexus.components.io.resources.PlexusIoResource;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Iterator;
 import java.util.List;
 
 import static java.util.Arrays.asList;
@@ -57,7 +63,7 @@ import static java.util.Arrays.asList;
  */
 @Mojo(name = "bar", requiresDependencyResolution = ResolutionScope.COMPILE_PLUS_RUNTIME, defaultPhase = LifecyclePhase.PACKAGE)
 public class BarMojo extends AbstractMojo {
-    private static final String JOB_XML_PATH = "META-INF/batch-jobs/";
+    private static final BatchDescriptorSelector JOB_SELECTOR = new BatchDescriptorSelector();
 
     @Component(role = Archiver.class, hint = "jar")
     private JarArchiver jarArchiver;
@@ -92,6 +98,9 @@ public class BarMojo extends AbstractMojo {
     @Parameter(property = "batchee.classes", defaultValue = "${project.build.directory}/classes")
     private File classes;
 
+    @Parameter(property = "batchee.maven-descriptors", defaultValue = "true")
+    private boolean mavenDescriptors;
+
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
         if (classifier == null && !"bar".equals(project.getPackaging())) {
@@ -111,17 +120,13 @@ public class BarMojo extends AbstractMojo {
     private File createBar() throws MojoExecutionException {
         final File target = new File(outputDirectory, finalName + (classifier != null ? classifier : "") + ".bar");
 
-        final MavenArchiver archiver = new MavenArchiver();
-        archiver.setOutputFile(target);
-        archiver.setArchiver(jarArchiver);
-
         // lib/*
         try {
             for (final Artifact dependency : resolver.resolve(project, asList("compile", "runtime", "system"), session)) {
                 if ("provided".equals(dependency.getScope())) { // not sure why compile triggers provided using resolver
                     continue;
                 }
-                jarArchiver.addFile(dependency.getFile(), "libs/" + artifactPath(dependency));
+                jarArchiver.addFile(dependency.getFile(), "BATCH-INF/lib/" + artifactPath(dependency));
             }
         } catch (final Exception e) {
             throw new MojoExecutionException(e.getMessage(), e);
@@ -129,11 +134,10 @@ public class BarMojo extends AbstractMojo {
 
         // classes
         if (classes.isDirectory()) {
-            final FileSelector jobSelector = new FileSelector() {
+            final FileSelector classesSelector = new FileSelector() {
                 @Override
                 public boolean isSelected(final FileInfo fileInfo) throws IOException {
-                    final String name = fileInfo.getName();
-                    return name.replace('\\', '/').startsWith(JOB_XML_PATH) && name.endsWith(".xml");
+                    return !JOB_SELECTOR.isSelected(fileInfo);
                 }
             };
 
@@ -141,24 +145,71 @@ public class BarMojo extends AbstractMojo {
             fileSet.setDirectory(classes);
             fileSet.setIncludingEmptyDirectories(false);
 
-            fileSet.setPrefix("batch/classes/");
-            fileSet.setFileSelectors(new FileSelector[]{
-                    new FileSelector() {
-                        @Override
-                        public boolean isSelected(final FileInfo fileInfo) throws IOException {
-                            return !jobSelector.isSelected(fileInfo);
-                        }
-                    }
-            });
+            fileSet.setPrefix("BATCH-INF/classes/");
+            fileSet.setFileSelectors(new FileSelector[]{classesSelector});
             jarArchiver.addFileSet(fileSet);
 
-            fileSet.setPrefix("batch/jobs/");
-            fileSet.setFileSelectors(new FileSelector[]{ jobSelector });
+            fileSet.setPrefix("BATCH-INF/");
+            fileSet.setFileSelectors(new FileSelector[]{JOB_SELECTOR});
             jarArchiver.addFileSet(fileSet);
         }
 
+        final MavenArchiveConfiguration archiveConfiguration = new MavenArchiveConfiguration();
+        archiveConfiguration.setAddMavenDescriptor(mavenDescriptors);
+
+        final MavenArchiver archiver = new MavenArchiver();
+        archiver.setOutputFile(target);
+        archiver.setArchiver(new JarArchiver() {
+            {
+                archiveType = "bar";
+            }
+
+            @Override
+            public void addFile( final File inputFile, final String destFileName ) throws ArchiverException {
+                jarArchiver.addFile(inputFile, destFileName);
+            }
+
+            @Override
+            public ResourceIterator getResources() throws ArchiverException {
+                final Iterator<ResourceIterator> iterators = asList(jarArchiver.getResources(), super.getResources()).iterator();
+                return new ResourceIterator() {
+                    private ResourceIterator ri = iterators.next();
+
+                    @Override
+                    public boolean hasNext() {
+                        if (ri.hasNext()) {
+                            return true;
+                        } else if (iterators.hasNext()) {
+                            ri = iterators.next();
+                        }
+                        return ri.hasNext();
+                    }
+
+                    @Override
+                    public ArchiveEntry next() {
+                        final ArchiveEntry next = ri.next();
+                        final PlexusIoResource resource = next.getResource();
+                        if (resource != null && PlexusIoFileResource.class.isInstance(resource)) {
+                            final File file = PlexusIoFileResource.class.cast(resource).getFile();
+                            final String name = next.getName();
+
+                            if (JOB_SELECTOR.accept(resource.getName())) {
+                                return ArchiveEntry.createEntry(name.replace(File.separatorChar, '/').replaceFirst("META\\-INF/", ""), file, next.getType(), next.getMode());
+                            }
+                        }
+                        return next;
+                    }
+
+                    @Override
+                    public void remove() {
+                        throw new UnsupportedOperationException();
+                    }
+                };
+            }
+        });
+
         try {
-            archiver.createArchive(session, project, new MavenArchiveConfiguration());
+            archiver.createArchive(session, project, archiveConfiguration);
         } catch (final Exception e) {
             throw new MojoExecutionException(e.getMessage(), e);
         }
@@ -188,5 +239,27 @@ public class BarMojo extends AbstractMojo {
 
         sb.append('.').append(artifact.getType());
         return sb.toString();
+    }
+
+    private static class BatchDescriptorSelector implements FileSelector {
+        private static final String JOB_XML_PATH = "META-INF/batch-jobs/";
+
+        @Override
+        public boolean isSelected(final FileInfo fileInfo) throws IOException {
+            final String name = fileInfo.getName();
+            return accept(name);
+        }
+
+        public boolean accept(final String name) {
+            final String nameWithoutSlash;
+            if (name.startsWith("/")) {
+                nameWithoutSlash = name.substring(1);
+            } else {
+                nameWithoutSlash = name;
+            }
+            return (nameWithoutSlash.replace('\\', '/').startsWith(JOB_XML_PATH) && nameWithoutSlash.endsWith(".xml"))
+                    || "META-INF/batch.xml".equals(name)
+                    || "META-INF/batchee.xml".equals(name);
+        }
     }
 }

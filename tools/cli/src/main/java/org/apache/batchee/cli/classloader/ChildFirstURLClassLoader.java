@@ -16,15 +16,83 @@
  */
 package org.apache.batchee.cli.classloader;
 
+import java.io.File;
+import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.LinkedList;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public class ChildFirstURLClassLoader  extends URLClassLoader {
     private final ClassLoader system;
+    private final Collection<File> resources = new CopyOnWriteArrayList<File>();
 
     public ChildFirstURLClassLoader(final URL[] urls, final ClassLoader parent) {
         super(urls, parent);
         system = ClassLoader.getSystemClassLoader();
+    }
+
+    public void addResource(final File resource) {
+        if (resource.isDirectory()) {
+            resources.add(resource);
+        }
+    }
+
+    @Override
+    public URL findResource(final String name) {
+        try {
+            final Collection<URL> urls = findResourceUrls(name, name);
+            if (urls != null) { // if not null -> not empty by design
+                return urls.iterator().next();
+            }
+        } catch (final MalformedURLException e) {
+            // no-op: use parent behavior
+        }
+        return super.findResource(name);
+    }
+
+    @Override
+    public Enumeration<URL> findResources(final String name) throws IOException {
+        final Enumeration<URL> defaultResources = super.findResources(name);
+        if (name == null) {
+            return defaultResources;
+        }
+
+        final Collection<URL> urls = findResourceUrls(name, name);
+        if (urls != null) {
+            urls.addAll(Collections.list(defaultResources));
+            return Collections.enumeration(urls);
+        }
+        return defaultResources;
+    }
+
+    private Collection<URL> findResourceUrls(final String inName, final String nameWithoutSlash) throws MalformedURLException {
+        final String name;
+        if (inName.startsWith("/") && inName.length() > 1) {
+            name = inName.substring(1);
+        } else {
+            name = inName;
+        }
+
+        Collection<URL> urls = null; // created lazily
+        if ((name.startsWith("META-INF/batch-jobs/")
+                || name.endsWith("batch.xml") || name.endsWith("batchee.xml"))
+                && nameWithoutSlash.endsWith(".xml")) {
+            for (final File folder : resources) {
+                final File resource = new File(folder, nameWithoutSlash.replace("META-INF/", ""));
+                if (resource.isFile()) {
+                    if (urls == null) {
+                        urls = new LinkedList<URL>();
+                    }
+                    urls.add(resource.toURI().toURL());
+                }
+            }
+        }
+        return urls;
     }
 
     @Override
