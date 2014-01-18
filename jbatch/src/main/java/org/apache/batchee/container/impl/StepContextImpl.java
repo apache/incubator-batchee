@@ -37,14 +37,14 @@ public class StepContextImpl implements StepContext {
     private Timestamp starttime = null;
     private Timestamp endtime = null;
 
-    private long stepExecID = 0;
+    private long stepExecID = Integer.MIN_VALUE;
+    private long stepInternalExecID = 0;
 
-    private Properties properties = new Properties();
+    private final Properties properties = new Properties();
 
     private String batchletProcessRetVal = null;
 
-
-    private ConcurrentHashMap<String, Metric> metrics = new ConcurrentHashMap<String, Metric>();
+    private final ConcurrentHashMap<String, Metric> metrics = new ConcurrentHashMap<String, Metric>();
 
     public StepContextImpl(String stepId) {
         this.stepId = stepId;
@@ -140,9 +140,18 @@ public class StepContextImpl implements StepContext {
         return stepExecID;
     }
 
+    public long getStepInternalExecID() {
+        return stepInternalExecID;
+    }
 
     public void setStepExecutionId(long stepExecutionId) {
-        stepExecID = stepExecutionId;
+        if (stepExecID == Integer.MIN_VALUE) {
+            stepExecID = stepExecutionId;
+        }
+    }
+
+    public void setInternalStepExecutionId(long stepExecutionId) {
+        stepInternalExecID = stepExecutionId;
     }
 
     public void setStartTime(Timestamp startTS) {

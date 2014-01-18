@@ -281,6 +281,7 @@ public abstract class BaseStepController implements ExecutionElementController {
             final StepExecutionImpl stepExecution = getNewStepExecution(rootJobExecutionId, stepContext);
             // create new step status for this run
             stepStatus = statusManagerService.createStepStatus(stepExecution.getStepExecutionId());
+            stepContext.setInternalStepExecutionId(stepExecution.getStepExecutionId());
             stepContext.setStepExecutionId(stepExecution.getStepExecutionId());
             return true;
         } else {
@@ -293,8 +294,10 @@ public abstract class BaseStepController implements ExecutionElementController {
                 stepStatus.incrementStartCount();
                 // create new step execution
                 final StepExecutionImpl stepExecution = getNewStepExecution(rootJobExecutionId, stepContext);
-                this.stepStatus.setLastRunStepExecutionId(stepExecution.getStepExecutionId());
-                stepContext.setStepExecutionId(stepExecution.getStepExecutionId());
+                final long stepExecutionId = stepExecution.getStepExecutionId();
+                this.stepStatus.setLastRunStepExecutionId(stepExecutionId);
+                stepContext.setStepExecutionId(stepExecutionId);
+                stepContext.setInternalStepExecutionId(stepExecutionId);
                 return true;
             }
             return false;
@@ -421,5 +424,11 @@ public abstract class BaseStepController implements ExecutionElementController {
 
     public String toString() {
         return "BaseStepController for step = " + step.getId();
+    }
+
+    public void setParentStepContext(final StepContextImpl parentStepContext) {
+        if (parentStepContext != null) {
+            stepContext.setStepExecutionId(parentStepContext.getStepExecutionId());
+        }
     }
 }

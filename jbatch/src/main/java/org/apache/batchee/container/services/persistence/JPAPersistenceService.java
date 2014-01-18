@@ -216,7 +216,7 @@ public class JPAPersistenceService implements PersistenceManagerService {
         try {
             final Object tx = txProvider.start(em);
             try {
-                final StepExecutionEntity entity = em.find(StepExecutionEntity.class, stepContext.getStepExecutionId());
+                final StepExecutionEntity entity = em.find(StepExecutionEntity.class, stepContext.getStepInternalExecID());
                 setStepData(em, jobExecId, stepContext,
                     stepContext.metricsAsMap().get(Metric.MetricType.READ_COUNT.name()).getValue(),
                     stepContext.metricsAsMap().get(Metric.MetricType.WRITE_COUNT.name()).getValue(),

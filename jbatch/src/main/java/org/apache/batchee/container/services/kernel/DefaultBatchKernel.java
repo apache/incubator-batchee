@@ -18,6 +18,8 @@ package org.apache.batchee.container.services.kernel;
 
 import org.apache.batchee.container.ThreadRootController;
 import org.apache.batchee.container.exception.BatchContainerServiceException;
+import org.apache.batchee.container.impl.JobContextImpl;
+import org.apache.batchee.container.impl.StepContextImpl;
 import org.apache.batchee.container.impl.jobinstance.JobExecutionHelper;
 import org.apache.batchee.container.impl.jobinstance.RuntimeFlowInSplitExecution;
 import org.apache.batchee.container.impl.jobinstance.RuntimeJobExecution;
@@ -156,7 +158,7 @@ public class DefaultBatchKernel implements BatchKernelService {
      */
 
     @Override
-    public List<BatchPartitionWorkUnit> buildNewParallelPartitions(final PartitionsBuilderConfig config)
+    public List<BatchPartitionWorkUnit> buildNewParallelPartitions(final PartitionsBuilderConfig config, final JobContextImpl jc, final StepContextImpl sc)
         throws JobRestartException, JobStartException {
 
         final List<JSLJob> jobModels = config.getJobModels();
@@ -167,9 +169,11 @@ public class DefaultBatchKernel implements BatchKernelService {
         for (final JSLJob parallelJob : jobModels) {
             final Properties partitionProps = (partitionPropertiesArray == null) ? null : partitionPropertiesArray[instance];
             final RuntimeJobExecution jobExecution = JobExecutionHelper.startPartition(servicesManager, parallelJob, partitionProps);
+            jobExecution.inheritJobContext(jc);
             jobExecution.setPartitionInstance(instance);
 
             final BatchPartitionWorkUnit batchWork = new BatchPartitionWorkUnit(jobExecution, config, servicesManager);
+            batchWork.inheritStepContext(sc);
 
             registerCurrentInstanceAndExecution(jobExecution, batchWork.getController());
 

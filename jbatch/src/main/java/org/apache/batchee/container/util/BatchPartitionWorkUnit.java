@@ -16,9 +16,9 @@
  */
 package org.apache.batchee.container.util;
 
+import org.apache.batchee.container.impl.StepContextImpl;
 import org.apache.batchee.container.impl.controller.PartitionThreadRootController;
 import org.apache.batchee.container.impl.jobinstance.RuntimeJobExecution;
-import org.apache.batchee.container.services.BatchKernelService;
 import org.apache.batchee.container.services.ServicesManager;
 
 import java.util.concurrent.BlockingQueue;
@@ -39,5 +39,9 @@ public class BatchPartitionWorkUnit extends BatchParallelWorkUnit {
         if (this.completedThreadQueue != null) {
             completedThreadQueue.add(this);
         }
+    }
+
+    public void inheritStepContext(final StepContextImpl sc) {
+        this.controller.setParentStepContext(sc);
     }
 }

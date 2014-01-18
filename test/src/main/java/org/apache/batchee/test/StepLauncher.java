@@ -98,7 +98,7 @@ public class StepLauncher {
                 .execute();
         }
 
-        return persistenceManagerService.getStepExecutionByStepExecutionId(stepContext.getStepExecutionId());
+        return persistenceManagerService.getStepExecutionByStepExecutionId(stepContext.getStepInternalExecID());
     }
 
     private StepLauncher() {

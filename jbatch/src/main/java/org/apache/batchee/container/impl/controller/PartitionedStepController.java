@@ -290,7 +290,7 @@ public class PartitionedStepController extends BaseStepController {
             if (stepStatus.getStartCount() > 1 && !plan.getPartitionsOverride()) {
                 parallelBatchWorkUnits = kernelService.buildOnRestartParallelPartitions(config);
             } else {
-                parallelBatchWorkUnits = kernelService.buildNewParallelPartitions(config);
+                parallelBatchWorkUnits = kernelService.buildNewParallelPartitions(config, jobExecutionImpl.getJobContext(), stepContext);
             }
 
             // NOTE:  At this point I might not have as many work units as I had partitions, since some may have already completed.
@@ -364,13 +364,13 @@ public class PartitionedStepController extends BaseStepController {
 
         for (final BatchWorkUnit subJob : completedWork) {
             final List<StepExecution> steps = persistenceManagerService.getStepExecutionsForJobExecution(subJob.getJobExecutionImpl().getExecutionId());
-            if (steps.size() != 1) {
-                // TODO: possible?
-            } else {
+            if (steps.size() == 1) {
                 for (final Metric metric : steps.iterator().next().getMetrics()) {
                     stepContext.getMetric(metric.getType()).incValueBy(metric.getValue());
                 }
-            }
+            }/* else {
+                // TODO: possible?
+            }*/
 
             final BatchStatus batchStatus = subJob.getJobExecutionImpl().getJobContext().getBatchStatus();
             if (batchStatus.equals(BatchStatus.FAILED)) {

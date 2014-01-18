@@ -69,6 +69,11 @@ public class RuntimeJobExecution {
         prepareForExecution(jobContext, null);
     }
 
+    public void inheritJobContext(final JobContextImpl jc) {
+        jobContext.setExecutionId(jc.getExecutionId());
+        jobContext.setInstanceId(jc.getInstanceId());
+    }
+
     public void setRestartOn(final String restartOn) {
         this.restartOn = restartOn;
     }

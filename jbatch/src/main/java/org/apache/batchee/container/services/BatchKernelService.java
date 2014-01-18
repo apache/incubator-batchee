@@ -16,6 +16,8 @@
  */
 package org.apache.batchee.container.services;
 
+import org.apache.batchee.container.impl.JobContextImpl;
+import org.apache.batchee.container.impl.StepContextImpl;
 import org.apache.batchee.container.impl.jobinstance.RuntimeJobExecution;
 import org.apache.batchee.container.util.BatchFlowInSplitWorkUnit;
 import org.apache.batchee.container.util.BatchPartitionWorkUnit;
@@ -49,7 +51,7 @@ public interface BatchKernelService extends BatchService {
 
     JobInstance getJobInstance(long instanceId);
 
-    List<BatchPartitionWorkUnit> buildNewParallelPartitions(PartitionsBuilderConfig config) throws JobRestartException, JobStartException;
+    List<BatchPartitionWorkUnit> buildNewParallelPartitions(PartitionsBuilderConfig config, JobContextImpl jc, StepContextImpl sc) throws JobRestartException, JobStartException;
 
     List<BatchPartitionWorkUnit> buildOnRestartParallelPartitions(PartitionsBuilderConfig config) throws JobRestartException, JobExecutionAlreadyCompleteException, JobExecutionNotMostRecentException;
 

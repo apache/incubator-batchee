@@ -19,6 +19,7 @@ package org.apache.batchee.container.impl.controller;
 import org.apache.batchee.container.Controller;
 import org.apache.batchee.container.ThreadRootController;
 import org.apache.batchee.container.impl.JobContextImpl;
+import org.apache.batchee.container.impl.StepContextImpl;
 import org.apache.batchee.container.impl.jobinstance.RuntimeJobExecution;
 import org.apache.batchee.container.navigator.ModelNavigator;
 import org.apache.batchee.container.proxy.InjectionReferences;
@@ -54,6 +55,8 @@ public abstract class JobThreadRootController implements ThreadRootController {
     protected final JobStatusManagerService jobStatusService;
     protected final PersistenceManagerService persistenceService;
     protected final ServicesManager manager;
+
+    protected StepContextImpl parentStepContext = null;
 
     private ExecutionTransitioner transitioner;
     private BlockingQueue<PartitionDataWrapper> analyzerQueue;
@@ -102,6 +105,7 @@ public abstract class JobThreadRootController implements ThreadRootController {
                 // within the job !!!
                 // --------------------
                 transitioner = new ExecutionTransitioner(jobExecution, rootJobExecutionId, jobNavigator, analyzerQueue, manager);
+                transitioner.setParentStepContext(parentStepContext);
                 retVal = transitioner.doExecutionLoop();
                 ExtendedBatchStatus extBatchStatus = retVal.getExtendedBatchStatus();
                 switch (extBatchStatus) {
@@ -275,5 +279,10 @@ public abstract class JobThreadRootController implements ThreadRootController {
     @Override
     public List<Long> getLastRunStepExecutions() {
         return this.transitioner.getStepExecIds();
+    }
+
+    @Override
+    public void setParentStepContext(final StepContextImpl parentStepContext) {
+        this.parentStepContext = parentStepContext;
     }
 }

@@ -446,7 +446,7 @@ public class MemoryPersistenceManager implements PersistenceManagerService {
 
     @Override
     public void updateStepExecution(final long jobExecId, final StepContextImpl stepContext) {
-        final long stepExecutionId = stepContext.getStepExecutionId();
+        final long stepExecutionId = stepContext.getStepInternalExecID();
         final String batchStatus = stepContext.getBatchStatus() == null ? BatchStatus.STARTING.name() : stepContext.getBatchStatus().name();
         final String exitStatus = stepContext.getExitStatus();
         final String stepName = stepContext.getStepName();

@@ -62,6 +62,7 @@ public class ExecutionTransitioner {
     private BlockingQueue<PartitionDataWrapper> analyzerQueue = null;
 
     private List<Long> stepExecIds;
+    private StepContextImpl parentStepContext;
 
     public ExecutionTransitioner(final RuntimeJobExecution jobExecution, final long rootJobExecutionId, final ModelNavigator<?> modelNavigator,
                                  final ServicesManager servicesManager) {
@@ -99,6 +100,9 @@ public class ExecutionTransitioner {
             final ExecutionElementController currentElementController = getNextElementController();
             currentStoppableElementController = currentElementController;
 
+            if (BaseStepController.class.isInstance(currentElementController)) {
+                BaseStepController.class.cast(currentElementController).setParentStepContext(parentStepContext);
+            }
             final ExecutionStatus status = currentElementController.execute();
 
             // Nothing special for decision or step except to get exit status.  For flow and split we want to bubble up though.
@@ -237,5 +241,9 @@ public class ExecutionTransitioner {
 
     public List<Long> getStepExecIds() {
         return stepExecIds;
+    }
+
+    public void setParentStepContext(final StepContextImpl parentStepContext) {
+        this.parentStepContext = parentStepContext;
     }
 }

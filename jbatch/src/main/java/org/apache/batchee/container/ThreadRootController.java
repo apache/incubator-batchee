@@ -16,8 +16,10 @@
  */
 package org.apache.batchee.container;
 
+import org.apache.batchee.container.impl.StepContextImpl;
 import org.apache.batchee.container.status.ExecutionStatus;
 
 public interface ThreadRootController extends Controller {
     ExecutionStatus originateExecutionOnThread();
+    void setParentStepContext(StepContextImpl stepContext);
 }
