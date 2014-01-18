@@ -22,6 +22,7 @@ import io.airlift.command.ParseException;
 import org.apache.batchee.cli.command.Abandon;
 import org.apache.batchee.cli.command.Executions;
 import org.apache.batchee.cli.command.Instances;
+import org.apache.batchee.cli.command.Names;
 import org.apache.batchee.cli.command.Restart;
 import org.apache.batchee.cli.command.Running;
 import org.apache.batchee.cli.command.Start;
@@ -34,6 +35,7 @@ public class BatchEECLI {
                 .withDescription("the stupid content tracker")
                 .withDefaultCommand(Help.class)
                 .withCommands(Help.class,
+                        Names.class,
                         Start.class, Restart.class,
                         Status.class, Running.class,
                         Stop.class, Abandon.class,

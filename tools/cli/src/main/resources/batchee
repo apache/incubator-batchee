@@ -1,0 +1,80 @@
+#!/bin/sh
+#============================================================
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License.  You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+cygwin=false
+case "`uname`" in
+CYGWIN*) cygwin=true;;
+esac
+
+if [ -z "$BATCHEE_HOME" -o ! -d "$BATCHEE_HOME" ] ; then
+  # find batchee
+  if [ -d /opt/batchee ] ; then
+    BATCHEE_HOME=/opt/batchee
+  fi
+
+  if [ -d "${HOME}/opt/batchee" ] ; then
+    BATCHEE_HOME="${HOME}/opt/batchee"
+  fi
+
+  ## resolve links - $0 may be a link to batchee's home
+  PRG="$0"
+  progname=`basename "$0"`
+
+  # need this for relative symlinks
+  while [ -L "$PRG" ] ; do
+    ls=`ls -ld "$PRG"`
+    link=`expr "$ls" : '.*-> \(.*\)$'`
+    if expr "$link" : '/.*' > /dev/null; then
+      PRG="$link"
+    else
+      PRG=`dirname "$PRG"`"/$link"
+    fi
+  done
+
+
+  BATCHEE_HOME=`dirname "$PRG"`/..
+
+  # make it fully qualified
+  BATCHEE_HOME=`cd "$BATCHEE_HOME" && pwd`
+fi
+
+sep=":"
+if $cygwin; then
+    sep=";"
+fi
+
+libs="$BATCHEE_HOME/lib"
+if $cygwin; then
+    libs=$(cygpath -wp "$libs")
+fi
+for i in $BATCHEE_HOME/lib/*.jar; do
+    value="$i"
+    if $cygwin; then
+        # wp to convert to windows path, suppose java is installed on windows and not cygwin!
+        value=$(cygpath -wp "$value")
+    fi
+    libs="$libs$sep$value"
+done
+
+args="$@"
+if [ "$1" = "debug" ]; then
+    BATCHEE_OPTS="-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5005 $BATCHEE_OPTS"
+	shift
+fi
+
+# TODO logging config: "-Djava.util.logging.config.file=$BATCHEE_HOME/conf/logging.properties"
+java $BATCHEE_OPTS -cp "$libs" org.apache.batchee.cli.BatchEECLI $@

@@ -38,7 +38,6 @@ public class DefaultJobXMLLoaderService implements JobXMLLoaderService {
 
     }
 
-
     private static String loadJobFromBatchJobs(final String id) {
         final ClassLoader tccl = Thread.currentThread().getContextClassLoader();
         final String relativePath = PREFIX + id + ".xml";
