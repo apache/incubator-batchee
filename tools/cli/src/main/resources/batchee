@@ -76,5 +76,12 @@ if [ "$1" = "debug" ]; then
 	shift
 fi
 
-# TODO logging config: "-Djava.util.logging.config.file=$BATCHEE_HOME/conf/logging.properties"
+logging="$BATCHEE_HOME/conf/logging.properties"
+if $cygwin; then
+    logging=$(cygpath -wp "$logging")
+fi
+if [ -f "$logging" ] ; then
+    BATCHEE_OPTS="$BATCHEE_OPTS -Djava.util.logging.config.file=$logging"
+fi
+
 java $BATCHEE_OPTS -cp "$libs" org.apache.batchee.cli.BatchEECLI $@
