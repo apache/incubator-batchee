@@ -51,7 +51,7 @@ import java.util.logging.Logger;
 public class ServicesManager implements BatchContainerConstants {
     private final static Logger LOGGER = Logger.getLogger(ServicesManager.class.getName());
 
-    private static final String SERVICES_CONFIGURATION_FILE = "/batchee.properties";
+    private static final String SERVICES_CONFIGURATION_FILE = "batchee.properties";
 
     // Use class names instead of Class objects to not drag in any dependencies and to easily interact with properties
     private static final Map<String, String> SERVICE_IMPL_CLASS_NAMES = new ConcurrentHashMap<String, String>();
@@ -76,6 +76,8 @@ public class ServicesManager implements BatchContainerConstants {
     }
 
     private static ServicesManagerLocator servicesManagerLocator;
+
+    private ClassLoader loader = null;
 
     // designed to be used from app or a server
     public static void setServicesManagerLocator(final ServicesManagerLocator locator) {
@@ -117,8 +119,10 @@ public class ServicesManager implements BatchContainerConstants {
 
                     batchRuntimeConfig.putAll(SERVICE_IMPL_CLASS_NAMES); // defaults
 
+                    loader = Thread.currentThread().getContextClassLoader();
+
                     // file in the classloader
-                    final InputStream batchServicesListInputStream = getClass().getResourceAsStream(SERVICES_CONFIGURATION_FILE);
+                    final InputStream batchServicesListInputStream = loader.getResourceAsStream(SERVICES_CONFIGURATION_FILE);
                     if (batchServicesListInputStream != null) {
                         try {
                             batchRuntimeConfig.load(batchServicesListInputStream);
@@ -198,7 +202,7 @@ public class ServicesManager implements BatchContainerConstants {
     }
 
     private <T> T load(final Class<T> expected, final String className) throws Exception {
-        final Class<?> cls = Class.forName(className);
+        final Class<?> cls = getLoader().loadClass(className);
         if (cls != null) {
             try {
                 final Constructor<?> constructor = cls.getConstructor(ServicesManager.class);
@@ -212,6 +216,13 @@ public class ServicesManager implements BatchContainerConstants {
             throw new BatchContainerRuntimeException("Service class " + className + " should  have a default constructor defined");
         }
         throw new Exception("Exception loading Service class " + className + " make sure it exists");
+    }
+
+    private ClassLoader getLoader() {
+        if (loader != null) {
+            return loader;
+        }
+        return Thread.currentThread().getContextClassLoader();
     }
 }
 

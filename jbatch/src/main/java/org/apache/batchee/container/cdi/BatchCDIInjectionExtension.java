@@ -54,6 +54,9 @@ public class BatchCDIInjectionExtension implements Extension {
     }
 
     public void cleanupStoredBeanManagerOnShutdown(final @Observes BeforeShutdown beforeShutdown) {
+        if (bmpSingleton == null) {
+            return;
+        }
         bmpSingleton.bmInfos.remove(loader());
     }
 
@@ -99,6 +102,12 @@ public class BatchCDIInjectionExtension implements Extension {
         BeanManagerInfo bmi = bmpSingleton.bmInfos.get(cl);
         if (bmi == null) {
             synchronized (this) {
+                for (final ClassLoader key : bmpSingleton.bmInfos.keySet()) {
+                    if (key.getParent() == cl) {
+                        return bmpSingleton.bmInfos.get(key);
+                    }
+                }
+
                 bmi = bmpSingleton.bmInfos.get(cl);
                 if (bmi == null) {
                     bmi = new BeanManagerInfo();

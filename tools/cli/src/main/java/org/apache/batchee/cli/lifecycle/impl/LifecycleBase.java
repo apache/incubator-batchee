@@ -28,7 +28,7 @@ import java.util.Properties;
 public abstract class LifecycleBase<T> implements Lifecycle<T> {
     protected static final String LIFECYCLE_PROPERTIES_FILE = "batchee-lifecycle.properties";
 
-    protected Map<?, ?> configuration(final String name) {
+    protected Map<String, Object> configuration(final String name) {
         final String propPath = System.getProperty("batchee.lifecycle." + name + ".properties-path", LIFECYCLE_PROPERTIES_FILE);
 
         final Properties p = new Properties();
@@ -46,6 +46,6 @@ public abstract class LifecycleBase<T> implements Lifecycle<T> {
             }
         }
 
-        return p;
+        return Map.class.cast(p);
     }
 }

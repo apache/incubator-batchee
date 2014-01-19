@@ -37,7 +37,13 @@ public class ClassLoaderLocator extends SingletonLocator {
 
     public static void initializeServiceManager(final ClassLoader key, final Properties props) {
         final ServicesManager mgr = new ServicesManager();
-        mgr.init(props);
+        final ClassLoader old = Thread.currentThread().getContextClassLoader();
+        Thread.currentThread().setContextClassLoader(key);
+        try {
+            mgr.init(props);
+        } finally {
+            Thread.currentThread().setContextClassLoader(old);
+        }
         setServiceManager(key, mgr);
     }
 

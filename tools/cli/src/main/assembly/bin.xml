@@ -46,49 +46,6 @@
       <outputFileNameMapping>${artifact.artifactId}-${artifact.baseVersion}.${artifact.extension}</outputFileNameMapping>
       <outputDirectory>lib</outputDirectory>
       <scope>runtime</scope>
-      <excludes>
-        <exclude>org.springframework:*</exclude>
-        <exclude>org.apache.geronimo.specs:geronimo-ejb_3.1_spec</exclude>
-        <exclude>org.apache.deltaspike.cdictrl:deltaspike-cdictrl-api</exclude>
-        <exclude>org.testng:*</exclude>
-        <exclude>org.junit:*</exclude>
-        <exclude>org.hamcrest:*</exclude>
-        <exclude>commons-logging:*</exclude>
-        <exclude>aopalliance:*</exclude>
-        <exclude>com.github.stefanbirkner:*</exclude>
-      </excludes>
-    </dependencySet>
-    <dependencySet>
-      <outputFileNameMapping>${artifact.artifactId}-${artifact.baseVersion}.${artifact.extension}</outputFileNameMapping>
-      <outputDirectory>lib</outputDirectory>
-      <scope>provided</scope>
-      <excludes>
-        <exclude>org.springframework:*</exclude>
-        <exclude>org.apache.geronimo.specs:geronimo-ejb_3.1_spec</exclude>
-        <exclude>org.apache.deltaspike.cdictrl:deltaspike-cdictrl-api</exclude>
-        <exclude>org.testng:*</exclude>
-        <exclude>org.junit:*</exclude>
-        <exclude>org.hamcrest:*</exclude>
-        <exclude>commons-logging:*</exclude>
-        <exclude>aopalliance:*</exclude>
-        <exclude>com.github.stefanbirkner:*</exclude>
-      </excludes>
-    </dependencySet>
-    <dependencySet>
-      <outputFileNameMapping>${artifact.artifactId}-${artifact.baseVersion}.${artifact.extension}</outputFileNameMapping>
-      <outputDirectory>lib</outputDirectory>
-      <scope>compile</scope>
-      <excludes>
-        <exclude>org.springframework:*</exclude>
-        <exclude>org.apache.geronimo.specs:geronimo-ejb_3.1_spec</exclude>
-        <exclude>org.apache.deltaspike.cdictrl:deltaspike-cdictrl-api</exclude>
-        <exclude>org.testng:*</exclude>
-        <exclude>org.junit:*</exclude>
-        <exclude>org.hamcrest:*</exclude>
-        <exclude>commons-logging:*</exclude>
-        <exclude>aopalliance:*</exclude>
-        <exclude>com.github.stefanbirkner:*</exclude>
-      </excludes>
     </dependencySet>
   </dependencySets>
 </assembly>

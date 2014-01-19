@@ -16,8 +16,13 @@
  */
 package org.apache.batchee.cli.classloader;
 
+import org.apache.commons.io.IOUtils;
+
+import java.io.BufferedInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -30,6 +35,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 public class ChildFirstURLClassLoader  extends URLClassLoader {
     private final ClassLoader system;
     private final Collection<File> resources = new CopyOnWriteArrayList<File>();
+    private File applicationFolder;
 
     public ChildFirstURLClassLoader(final URL[] urls, final ClassLoader parent) {
         super(urls, parent);
@@ -106,6 +112,42 @@ public class ChildFirstURLClassLoader  extends URLClassLoader {
             return clazz;
         }
 
+        // lifecycle classes and cdi extensions need to be loaded from "container/lifecyle" loader
+        if ((name.endsWith("Lifecycle") && name.startsWith("org.apache.batchee.cli.lifecycle.impl."))
+                || name.startsWith("org.apache.batchee.container.cdi.")
+                || name.startsWith("org.apache.batchee.container.services.factory.CDIBatchArtifactFactory")) {
+            if (getParent() == system ) {
+                final String path = name.replace('.', '/').concat(".class");
+                try {
+                    InputStream res = getResourceAsStream(path);
+                    if (res != null && !BufferedInputStream.class.isInstance(res)) {
+                        res = new BufferedInputStream(res);
+                    }
+
+                    if (res != null) {
+                        final ByteArrayOutputStream bout = new ByteArrayOutputStream(6 * 1024);
+                        try {
+                            IOUtils.copy(res, bout);
+                            final byte[] bytes = bout.toByteArray();
+                            clazz = defineClass(name, bytes, 0, bytes.length);
+                            if (resolve) {
+                                resolveClass(clazz);
+                            }
+                            return clazz;
+                        } catch (final IOException e) {
+                            throw new ClassNotFoundException(name, e);
+                        } finally {
+                            IOUtils.closeQuietly(res);
+                        }
+                    }
+                } catch (final ClassNotFoundException cnfe) {
+                    // no-op
+                }
+            } else {
+                return super.loadClass(name, resolve);
+            }
+        }
+
         // JSE classes
         try {
             clazz = system.loadClass(name);
@@ -115,11 +157,10 @@ public class ChildFirstURLClassLoader  extends URLClassLoader {
                 }
                 return clazz;
             }
-        } catch (ClassNotFoundException ignored) {
+        } catch (final ClassNotFoundException ignored) {
             // no-op
         }
 
-        final boolean ok = shouldSkip(name);
         clazz = loadInternal(name, resolve);
         if (clazz != null) {
             return clazz;
@@ -131,19 +172,7 @@ public class ChildFirstURLClassLoader  extends URLClassLoader {
             return clazz;
         }
 
-        if (!ok) {
-            clazz = loadInternal(name, resolve);
-            if (clazz != null) {
-                return clazz;
-            }
-        }
-
         throw new ClassNotFoundException(name);
-    }
-
-    // extension point for next releases but here to don't need to re-implement the login in loadClass
-    private boolean shouldSkip(final String name) {
-        return false;
     }
 
     private Class<?> loadFromParent(final String name, final boolean resolve) {
@@ -159,7 +188,7 @@ public class ChildFirstURLClassLoader  extends URLClassLoader {
                 }
                 return clazz;
             }
-        } catch (ClassNotFoundException ignored) {
+        } catch (final ClassNotFoundException ignored) {
             // no-op
         }
         return null;
@@ -178,5 +207,13 @@ public class ChildFirstURLClassLoader  extends URLClassLoader {
             // no-op
         }
         return null;
+    }
+
+    public void setApplicationFolder(final File applicationFolder) {
+        this.applicationFolder = applicationFolder;
+    }
+
+    public File getApplicationFolder() {
+        return applicationFolder;
     }
 }

@@ -37,17 +37,17 @@ import static java.util.Arrays.asList;
 public class SpringLifecycle extends LifecycleBase<AbstractApplicationContext> {
     @Override
     public AbstractApplicationContext start() {
-        final Map<?, ?> config = configuration("spring");
+        final Map<String, Object> config = configuration("spring");
 
         final AbstractApplicationContext ctx;
         if (config.containsKey("locations")) {
             final Collection<String> locations = new LinkedList<String>();
-            locations.addAll(asList(String.class.cast(config.get("locations")).split(",")));
+            locations.addAll(asList(config.get("locations").toString().split(",")));
             ctx = new ClassPathXmlApplicationContext(locations.toArray(new String[locations.size()]));
         } else if (config.containsKey("classes")) {
             final Collection<Class<?>> classes = new LinkedList<Class<?>>();
             final ClassLoader loader = currentThread().getContextClassLoader();
-            for (final String clazz : String.class.cast(config.get("classes")).split(",")) {
+            for (final String clazz : config.get("classes").toString().split(",")) {
                 try {
                     classes.add(loader.loadClass(clazz));
                 } catch (final ClassNotFoundException e) {

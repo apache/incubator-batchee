@@ -110,6 +110,9 @@ public abstract class JobOperatorCommand implements Runnable {
     @Option(name = "-shared-libs", description = "folder containing shared libraries, the folder is added too to the loader")
     private String sharedLibs = null;
 
+    @Option(name = "-add-folder-to-loader", description = "force shared lib and libs folders to be added to the classloader")
+    private boolean addFolderToLoader = false;
+
     protected JobOperator operator() {
         if (baseUrl == null) {
             return BatchRuntime.getJobOperator();
@@ -187,8 +190,8 @@ public abstract class JobOperatorCommand implements Runnable {
 
     private Lifecycle<Object> createLifecycle(final ClassLoader loader) {
         // some shortcuts are nicer to use from CLI
-        if ("ejbcontainer".equalsIgnoreCase(lifecycle)) {
-            lifecycle = "org.apache.batchee.cli.lifecycle.impl.EJBContainerLifecycle";
+        if ("openejb".equalsIgnoreCase(lifecycle)) {
+            lifecycle = "org.apache.batchee.cli.lifecycle.impl.OpenEJBLifecycle";
         } else if ("cdi".equalsIgnoreCase(lifecycle)) {
             lifecycle = "org.apache.batchee.cli.lifecycle.impl.CdiCtrlLifecycle";
         } else if ("spring".equalsIgnoreCase(lifecycle)) {
@@ -214,9 +217,9 @@ public abstract class JobOperatorCommand implements Runnable {
 
         // we add libs/*.jar and libs/xxx/*.jar to be able to sort libs but only one level to keep it simple
         File resources = null;
+        File exploded = null;
         if (archive != null) {
             final File bar = new File(archive);
-            final File exploded;
             if (bar.exists()) {
                 if (bar.isFile()) { // bar to unzip
                     exploded = new File(work, bar.getName());
@@ -243,10 +246,17 @@ public abstract class JobOperatorCommand implements Runnable {
                     explode(bar, exploded, timestamp, bar.lastModified());
                 }
 
-                // bar archives are split accross 3 folders
-                addFolder(new File(exploded, "BATCH-INF/classes"), urls);
-                addFolder(new File(exploded, "BATCH-INF/lib"), urls);
-                resources = new File(exploded, "BATCH-INF");
+                if (archive.endsWith(".bar") || new File(exploded, "BATCH-INF").exists()) {
+                    // bar archives are split accross 3 folders
+                    addFolder(new File(exploded, "BATCH-INF/classes"), urls);
+                    addFolderIfExist(new File(exploded, "BATCH-INF/lib"), urls);
+                    resources = new File(exploded, "BATCH-INF");
+                } else if (archive.endsWith(".war") || new File(exploded, "WEB-INF").exists()) {
+                    addFolderIfExist(new File(exploded, "WEB-INF/classes"), urls);
+                    addLibs(new File(exploded, "WEB-INF/lib"), urls);
+                } else {
+                    throw new IllegalArgumentException("unknown or unsupported archive type: " + archive);
+                }
             } else {
                 throw new IllegalArgumentException("'" + archive + "' doesn't exist");
             }
@@ -261,19 +271,40 @@ public abstract class JobOperatorCommand implements Runnable {
         if (resources != null && resources.exists()) {
             classLoader.addResource(resources);
         }
+        if (exploded != null) {
+            classLoader.setApplicationFolder(exploded);
+        }
         return classLoader;
+    }
+
+    private static void addFolderIfExist(final File file, final Collection<URL> urls) throws MalformedURLException {
+        if (file.isDirectory()) {
+            urls.add(file.toURI().toURL());
+        }
     }
 
     private ClassLoader createSharedClassLoader(final ClassLoader parent) throws MalformedURLException {
         final ClassLoader usedParent;
         if (sharedLibs != null) { // add it later to let specific libs be taken before
             final Collection<URL> sharedUrls = new LinkedList<URL>();
-            addFolder(new File(sharedLibs), sharedUrls);
+            final File folder = new File(sharedLibs);
+            addJars(folder, sharedUrls);
             usedParent = new ChildFirstURLClassLoader(sharedUrls.toArray(new URL[sharedUrls.size()]), parent);
         } else {
             usedParent = parent;
         }
         return usedParent;
+    }
+
+    private void addJars(final File folder, final Collection<URL> urls) throws MalformedURLException {
+        if (!folder.isDirectory()) {
+            return;
+        }
+
+        addLibs(folder, urls);
+        if (addFolderToLoader) {
+            urls.add(folder.toURI().toURL());
+        }
     }
 
     private void addFolder(File folder, Collection<URL> urls) throws MalformedURLException {
@@ -291,14 +322,17 @@ public abstract class JobOperatorCommand implements Runnable {
         }
     }
 
-    private static void addJars(final File folder, final Collection<URL> urls) throws MalformedURLException {
+    private static void addLibs(final File folder, final Collection<URL> urls) throws MalformedURLException {
+        if (!folder.isDirectory()) {
+            return;
+        }
+
         final File[] additionals = folder.listFiles(JarFilter.INSTANCE);
         if (additionals != null) {
             for (final File toAdd : additionals) {
                 urls.add(toAdd.toURI().toURL());
             }
         }
-        urls.add(folder.toURI().toURL());
     }
 
     private static void explode(final File source, final File target, final File timestampFile, final long time) {
@@ -320,7 +354,7 @@ public abstract class JobOperatorCommand implements Runnable {
 
         @Override
         public boolean accept(final File dir, final String name) {
-            return dir.isFile() && (name.endsWith(".jar") || name.endsWith(".zip"));
+            return name.endsWith(".jar") || name.endsWith(".zip");
         }
     }
 
