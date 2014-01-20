@@ -119,6 +119,45 @@
     <plugins>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jar-plugin</artifactId>
+        <version>2.4</version>
+        <executions>
+          <execution>
+            <id>boostrap-jar</id>
+            <goals>
+              <goal>jar</goal>
+            </goals>
+            <configuration>
+              <includes>
+                <include>**/bootstrap/*</include>
+                <include>**/classloader/*</include>
+              </includes>
+              <classifier>bootstrap</classifier>
+            </configuration>
+          </execution>
+          <execution>
+            <id>runner-jar</id>
+            <goals>
+              <goal>jar</goal>
+            </goals>
+            <configuration>
+              <excludes>
+                <exclude>**/bootstrap/*</exclude>
+                <exclude>**/classloader/*</exclude>
+              </excludes>
+              <classifier>runner</classifier>
+            </configuration>
+          </execution>
+          <execution>
+            <id>normal-jar</id>
+            <goals>
+              <goal>jar</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-shade-plugin</artifactId>
         <version>2.2</version>
         <executions>

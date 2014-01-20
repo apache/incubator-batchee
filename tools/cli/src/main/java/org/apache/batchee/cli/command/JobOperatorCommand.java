@@ -289,7 +289,12 @@ public abstract class JobOperatorCommand implements Runnable {
             final Collection<URL> sharedUrls = new LinkedList<URL>();
             final File folder = new File(sharedLibs);
             addJars(folder, sharedUrls);
-            usedParent = new ChildFirstURLClassLoader(sharedUrls.toArray(new URL[sharedUrls.size()]), parent);
+            if (ChildFirstURLClassLoader.class.isInstance(parent)) { // merge it
+                ChildFirstURLClassLoader.class.cast(parent).addUrls(sharedUrls);
+                usedParent = parent;
+            } else {
+                usedParent = new ChildFirstURLClassLoader(sharedUrls.toArray(new URL[sharedUrls.size()]), parent);
+            }
         } else {
             usedParent = parent;
         }

@@ -16,13 +16,8 @@
  */
 package org.apache.batchee.cli.classloader;
 
-import org.apache.commons.io.IOUtils;
-
-import java.io.BufferedInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -32,6 +27,7 @@ import java.util.Enumeration;
 import java.util.LinkedList;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+// Note: don't depend from any other classes
 public class ChildFirstURLClassLoader  extends URLClassLoader {
     private final ClassLoader system;
     private final Collection<File> resources = new CopyOnWriteArrayList<File>();
@@ -112,6 +108,7 @@ public class ChildFirstURLClassLoader  extends URLClassLoader {
             return clazz;
         }
 
+        /* needed if classloader hierarchy is batchee* <- cdi container <- app
         // lifecycle classes and cdi extensions need to be loaded from "container/lifecyle" loader
         if ((name.endsWith("Lifecycle") && name.startsWith("org.apache.batchee.cli.lifecycle.impl."))
                 || name.startsWith("org.apache.batchee.container.cdi.")
@@ -147,6 +144,7 @@ public class ChildFirstURLClassLoader  extends URLClassLoader {
                 return super.loadClass(name, resolve);
             }
         }
+        */
 
         // JSE classes
         try {
@@ -215,5 +213,11 @@ public class ChildFirstURLClassLoader  extends URLClassLoader {
 
     public File getApplicationFolder() {
         return applicationFolder;
+    }
+
+    public void addUrls(final Collection<URL> urls) {
+        for (final URL url : urls) {
+            addURL(url);
+        }
     }
 }

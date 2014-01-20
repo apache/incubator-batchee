@@ -52,23 +52,16 @@ if [ -z "$BATCHEE_HOME" -o ! -d "$BATCHEE_HOME" ] ; then
   BATCHEE_HOME=`cd "$BATCHEE_HOME" && pwd`
 fi
 
-sep=":"
+bin="$BATCHEE_HOME/bin/batchee-cli-${project.version}-bootstrap.jar"
 if $cygwin; then
-    sep=";"
+    bin=$(cygpath -wp "$bin")
 fi
 
-libs="$BATCHEE_HOME/lib"
+home="$BATCHEE_HOME"
 if $cygwin; then
-    libs=$(cygpath -wp "$libs")
+    home=$(cygpath -wp "$home")
 fi
-for i in $BATCHEE_HOME/lib/*.jar; do
-    value="$i"
-    if $cygwin; then
-        # wp to convert to windows path, suppose java is installed on windows and not cygwin!
-        value=$(cygpath -wp "$value")
-    fi
-    libs="$libs$sep$value"
-done
+BATCHEE_OPTS="$BATCHEE_OPTS -Dbatchee.home=$home"
 
 args="$@"
 if [ "$1" = "debug" ]; then
@@ -84,4 +77,4 @@ if [ -f "$logging" ] ; then
     BATCHEE_OPTS="$BATCHEE_OPTS -Djava.util.logging.config.file=$logging"
 fi
 
-java $BATCHEE_OPTS -cp "$libs" org.apache.batchee.cli.BatchEECLI $@
+java $BATCHEE_OPTS -cp "$bin" org.apache.batchee.cli.bootstrap.Bootstrap $@

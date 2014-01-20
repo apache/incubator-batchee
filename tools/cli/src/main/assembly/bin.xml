@@ -24,7 +24,7 @@
   </formats>
   <fileSets>
     <fileSet>
-      <directory>${project.basedir}/target/classes</directory>
+      <directory>${project.build.outputDirectory}</directory>
       <outputDirectory>/</outputDirectory>
       <includes>
         <include>LICENSE</include>
@@ -32,7 +32,7 @@
       </includes>
     </fileSet>
     <fileSet>
-      <directory>${project.basedir}/target/classes</directory>
+      <directory>${project.build.outputDirectory}</directory>
       <outputDirectory>bin/</outputDirectory>
       <includes>
         <include>batchee</include>
@@ -40,12 +40,29 @@
       <lineEnding>unix</lineEnding>
       <fileMode>0755</fileMode>
     </fileSet>
+    <fileSet>
+      <directory>${project.build.directory}/</directory>
+      <outputDirectory>bin/</outputDirectory>
+      <includes>
+        <include>batchee-cli-*-bootstrap.jar</include>
+      </includes>
+    </fileSet>
+    <fileSet>
+      <directory>${project.build.directory}/</directory>
+      <outputDirectory>lib/</outputDirectory>
+      <includes>
+        <include>batchee-cli-*-runner.jar</include>
+      </includes>
+    </fileSet>
   </fileSets>
   <dependencySets>
     <dependencySet>
       <outputFileNameMapping>${artifact.artifactId}-${artifact.baseVersion}.${artifact.extension}</outputFileNameMapping>
       <outputDirectory>lib</outputDirectory>
       <scope>runtime</scope>
+      <excludes>
+        <exclude>org.apache.batchee:batchee-cli</exclude> <!-- we use bootstrap and runner -->
+      </excludes>
     </dependencySet>
   </dependencySets>
 </assembly>
