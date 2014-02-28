@@ -136,7 +136,8 @@ public class PartitionedStepController extends BaseStepController {
             // Set all the contexts associated with this controller.
             // Some of them may be null
             final InjectionReferences injectionRef = new InjectionReferences(jobExecutionImpl.getJobContext(), stepContext, propertyList);
-            final PartitionMapperProxy partitionMapperProxy = ProxyFactory.createPartitionMapperProxy(factory, partitionMapper.getRef(), injectionRef, stepContext, jobExecutionImpl);
+            final PartitionMapperProxy partitionMapperProxy =
+                    ProxyFactory.createPartitionMapperProxy(factory, partitionMapper.getRef(), injectionRef, stepContext, jobExecutionImpl);
 
 
             final PartitionPlan mapperPlan = partitionMapperProxy.mapPartitions();
@@ -245,13 +246,13 @@ public class PartitionedStepController extends BaseStepController {
         //persist the partition plan so on restart we have the same plan to reuse
         stepStatus.setNumPartitions(plan.getPartitions());
 
-		/* When true is specified, the partition count from the current run
+        /* When true is specified, the partition count from the current run
          * is used and all results from past partitions are discarded. Any
-		 * resource cleanup or back out of work done in the previous run is the
-		 * responsibility of the application. The PartitionReducer artifact's
-		 * rollbackPartitionedStep method is invoked during restart before any
-		 * partitions begin processing to provide a cleanup hook.
-		 */
+         * resource cleanup or back out of work done in the previous run is the
+         * responsibility of the application. The PartitionReducer artifact's
+         * rollbackPartitionedStep method is invoked during restart before any
+         * partitions begin processing to provide a cleanup hook.
+         */
         if (plan.getPartitionsOverride()) {
             if (this.partitionReducerProxy != null) {
                 this.partitionReducerProxy.rollbackPartitionedStep();
@@ -285,7 +286,8 @@ public class PartitionedStepController extends BaseStepController {
                 subJobs.add(PartitionedStepBuilder.buildPartitionSubJob(jobExecutionImpl.getInstanceId(), jobExecutionImpl.getJobContext(), step, instance));
             }
 
-            PartitionsBuilderConfig config = new PartitionsBuilderConfig(subJobs, partitionProperties, analyzerStatusQueue, completedWorkQueue, jobExecutionImpl.getExecutionId());
+            PartitionsBuilderConfig config =
+                    new PartitionsBuilderConfig(subJobs, partitionProperties, analyzerStatusQueue, completedWorkQueue, jobExecutionImpl.getExecutionId());
             // Then build all the subjobs but do not start them yet
             if (stepStatus.getStartCount() > 1 && !plan.getPartitionsOverride()) {
                 parallelBatchWorkUnits = kernelService.buildOnRestartParallelPartitions(config);

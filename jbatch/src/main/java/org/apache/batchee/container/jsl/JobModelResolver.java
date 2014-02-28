@@ -28,7 +28,8 @@ import java.security.AccessController;
 import java.security.PrivilegedAction;
 
 public class JobModelResolver {
-    private static JAXBContext JOB_CONTEXT;
+    private static final JAXBContext JOB_CONTEXT;
+
     static {
         try {
             JOB_CONTEXT = JAXBContext.newInstance(JSLJob.class.getPackage().getName());

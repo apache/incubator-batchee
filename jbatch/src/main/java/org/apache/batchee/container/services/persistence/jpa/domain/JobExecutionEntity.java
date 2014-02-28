@@ -35,7 +35,8 @@ import java.util.Properties;
 
 @Entity
 @NamedQueries({
-    @NamedQuery(name = JobExecutionEntity.Queries.MOST_RECENT, query =  "SELECT e FROM JobExecutionEntity e WHERE e.instance.jobInstanceId = :instanceId ORDER BY e.createTime DESC"),
+    @NamedQuery(name = JobExecutionEntity.Queries.MOST_RECENT,
+                query =  "SELECT e FROM JobExecutionEntity e WHERE e.instance.jobInstanceId = :instanceId ORDER BY e.createTime DESC"),
     @NamedQuery(name = JobExecutionEntity.Queries.FIND_BY_INSTANCE, query =  "SELECT e FROM JobExecutionEntity e WHERE e.instance.jobInstanceId = :instanceId"),
     @NamedQuery(name = JobExecutionEntity.Queries.DELETE_BY_INSTANCE_ID, query =  "delete from JobExecutionEntity e where e.instance.jobInstanceId = :instanceId"),
     @NamedQuery(name = JobExecutionEntity.Queries.FIND_RUNNING, query =  "SELECT e FROM JobExecutionEntity e WHERE e.batchStatus in :statuses and e.instance.name = :name")

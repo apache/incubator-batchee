@@ -73,10 +73,10 @@ public class BatchletStepController extends SingleThreadedStepController {
         //TODO If this step is partitioned create partition artifacts
         /*
         Partition partition = step.getPartition();
-		if (partition != null) {
-			//partition.getConcurrencyElements();
-		}
-		*/
+        if (partition != null) {
+            //partition.getConcurrencyElements();
+        }
+        */
         try {
             invokeBatchlet(step.getBatchlet());
         } finally {
@@ -96,9 +96,9 @@ public class BatchletStepController extends SingleThreadedStepController {
                 batchletProxy.stop();
             }
         }/* else {
-			// TODO do we need to throw an error if the batchlet is already stopping/stopped
-			// a stop gets issued twice
-		}*/
+            // TODO do we need to throw an error if the batchlet is already stopping/stopped
+            // a stop gets issued twice
+        }*/
     }
 
 

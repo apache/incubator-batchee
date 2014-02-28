@@ -26,7 +26,13 @@ public class JSLValidationEventHandler implements ValidationEventHandler {
     private boolean eventOccurred = false;
 
     public boolean handleEvent(final ValidationEvent event) {
-        logger.warning("JSL invalid per XSD, details: " + ("\nMESSAGE: " + event.getMessage()) + "\nSEVERITY: " + event.getSeverity() + "\nLINKED EXC: " + event.getLinkedException() + "\nLOCATOR INFO:\n------------" + "\n  COLUMN NUMBER:  " + event.getLocator().getColumnNumber() + "\n  LINE NUMBER:  " + event.getLocator().getLineNumber() + "\n  OFFSET:  " + event.getLocator().getOffset() + "\n  CLASS:  " + event.getLocator().getClass() + "\n  NODE:  " + event.getLocator().getNode() + "\n  OBJECT:  " + event.getLocator().getObject() + "\n  URL:  " + event.getLocator().getURL());
+        logger.warning("JSL invalid per XSD, details: " + ("\nMESSAGE: " + event.getMessage()) + "\nSEVERITY: " + event.getSeverity() +
+                "\nLINKED EXC: " + event.getLinkedException() + "\nLOCATOR INFO:\n------------"
+                + "\n  COLUMN NUMBER:  " + event.getLocator().getColumnNumber() +
+                "\n  LINE NUMBER:  " + event.getLocator().getLineNumber() +
+                "\n  OFFSET:  " + event.getLocator().getOffset() + "\n  CLASS:  " + event.getLocator().getClass() +
+                "\n  NODE:  " + event.getLocator().getNode() + "\n  OBJECT:  " + event.getLocator().getObject() +
+                "\n  URL:  " + event.getLocator().getURL());
 
         eventOccurred = true;
 

@@ -85,22 +85,26 @@ public class ChunkPropertyResolver extends AbstractPropertyResolver<Chunk> {
 
         // Resolve CheckpointAlgorithm properties
         if (chunk.getCheckpointAlgorithm() != null) {
-            PropertyResolverFactory.createCheckpointAlgorithmPropertyResolver(this.isPartitionedStep).substituteProperties(chunk.getCheckpointAlgorithm(), submittedProps, parentProps);
+            PropertyResolverFactory.createCheckpointAlgorithmPropertyResolver(this.isPartitionedStep).substituteProperties(chunk.getCheckpointAlgorithm(),
+                    submittedProps, parentProps);
         }
 
         // Resolve SkippableExceptionClasses properties
         if (chunk.getSkippableExceptionClasses() != null) {
-            PropertyResolverFactory.createSkippableExceptionClassesPropertyResolver(this.isPartitionedStep).substituteProperties(chunk.getSkippableExceptionClasses(), submittedProps, parentProps);
+            PropertyResolverFactory.createSkippableExceptionClassesPropertyResolver(this.isPartitionedStep).substituteProperties(chunk.getSkippableExceptionClasses(),
+                    submittedProps, parentProps);
         }
 
         // Resolve RetryableExceptionClasses properties
         if (chunk.getRetryableExceptionClasses() != null) {
-            PropertyResolverFactory.createRetryableExceptionClassesPropertyResolver(this.isPartitionedStep).substituteProperties(chunk.getRetryableExceptionClasses(), submittedProps, parentProps);
+            PropertyResolverFactory.createRetryableExceptionClassesPropertyResolver(this.isPartitionedStep).substituteProperties(chunk.getRetryableExceptionClasses(),
+                    submittedProps, parentProps);
         }
 
         // Resolve NoRollbackExceptionClasses properties
         if (chunk.getNoRollbackExceptionClasses() != null) {
-            PropertyResolverFactory.createNoRollbackExceptionClassesPropertyResolver(this.isPartitionedStep).substituteProperties(chunk.getNoRollbackExceptionClasses(), submittedProps, parentProps);
+            PropertyResolverFactory.createNoRollbackExceptionClassesPropertyResolver(this.isPartitionedStep).substituteProperties(chunk.getNoRollbackExceptionClasses(),
+                    submittedProps, parentProps);
         }
 
         //FIXME There are more properties to add in here for the rest of the chunk elements

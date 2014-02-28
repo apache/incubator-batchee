@@ -33,11 +33,11 @@ import java.util.Properties;
 
 import static org.testng.Assert.assertEquals;
 
-public class CamelProcessorTest extends CamelBridge {
+public class CamelProcessorTest {
     @Test
     public void process() throws Exception {
         final List<Exchange> exchanges = new ArrayList<Exchange>(2);
-        final Consumer consumer = CONTEXT.getEndpoint("direct:processor").createConsumer(new Processor() {
+        final Consumer consumer = CamelBridge.CONTEXT.getEndpoint("direct:processor").createConsumer(new Processor() {
             @Override
             public void process(final Exchange exchange) throws Exception {
                 exchanges.add(exchange);

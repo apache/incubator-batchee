@@ -26,6 +26,10 @@ public class Xsds {
     private static Schema schema = null;
     private static SchemaFactory sf = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
 
+    private Xsds() {
+        // private utility class ct
+    }
+
     public static Schema jobXML() {
         if (schema == null) {
             synchronized (Xsds.class) {

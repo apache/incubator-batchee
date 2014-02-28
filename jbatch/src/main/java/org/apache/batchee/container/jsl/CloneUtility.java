@@ -35,6 +35,10 @@ import java.util.Properties;
 public class CloneUtility {
     private static final ObjectFactory JSL_FACTORY = new ObjectFactory();
 
+    private CloneUtility() {
+        // private utility class ct
+    }
+
     public static Batchlet cloneBatchlet(final Batchlet batchlet) {
         final Batchlet newBatchlet = JSL_FACTORY.createBatchlet();
         newBatchlet.setRef(batchlet.getRef());

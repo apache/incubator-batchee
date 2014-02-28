@@ -32,14 +32,14 @@ public class PartitionMapperPropertyResolver extends
     public PartitionMapper substituteProperties(PartitionMapper partitionMapper,
                                                 Properties submittedProps, Properties parentProps) {
 
-		/*
-		<xs:complexType name="PartitionMapper">
-			<xs:sequence>
-				<xs:element name="properties" type="jsl:Properties" minOccurs="0" maxOccurs="1" />
-			</xs:sequence>
-			<xs:attribute name="ref" use="required" type="jsl:artifactRef" />
-		</xs:complexType>
-		*/
+        /*
+        <xs:complexType name="PartitionMapper">
+            <xs:sequence>
+                <xs:element name="properties" type="jsl:Properties" minOccurs="0" maxOccurs="1" />
+            </xs:sequence>
+            <xs:attribute name="ref" use="required" type="jsl:artifactRef" />
+        </xs:complexType>
+        */
 
         partitionMapper.setRef(this.replaceAllProperties(partitionMapper.getRef(), submittedProps, parentProps));
 

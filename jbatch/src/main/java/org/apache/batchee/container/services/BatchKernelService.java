@@ -39,7 +39,8 @@ import java.util.Properties;
 public interface BatchKernelService extends BatchService {
     InternalJobExecution getJobExecution(long executionId) throws NoSuchJobExecutionException;
 
-    InternalJobExecution restartJob(long executionID, Properties overrideJobParameters) throws JobRestartException, JobExecutionAlreadyCompleteException, JobExecutionNotMostRecentException, NoSuchJobExecutionException;
+    InternalJobExecution restartJob(long executionID, Properties overrideJobParameters) throws JobRestartException, JobExecutionAlreadyCompleteException,
+            JobExecutionNotMostRecentException, NoSuchJobExecutionException;
 
     InternalJobExecution startJob(String jobXML, Properties jobParameters) throws JobStartException;
 
@@ -53,7 +54,8 @@ public interface BatchKernelService extends BatchService {
 
     List<BatchPartitionWorkUnit> buildNewParallelPartitions(PartitionsBuilderConfig config, JobContextImpl jc, StepContextImpl sc) throws JobRestartException, JobStartException;
 
-    List<BatchPartitionWorkUnit> buildOnRestartParallelPartitions(PartitionsBuilderConfig config) throws JobRestartException, JobExecutionAlreadyCompleteException, JobExecutionNotMostRecentException;
+    List<BatchPartitionWorkUnit> buildOnRestartParallelPartitions(PartitionsBuilderConfig config) throws JobRestartException,
+            JobExecutionAlreadyCompleteException, JobExecutionNotMostRecentException;
 
     void startGeneratedJob(BatchWorkUnit batchWork);
 

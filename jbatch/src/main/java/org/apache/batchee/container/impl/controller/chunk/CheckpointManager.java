@@ -21,7 +21,6 @@ import org.apache.batchee.container.exception.BatchContainerServiceException;
 import org.apache.batchee.container.proxy.ItemReaderProxy;
 import org.apache.batchee.container.proxy.ItemWriterProxy;
 import org.apache.batchee.spi.PersistenceManagerService;
-import org.apache.batchee.container.services.ServicesManager;
 
 import javax.batch.api.chunk.CheckpointAlgorithm;
 import java.io.ByteArrayOutputStream;
@@ -60,8 +59,10 @@ public class CheckpointManager {
     public void checkpoint() {
         final ByteArrayOutputStream readerChkptBA = new ByteArrayOutputStream();
         final ByteArrayOutputStream writerChkptBA = new ByteArrayOutputStream();
-        final ObjectOutputStream readerOOS, writerOOS;
-        final CheckpointDataKey readerChkptDK, writerChkptDK;
+        final ObjectOutputStream readerOOS;
+        final ObjectOutputStream writerOOS;
+        final CheckpointDataKey readerChkptDK;
+        final CheckpointDataKey writerChkptDK;
         try {
             readerOOS = new ObjectOutputStream(readerChkptBA);
             readerOOS.writeObject(readerProxy.checkpointInfo());

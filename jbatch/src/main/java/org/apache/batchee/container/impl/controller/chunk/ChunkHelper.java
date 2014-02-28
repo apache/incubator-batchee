@@ -20,6 +20,10 @@ import org.apache.batchee.jaxb.Chunk;
 
 public class ChunkHelper {
 
+    private ChunkHelper() {
+        // utility class private ct
+    }
+
     public static int getItemCount(Chunk chunk) {
         String chunkSizeStr = chunk.getItemCount();
         int size = 10;

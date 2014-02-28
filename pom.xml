@@ -221,9 +221,13 @@
                     </execution>
                 </executions>
                 <configuration>
+                    <!-- exclude JAXB generated stuff -->
+                    <excludes>org/apache/batchee/jaxb/*</excludes>
+
                     <logViolationsToConsole>true</logViolationsToConsole>
                     <checkstyleRules>
                         <module name="Checker">
+                            <module name="SuppressionCommentFilter"/>
 
                             <!-- Checks for Size Violations.                    -->
                             <!-- See http://checkstyle.sf.net/config_sizes.html -->
@@ -238,6 +242,8 @@
 
 
                             <module name="TreeWalker">
+                                <!-- needed for the SuppressionCommentFilter -->
+                                <module name="FileContentsHolder"/>
 
                                 <!-- Checks for Javadoc comments.                     -->
                                 <!-- See http://checkstyle.sf.net/config_javadoc.html -->
@@ -303,7 +309,9 @@
 
                                 <!-- Checks for blocks. You know, those {}'s         -->
                                 <!-- See http://checkstyle.sf.net/config_blocks.html -->
-                                <module name="EmptyBlock"/>
+                                <module name="EmptyBlock">
+                                    <property name="option" value="text"/>
+                                </module>
 
                                 <module name="NeedBraces"/>
                                 <module name="LeftCurly">
@@ -317,7 +325,6 @@
                                 <!-- See http://checkstyle.sf.net/config_coding.html -->
                                 <module name="EmptyStatement"/>
                                 <module name="EqualsHashCode"/>
-                                <module name="InnerAssignment"/>
                                 <module name="DefaultComesLast"/>
                                 <module name="MissingSwitchDefault"/>
                                 <module name="FallThrough"/>

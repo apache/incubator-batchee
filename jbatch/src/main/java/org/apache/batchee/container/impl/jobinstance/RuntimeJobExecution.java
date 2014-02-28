@@ -51,11 +51,10 @@ public class RuntimeJobExecution {
     }
 
 
-	/*
+    /**
      * Non-spec'd methods (not on the interface, but maybe we should
-	 * put on a second interface).
-	 */
-
+     * put on a second interface).
+     */
     public void prepareForExecution(final JobContextImpl jobContext, final String restartOn) {
         this.jobContext = jobContext;
         this.jobNavigator = jobContext.getNavigator();

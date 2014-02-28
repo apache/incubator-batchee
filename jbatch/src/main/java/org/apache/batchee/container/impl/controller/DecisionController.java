@@ -58,7 +58,7 @@ public class DecisionController implements ExecutionElementController {
 
         //Create a decider proxy and inject the associated properties
 
-		/* Set the contexts associated with this scope */
+        /* Set the contexts associated with this scope */
         //job context is always in scope
         //the parent controller will only pass one valid context to a decision controller
         //so two of these contexts will always be null

@@ -118,6 +118,9 @@ public abstract class JobThreadRootController implements ThreadRootController {
                     case EXCEPTION_THROWN:
                         updateJobBatchStatus(BatchStatus.FAILED);
                         break;
+                    default:
+                        // all ok
+                        break;
                 }
             }
         } catch (final Throwable t) {

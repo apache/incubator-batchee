@@ -331,7 +331,8 @@ public class MemoryPersistenceManager implements PersistenceManagerService {
         return jobExecution;
     }
 
-    private Structures.ExecutionInstanceData createRuntimeJobExecutionEntry(final JobInstance jobInstance, final Properties jobParameters, final BatchStatus batchStatus, final Timestamp now) {
+    private Structures.ExecutionInstanceData createRuntimeJobExecutionEntry(final JobInstance jobInstance, final Properties jobParameters,
+                                                                            final BatchStatus batchStatus, final Timestamp now) {
         final Structures.ExecutionInstanceData executionInstanceData = new Structures.ExecutionInstanceData();
         final long id = data.executionInstanceIdGenerator.getAndIncrement();
         executionInstanceData.execution = new JobExecutionImpl(id, jobInstance.getInstanceId(), this);
@@ -394,10 +395,12 @@ public class MemoryPersistenceManager implements PersistenceManagerService {
             endTime, persistentData);
     }
 
+//CHECKSTYLE:OFF
     private StepExecutionImpl createStepExecution(final long rootJobExecId, final String batchStatus, final String exitStatus, final String stepName,
                                                   final long readCount, final long writeCount, final long commitCount, final long rollbackCount,
                                                   final long readSkipCount, final long processSkipCount, final long filterCount, final long writeSkipCount,
                                                   final Timestamp startTime, final Timestamp endTime, final Serializable persistentData) {
+//CHECKSTYLE:ON
 
         final StepExecutionImpl stepExecution = new StepExecutionImpl(rootJobExecId, data.stepExecutionIdGenerator.getAndIncrement());
         stepExecution.setStepName(stepName);
@@ -418,6 +421,7 @@ public class MemoryPersistenceManager implements PersistenceManagerService {
         return stepExecution;
     }
 
+//CHECKSTYLE:OFF
     private void updateStepExecutionInstanceData(final Structures.ExecutionInstanceData exec,
                                                  final String batchStatus,final  String exitStatus, final String stepName,
                                                  final long readCount, final long writeCount, final long commitCount, final long rollbackCount,
@@ -425,6 +429,7 @@ public class MemoryPersistenceManager implements PersistenceManagerService {
                                                  final Timestamp startTime, final Timestamp endTime,
                                                  final Serializable persistentData,
                                                  final Structures.StepExecutionInstanceData stepExecutionInstanceData) {
+//CHECKSTYLE:ON
         stepExecutionInstanceData.jobExec = exec;
         stepExecutionInstanceData.execution.setExitStatus(exitStatus);
         stepExecutionInstanceData.execution.setBatchStatus(BatchStatus.valueOf(batchStatus));
@@ -489,10 +494,12 @@ public class MemoryPersistenceManager implements PersistenceManagerService {
             writeSkipCount, startTime, endTime, persistentData);
     }
 
+//CHECKSTYLE:OFF
     private void updateStepExecution(final long stepExecutionId, final long jobExecId, final String batchStatus, final String exitStatus, final String stepName,
                                      final long readCount, final long writeCount, final long commitCount, final long rollbackCount,
                                      final long readSkipCount, final long processSkipCount, final long filterCount, final long writeSkipCount,
                                      final Timestamp startTime, final Timestamp endTime, final Serializable persistentData) {
+//CHECKSTYLE:ON
         final Structures.ExecutionInstanceData executionInstanceData = data.executionInstanceData.get(jobExecId);
         if (executionInstanceData == null) {
             return;

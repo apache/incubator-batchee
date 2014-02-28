@@ -1161,7 +1161,8 @@ public class JDBCPersistenceManager implements PersistenceManagerService {
         return jobExecution;
     }
 
-    private long createRuntimeJobExecutionEntry(final JobInstance jobInstance, final Properties jobParameters, final BatchStatus batchStatus, final Timestamp timestamp) {
+    private long createRuntimeJobExecutionEntry(final JobInstance jobInstance, final Properties jobParameters, final BatchStatus batchStatus,
+                                                final Timestamp timestamp) {
         Connection conn = null;
         PreparedStatement statement = null;
         ResultSet rs = null;
@@ -1247,9 +1248,12 @@ public class JDBCPersistenceManager implements PersistenceManagerService {
     }
 
 
-    private StepExecutionImpl createStepExecution(final long rootJobExecId, final String batchStatus, final String exitStatus, final String stepName, final long readCount,
-                                                  final long writeCount, final long commitCount, final long rollbackCount, final long readSkipCount, final long processSkipCount, final long filterCount,
-                                                  final long writeSkipCount, final Timestamp startTime, final Timestamp endTime, final Serializable persistentData) {
+//CHECKSTYLE:OFF
+    private StepExecutionImpl createStepExecution(final long rootJobExecId, final String batchStatus, final String exitStatus, final String stepName,
+                                                  final long readCount, final long writeCount, final long commitCount, final long rollbackCount, final long readSkipCount,
+                                                  final long processSkipCount, final long filterCount, final long writeSkipCount, final Timestamp startTime,
+                                                  final Timestamp endTime, final Serializable persistentData) {
+//CHECKSTYLE:ON
         Connection conn = null;
         PreparedStatement statement = null;
         ResultSet rs;
@@ -1342,9 +1346,12 @@ public class JDBCPersistenceManager implements PersistenceManagerService {
     }
 
 
-    private void updateStepExecution(final long stepExecutionId, final long jobExecId, final String batchStatus, final String exitStatus, final String stepName, final long readCount,
-                                     final long writeCount, final long commitCount, final long rollbackCount, final long readSkipCount, final long processSkipCount, final long filterCount,
-                                     final long writeSkipCount, final Timestamp startTime, final Timestamp endTime, final Serializable persistentData) {
+//CHECKSTYLE:OFF
+    private void updateStepExecution(final long stepExecutionId, final long jobExecId, final String batchStatus, final String exitStatus, final String stepName,
+                                     final long readCount, final long writeCount, final long commitCount, final long rollbackCount, final long readSkipCount,
+                                     final long processSkipCount, final long filterCount, final long writeSkipCount, final Timestamp startTime,
+                                     final Timestamp endTime, final Serializable persistentData) {
+//CHECKSTYLE:ON
         Connection conn = null;
         PreparedStatement statement = null;
 

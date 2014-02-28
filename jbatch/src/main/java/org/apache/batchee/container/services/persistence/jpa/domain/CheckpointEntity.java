@@ -30,7 +30,8 @@ import javax.persistence.NamedQuery;
 
 @Entity
 @NamedQueries({
-    @NamedQuery(name = CheckpointEntity.Queries.FIND, query = "select c from CheckpointEntity c where c.instance.jobInstanceId = :jobInstanceId and c.stepName = :stepName and c.type = :type"),
+    @NamedQuery(name = CheckpointEntity.Queries.FIND,
+                query = "select c from CheckpointEntity c where c.instance.jobInstanceId = :jobInstanceId and c.stepName = :stepName and c.type = :type"),
     @NamedQuery(name = CheckpointEntity.Queries.DELETE_BY_INSTANCE_ID, query = "delete from CheckpointEntity e where e.instance.jobInstanceId = :id")
 })
 public class CheckpointEntity {

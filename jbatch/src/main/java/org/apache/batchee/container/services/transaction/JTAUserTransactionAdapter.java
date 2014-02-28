@@ -28,7 +28,7 @@ import javax.transaction.SystemException;
 import javax.transaction.TransactionManager;
 
 public class JTAUserTransactionAdapter implements TransactionManagerAdapter {
-    private static final String [] JNDI_LOCS = new String[] { // taken from OpenJPA ManagedRuntime
+    private static final String[] JNDI_LOCS = new String[] { // taken from OpenJPA ManagedRuntime
         "java:comp/TransactionManager", // generic, TomEE
         "javax.transaction.TransactionManager", // weblogic
         "java:/TransactionManager", // jboss, jrun, Geronimo
@@ -38,7 +38,7 @@ public class JTAUserTransactionAdapter implements TransactionManagerAdapter {
         "java:pm/TransactionManager", // borland
         "aries:services/javax.transaction.TransactionManager", // Apache Aries
     };
-    private static final String [] METHODS = new String[] {  // taken from OpenJPA ManagedRuntime
+    private static final String[] METHODS = new String[] {  // taken from OpenJPA ManagedRuntime
         "org.openejb.OpenEJB.getTransactionManager",
         "com.arjuna.jta.JTA_TransactionManager.transactionManager", // hp
         "com.bluestone.jta.SaTransactionManagerFactory.SaGetTransactionManager",
@@ -50,9 +50,9 @@ public class JTAUserTransactionAdapter implements TransactionManagerAdapter {
     protected TransactionManager mgr = null;
 
     public JTAUserTransactionAdapter() {
-        for (final String JNDI_LOC : JNDI_LOCS) {
+        for (final String jndiLoc : JNDI_LOCS) {
             try {
-                mgr = TransactionManager.class.cast(new InitialContext().lookup(JNDI_LOC));
+                mgr = TransactionManager.class.cast(new InitialContext().lookup(jndiLoc));
             } catch (final Throwable t) {
                 // no-op
             }
@@ -61,9 +61,9 @@ public class JTAUserTransactionAdapter implements TransactionManagerAdapter {
             }
         }
         if (mgr == null) {
-            for (final String METHOD : METHODS) {
-                final String clazz = METHOD.substring(0, METHOD.lastIndexOf('.'));
-                final String methodName = METHOD.substring(METHOD.lastIndexOf('.') + 1);
+            for (final String method : METHODS) {
+                final String clazz = method.substring(0, method.lastIndexOf('.'));
+                final String methodName = method.substring(method.lastIndexOf('.') + 1);
                 try {
                     mgr = TransactionManager.class.cast(
                         Thread.currentThread().getContextClassLoader().loadClass(clazz).getMethod(methodName).invoke(null));

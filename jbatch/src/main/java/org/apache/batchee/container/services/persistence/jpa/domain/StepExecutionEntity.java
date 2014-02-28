@@ -34,7 +34,8 @@ import java.sql.Timestamp;
 @NamedQueries({
     @NamedQuery(name = StepExecutionEntity.Queries.FIND_BY_EXECUTION, query = "select s from StepExecutionEntity s where s.execution.executionId = :executionId"),
     @NamedQuery(name = StepExecutionEntity.Queries.DELETE_BY_INSTANCE_ID, query = "delete from StepExecutionEntity e where e.execution.instance.jobInstanceId = :instanceId"),
-    @NamedQuery(name = StepExecutionEntity.Queries.FIND_BY_INSTANCE_AND_NAME, query = "select se FROM StepExecutionEntity se where se.execution.instance.jobInstanceId = :instanceId and se.stepName = :step")
+    @NamedQuery(name = StepExecutionEntity.Queries.FIND_BY_INSTANCE_AND_NAME,
+                query = "select se FROM StepExecutionEntity se where se.execution.instance.jobInstanceId = :instanceId and se.stepName = :step")
 })
 public class StepExecutionEntity {
     public static interface Queries {

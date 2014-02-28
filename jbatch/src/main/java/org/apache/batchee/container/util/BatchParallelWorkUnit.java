@@ -17,7 +17,6 @@
 package org.apache.batchee.container.util;
 
 import org.apache.batchee.container.impl.jobinstance.RuntimeJobExecution;
-import org.apache.batchee.container.services.BatchKernelService;
 import org.apache.batchee.container.services.ServicesManager;
 
 /*

@@ -41,7 +41,7 @@ import java.util.Set;
 public class BatchEEMBeanImpl implements BatchEEMBean {
     public static final BatchEEMBeanImpl INSTANCE = new BatchEEMBeanImpl();
 
-    private static final JobOperator operator = BatchRuntime.getJobOperator();
+    private final JobOperator operator = BatchRuntime.getJobOperator();
 
     private static final String[] JOB_INSTANCES_ATTRIBUTES = { "jobName", "instanceId" };
     private static final TabularType JOB_INSTANCES_TABULAR_TYPE;
@@ -51,34 +51,41 @@ public class BatchEEMBeanImpl implements BatchEEMBean {
     private static final TabularType PROPERTIES_TABULAR_TYPE;
     private static final CompositeType PROPERTIES_COMPOSITE_TYPE;
 
-    private static final String[] JOB_EXECUTION_ATTRIBUTES = { "executionId", "jobName", "Batch status", "Exit status", "Create time", "Last updated time", "Start time", "End time" };
+    private static final String[] JOB_EXECUTION_ATTRIBUTES =
+            { "executionId", "jobName", "Batch status", "Exit status", "Create time", "Last updated time", "Start time", "End time" };
+
     private static final TabularType JOB_EXECUTION_TABULAR_TYPE;
     private static final CompositeType JOB_EXECUTION_COMPOSITE_TYPE;
 
-    private static final String[] STEP_EXECUTION_ATTRIBUTES = { "stepExecutionId", "stepName", "Batch status", "Exit status", "Start time", "End time", "Read", "Write", "Commit", "Rollback", "Read skip", "Process skip", "Write skip", "Filter" };
+    private static final String[] STEP_EXECUTION_ATTRIBUTES =
+            { "stepExecutionId", "stepName", "Batch status", "Exit status", "Start time", "End time", "Read", "Write",
+              "Commit", "Rollback", "Read skip", "Process skip", "Write skip", "Filter" };
     private static final TabularType STEP_EXECUTION_TABULAR_TYPE;
     private static final CompositeType STEP_EXECUTION_COMPOSITE_TYPE;
 
     static {
         try {
-            JOB_INSTANCES_COMPOSITE_TYPE = new CompositeType("JobInstance", "Job Instance", JOB_INSTANCES_ATTRIBUTES, JOB_INSTANCES_ATTRIBUTES, new OpenType[] { SimpleType.STRING, SimpleType.LONG });
+            JOB_INSTANCES_COMPOSITE_TYPE = new CompositeType("JobInstance", "Job Instance", JOB_INSTANCES_ATTRIBUTES, JOB_INSTANCES_ATTRIBUTES,
+                new OpenType[] { SimpleType.STRING, SimpleType.LONG });
             JOB_INSTANCES_TABULAR_TYPE = new TabularType("JobInstances", "Job Instances",
                 JOB_INSTANCES_COMPOSITE_TYPE,
                 JOB_INSTANCES_ATTRIBUTES);
 
-            PROPERTIES_COMPOSITE_TYPE = new CompositeType("Properties", "Properties", PROPERTIES_ATTRIBUTES, PROPERTIES_ATTRIBUTES, new OpenType[] { SimpleType.STRING, SimpleType.STRING });
+            PROPERTIES_COMPOSITE_TYPE = new CompositeType("Properties", "Properties", PROPERTIES_ATTRIBUTES, PROPERTIES_ATTRIBUTES,
+                new OpenType[] { SimpleType.STRING, SimpleType.STRING });
             PROPERTIES_TABULAR_TYPE = new TabularType("Properties", "Properties",
                 PROPERTIES_COMPOSITE_TYPE,
                 PROPERTIES_ATTRIBUTES);
 
             JOB_EXECUTION_COMPOSITE_TYPE = new CompositeType("JobExecution", "Job Execution", JOB_EXECUTION_ATTRIBUTES, JOB_EXECUTION_ATTRIBUTES,
-                new OpenType[] { SimpleType.LONG, SimpleType.STRING, SimpleType.STRING, SimpleType.STRING, SimpleType.STRING, SimpleType.STRING, SimpleType.STRING, SimpleType.STRING });
+                new OpenType[] { SimpleType.LONG, SimpleType.STRING, SimpleType.STRING, SimpleType.STRING, SimpleType.STRING,
+                                 SimpleType.STRING, SimpleType.STRING, SimpleType.STRING });
             JOB_EXECUTION_TABULAR_TYPE = new TabularType("JobExecutions", "Job Executions",
                 JOB_EXECUTION_COMPOSITE_TYPE, JOB_EXECUTION_ATTRIBUTES);
 
             STEP_EXECUTION_COMPOSITE_TYPE = new CompositeType("StepExecution", "Step Execution", STEP_EXECUTION_ATTRIBUTES, STEP_EXECUTION_ATTRIBUTES,
                 new OpenType[] { SimpleType.LONG, SimpleType.STRING, SimpleType.STRING, SimpleType.STRING, SimpleType.STRING, SimpleType.STRING,
-                    SimpleType.LONG, SimpleType.LONG, SimpleType.LONG, SimpleType.LONG, SimpleType.LONG, SimpleType.LONG, SimpleType.LONG, SimpleType.LONG });
+                                 SimpleType.LONG, SimpleType.LONG, SimpleType.LONG, SimpleType.LONG, SimpleType.LONG, SimpleType.LONG, SimpleType.LONG, SimpleType.LONG });
             STEP_EXECUTION_TABULAR_TYPE = new TabularType("StepExecutions", "Step Executions",
                 STEP_EXECUTION_COMPOSITE_TYPE,
                 STEP_EXECUTION_ATTRIBUTES);

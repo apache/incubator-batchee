@@ -49,7 +49,8 @@ public class Dictionary {
         String JOB_INSTANCE_CREATE_WITH_JOB_XML = INSERT_INTO + "%s" + "(%s, %s, %s) VALUES(?, ?, ?)";
         String DELETE_JOB_INSTANCE = DELETE + "%s" + WHERE + "%s = ?";
 
-        String[] JOB_EXECUTION_COLUMNS = { "executionId", "batchStatus", "createTime", "endTime", "exitStatus", "jobProperties", "startTime", "updateTime", "INSTANCE_JOBINSTANCEID" };
+        String[] JOB_EXECUTION_COLUMNS = { "executionId", "batchStatus", "createTime", "endTime", "exitStatus", "jobProperties",
+                "startTime", "updateTime", "INSTANCE_JOBINSTANCEID" };
         String CREATE_JOB_EXECUTION = CREATE_TABLE + "%s(%s %s %s, %s %s, %s %s, %s %s, %s %s, %s %s, %s %s, %s %s, %s %s)";
         String JOB_EXECUTION_TIMESTAMPS = SELECT + " %s, %s, %s, %s" + FROM + "%s" + WHERE + "%s = ?";
         String JOB_EXECUTION_BATCH_STATUS = SELECT + "%s" + FROM + "%s" + WHERE + "%s = ?";
@@ -58,8 +59,12 @@ public class Dictionary {
         String JOB_EXECUTION_UPDATE = UPDATE + "%s set %s = ?, %s = ? where %s = ?";
         String JOB_EXECUTION_SET_FINAL_DATA = UPDATE + "%s set %s = ?, %s = ?, %s = ?, %s = ? where %s = ?";
         String JOB_EXECUTION_START = UPDATE + "%s set %s = ?, %s = ?, %s = ? where %s = ?";
-        String JOB_EXECUTION_FIND_BY_ID = SELECT + "A.%s, A.%s, A.%s, A.%s, A.%s, A.%s, A.%s, A.%s, B.%s" + FROM + "%s as A inner join %s as B on A.%s = B.%s" + WHERE + "%s = ?";
-        String JOB_EXECUTION_FROM_INSTANCE = SELECT + "A.%s, A.%s, A.%s, A.%s, A.%s, A.%s, A.%s, A.%s, B.%s " + FROM + "%s as A inner join %s as B ON A.%s = B.%s" + WHERE + "B.%s = ?";
+
+        String JOB_EXECUTION_FIND_BY_ID = SELECT + "A.%s, A.%s, A.%s, A.%s, A.%s, A.%s, A.%s, A.%s, B.%s" +
+                FROM + "%s as A inner join %s as B on A.%s = B.%s" + WHERE + "%s = ?";
+
+        String JOB_EXECUTION_FROM_INSTANCE = SELECT + "A.%s, A.%s, A.%s, A.%s, A.%s, A.%s, A.%s, A.%s, B.%s " +
+                FROM + "%s as A inner join %s as B ON A.%s = B.%s" + WHERE + "B.%s = ?";
         String JOB_EXECUTION_RUNNING = SELECT + "A.%s" + FROM + "%s AS A inner join %s AS B ON A.%s = B.%s WHERE A.%s IN (?,?,?) AND B.%s = ?";
         String JOB_INSTANCE_STATUS = SELECT + "*" + FROM + "%s as A inner join %s as B on A.%s = B.%s " + WHERE + "B.%s = ?";
         String JOB_INSTANCE_FROM_EXECUTION = SELECT + "%s" + FROM + "%s" +  WHERE + "%s = ?";
@@ -67,14 +72,22 @@ public class Dictionary {
         String JOB_EXECUTION_MOST_RECENT = SELECT + "%s" + FROM + "%s" + WHERE + "%s = ? ORDER BY %s DESC";
         String DELETE_JOB_EXECUTION = DELETE + "%s" + WHERE + "%s = ?";
 
-        String[] STEP_EXECUTION_COLUMNS = { "id", "batchStatus", "commit", "endTime", "exitStatus", "filter", "lastRunStepExecutionId", "numPartitions", "persistentData", "processSkip", "read", "readSkip", "rollback", "startCount", "startTime", "stepName", "write", "writeSkip", "EXECUTION_EXECUTIONID" };
-        String CREATE_STEP_EXECUTION = CREATE_TABLE + "%s(%s %s %s" + ", %s %s, %s %s, %s %s, %s %s, %s %s, %s %s, %s %s, %s %s, %s %s, %s %s, %s %s, %s %s, %s %s, %s %s, %s %s, %s %s, %s %s, %s %s, PRIMARY KEY (id))";
+        String[] STEP_EXECUTION_COLUMNS = { "id", "batchStatus", "commit", "endTime", "exitStatus", "filter", "lastRunStepExecutionId", "numPartitions",
+                "persistentData", "processSkip", "read", "readSkip", "rollback", "startCount", "startTime", "stepName", "write", "writeSkip", "EXECUTION_EXECUTIONID" };
+
+        String CREATE_STEP_EXECUTION = CREATE_TABLE +
+                "%s(%s %s %s" + ", %s %s, %s %s, %s %s, %s %s, %s %s, %s %s, %s %s, %s %s, %s %s, %s %s, %s %s, %s %s, %s %s, %s %s, %s %s, %s %s, %s %s, %s %s, PRIMARY KEY (id))";
         String STEPS_FROM_EXECUTION = SELECT + "*" + FROM + "%s" + WHERE + "%s = ?";
         String STEP_FROM_ID = SELECT + "*" + FROM + "%s" + WHERE + "%s = ?";
         String STEP_EXECUTION_CREATE = INSERT_INTO + "%s" + "(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         String STEP_EXECUTION_UPDATE_STATUS = UPDATE + "%s SET %s = ?, %s = ?, %s = ?, %s = ?, %s = ?, %s = ? WHERE %s = ?";
-        String STEP_EXECUTION_UPDATE = UPDATE + "%s SET %s = ?, %s = ?, %s = ?, %s = ?,  %s = ?, %s = ?, %s = ?, %s = ?, %s = ?, %s = ?, %s = ?, %s = ?, %s = ?, %s = ?, %s = ? WHERE %s = ?";
-        String STEP_EXECUTION_BY_INSTANCE_AND_STEP = SELECT + "B.%s, B.%s, B.%s, B.%s, B.%s, B.%s, B.%s, B.%s" + FROM + "%s A inner join %s B ON A.%s = B.%s " + WHERE + "A.%s = ? and B.%s = ?";
+
+        String STEP_EXECUTION_UPDATE = UPDATE +
+                "%s SET %s = ?, %s = ?, %s = ?, %s = ?,  %s = ?, %s = ?, %s = ?, %s = ?, %s = ?, %s = ?, %s = ?, %s = ?, %s = ?, %s = ?, %s = ? WHERE %s = ?";
+
+        String STEP_EXECUTION_BY_INSTANCE_AND_STEP = SELECT +
+                "B.%s, B.%s, B.%s, B.%s, B.%s, B.%s, B.%s, B.%s" + FROM + "%s A inner join %s B ON A.%s = B.%s " + WHERE + "A.%s = ? and B.%s = ?";
+
         String DELETE_STEP_EXECUTION = DELETE + "%s A inner join %s B ON A.%s = B.%s " + WHERE + "A.%s = ?";
     }
 
@@ -165,13 +178,17 @@ public class Dictionary {
                                                         jobInstanceColumns[8], database.varchar255(), jobInstanceColumns[0]);
             this.countJobInstanceByName = String.format(SQL.JOB_INSTANCE_COUNT_FROM_NAME, jobInstanceColumns[0], jobInstanceTable, jobInstanceColumns[3]);
             this.findJobInstance = String.format(SQL.JOB_INSTANCE_BY_ID, jobInstanceTable, jobInstanceColumns[0]);
-            this.updateJobInstanceStatus = String.format(SQL.JOB_INSTANCE_UPDATE_STATUS, jobInstanceTable, jobInstanceColumns[1], jobInstanceColumns[2], jobInstanceColumns[5], jobInstanceColumns[6], jobInstanceColumns[7], jobInstanceColumns[3], jobInstanceColumns[0]);
+            this.updateJobInstanceStatus = String.format(SQL.JOB_INSTANCE_UPDATE_STATUS, jobInstanceTable, jobInstanceColumns[1], jobInstanceColumns[2], jobInstanceColumns[5],
+                    jobInstanceColumns[6], jobInstanceColumns[7], jobInstanceColumns[3], jobInstanceColumns[0]);
             this.countJobInstanceByNameAndTag = String.format(SQL.JOB_INSTANCE_COUNT, jobInstanceColumns[0], jobInstanceTable, jobInstanceColumns[6], jobInstanceColumns[8]);
-            this.findJoBInstanceIds = String.format(SQL.JOB_INSTANCE_IDS, jobInstanceColumns[0], jobInstanceTable, jobInstanceColumns[3], jobInstanceColumns[8], jobInstanceColumns[0]);
+            this.findJoBInstanceIds = String.format(SQL.JOB_INSTANCE_IDS, jobInstanceColumns[0], jobInstanceTable, jobInstanceColumns[3],
+                    jobInstanceColumns[8], jobInstanceColumns[0]);
             this.findJobInstanceIdsByName = String.format(SQL.JOB_INSTANCE_IDS_FROM_NAME, jobInstanceColumns[0], jobInstanceTable, jobInstanceColumns[3], jobInstanceColumns[0]);
-            this.findExternalJobInstances = String.format(SQL.EXTERNAL_JOB_INSTANCE, jobInstanceColumns[0], jobInstanceColumns[3], jobInstanceTable, jobInstanceColumns[3], PartitionedStepBuilder.JOB_ID_SEPARATOR + "%");
+            this.findExternalJobInstances = String.format(SQL.EXTERNAL_JOB_INSTANCE, jobInstanceColumns[0], jobInstanceColumns[3], jobInstanceTable,
+                    jobInstanceColumns[3], PartitionedStepBuilder.JOB_ID_SEPARATOR + "%");
             this.createJobInstance = String.format(SQL.JOB_INSTANCE_CREATE, jobInstanceTable, jobInstanceColumns[3], jobInstanceColumns[8]);
-            this.createJobInstanceWithJobXml = String.format(SQL.JOB_INSTANCE_CREATE_WITH_JOB_XML, jobInstanceTable, jobInstanceColumns[3], jobInstanceColumns[8], jobInstanceColumns[4]);
+            this.createJobInstanceWithJobXml = String.format(SQL.JOB_INSTANCE_CREATE_WITH_JOB_XML, jobInstanceTable, jobInstanceColumns[3],
+                    jobInstanceColumns[8], jobInstanceColumns[4]);
             this.deleteJobInstance = String.format(SQL.DELETE_JOB_INSTANCE, jobInstanceTable, jobInstanceColumns[0]);
         }
 
@@ -188,24 +205,31 @@ public class Dictionary {
                                                             jobExecutionColumns[6], database.timestamp(),
                                                             jobExecutionColumns[7], database.timestamp(),
                                                             jobExecutionColumns[8], database.bigint());
-            this.findJobExecutionTimestamps = String.format(SQL.JOB_EXECUTION_TIMESTAMPS, jobExecutionColumns[2], jobExecutionColumns[3], jobExecutionColumns[7], jobExecutionColumns[6], jobExecutionTable, jobExecutionColumns[0]);
+            this.findJobExecutionTimestamps = String.format(SQL.JOB_EXECUTION_TIMESTAMPS, jobExecutionColumns[2], jobExecutionColumns[3], jobExecutionColumns[7],
+                    jobExecutionColumns[6], jobExecutionTable, jobExecutionColumns[0]);
             this.findJobExecutionBatchStatus = String.format(SQL.JOB_EXECUTION_BATCH_STATUS, jobExecutionColumns[1], jobExecutionTable, jobExecutionColumns[0]);
             this.findJobExecutionExitStatus = String.format(SQL.JOB_EXECUTION_EXIT_STATUS, jobExecutionColumns[4], jobExecutionTable, jobExecutionColumns[0]);
             this.findJobExecutionJobProperties = String.format(SQL.JOB_EXECUTION_PROPERTIES, jobExecutionColumns[5], jobExecutionTable, jobExecutionColumns[0]);
             this.updateJobExecution = String.format(SQL.JOB_EXECUTION_UPDATE, jobExecutionTable, jobExecutionColumns[1], jobExecutionColumns[7], jobExecutionColumns[0]);
-            this.setJobExecutionFinalData = String.format(SQL.JOB_EXECUTION_SET_FINAL_DATA, jobExecutionTable, jobExecutionColumns[1], jobExecutionColumns[4], jobExecutionColumns[3], jobExecutionColumns[7], jobExecutionColumns[0]);
-            this.updateStartedJobExecution = String.format(SQL.JOB_EXECUTION_START, jobExecutionTable, jobExecutionColumns[1], jobExecutionColumns[6], jobExecutionColumns[7], jobExecutionColumns[0]);
-            this.findJobExecutionById = String.format(SQL.JOB_EXECUTION_FIND_BY_ID, jobExecutionColumns[2], jobExecutionColumns[6], jobExecutionColumns[3], jobExecutionColumns[7], jobExecutionColumns[5],
-                                                    jobExecutionColumns[8], jobExecutionColumns[1], jobExecutionColumns[4], jobInstanceColumns[3], jobExecutionTable, jobInstanceTable,
-                                                    jobExecutionColumns[8], jobInstanceColumns[0], jobExecutionColumns[0]);
-            this.findRunningJobExecutions = String.format(SQL.JOB_EXECUTION_RUNNING, jobExecutionColumns[0], jobExecutionTable, jobInstanceTable, jobExecutionColumns[8], jobInstanceColumns[0], jobExecutionColumns[1], jobInstanceColumns[3]);
+            this.setJobExecutionFinalData = String.format(SQL.JOB_EXECUTION_SET_FINAL_DATA, jobExecutionTable, jobExecutionColumns[1], jobExecutionColumns[4],
+                    jobExecutionColumns[3], jobExecutionColumns[7], jobExecutionColumns[0]);
+            this.updateStartedJobExecution = String.format(SQL.JOB_EXECUTION_START, jobExecutionTable, jobExecutionColumns[1], jobExecutionColumns[6],
+                    jobExecutionColumns[7], jobExecutionColumns[0]);
+            this.findJobExecutionById = String.format(SQL.JOB_EXECUTION_FIND_BY_ID, jobExecutionColumns[2], jobExecutionColumns[6], jobExecutionColumns[3],
+                    jobExecutionColumns[7], jobExecutionColumns[5], jobExecutionColumns[8], jobExecutionColumns[1], jobExecutionColumns[4], jobInstanceColumns[3],
+                    jobExecutionTable, jobInstanceTable, jobExecutionColumns[8], jobInstanceColumns[0], jobExecutionColumns[0]);
+            this.findRunningJobExecutions = String.format(SQL.JOB_EXECUTION_RUNNING, jobExecutionColumns[0], jobExecutionTable, jobInstanceTable, jobExecutionColumns[8],
+                    jobInstanceColumns[0], jobExecutionColumns[1], jobInstanceColumns[3]);
             this.findJobExecutionByInstance = String.format(SQL.JOB_EXECUTION_FROM_INSTANCE, jobExecutionColumns[0], jobExecutionColumns[2], jobExecutionColumns[6],
                 jobExecutionColumns[3], jobExecutionColumns[7], jobExecutionColumns[5], jobExecutionColumns[1], jobExecutionColumns[4], jobInstanceColumns[3],
                 jobExecutionTable, jobInstanceTable, jobExecutionColumns[8], jobInstanceColumns[0], jobInstanceColumns[0]);
-            this.findJobStatus = String.format(SQL.JOB_INSTANCE_STATUS, jobInstanceTable, jobExecutionTable, jobInstanceColumns[0], jobExecutionColumns[8], jobExecutionColumns[0]);
+            this.findJobStatus = String.format(SQL.JOB_INSTANCE_STATUS, jobInstanceTable, jobExecutionTable, jobInstanceColumns[0], jobExecutionColumns[8],
+                    jobExecutionColumns[0]);
             this.findJobInstanceFromJobExecution = String.format(SQL.JOB_INSTANCE_FROM_EXECUTION, jobExecutionColumns[8], jobExecutionTable, jobExecutionColumns[0]);
-            this.createJobExecution = String.format(SQL.JOB_EXECUTION_CREATE, jobExecutionTable, jobExecutionColumns[8], jobExecutionColumns[2], jobExecutionColumns[7], jobExecutionColumns[1], jobExecutionColumns[5]);
-            this.findMostRecentJobExecution = String.format(SQL.JOB_EXECUTION_MOST_RECENT, jobExecutionColumns[0], jobExecutionTable, jobExecutionColumns[8], jobExecutionColumns[2]);
+            this.createJobExecution = String.format(SQL.JOB_EXECUTION_CREATE, jobExecutionTable, jobExecutionColumns[8], jobExecutionColumns[2], jobExecutionColumns[7],
+                    jobExecutionColumns[1], jobExecutionColumns[5]);
+            this.findMostRecentJobExecution = String.format(SQL.JOB_EXECUTION_MOST_RECENT, jobExecutionColumns[0], jobExecutionTable,
+                    jobExecutionColumns[8], jobExecutionColumns[2]);
             this.deleteJobExecution = String.format(SQL.DELETE_JOB_EXECUTION, jobExecutionTable, jobExecutionColumns[8]);
         }
 
@@ -234,18 +258,25 @@ public class Dictionary {
                                                             stepExecutionColumns[18], database.bigint());
             this.finStepExecutionFromJobExecution = String.format(SQL.STEPS_FROM_EXECUTION, stepExecutionTable, stepExecutionColumns[18]);
             this.findStepExecutionFromId = String.format(SQL.STEP_FROM_ID, stepExecutionTable, stepExecutionColumns[0]);
-            this.createStepExecution = String.format(SQL.STEP_EXECUTION_CREATE, stepExecutionTable, stepExecutionColumns[18], stepExecutionColumns[1], stepExecutionColumns[4], stepExecutionColumns[15],
-                stepExecutionColumns[10], stepExecutionColumns[16], stepExecutionColumns[2], stepExecutionColumns[12], stepExecutionColumns[11], stepExecutionColumns[9], stepExecutionColumns[5],
+            this.createStepExecution = String.format(SQL.STEP_EXECUTION_CREATE, stepExecutionTable, stepExecutionColumns[18], stepExecutionColumns[1],
+                    stepExecutionColumns[4], stepExecutionColumns[15],
+                stepExecutionColumns[10], stepExecutionColumns[16], stepExecutionColumns[2], stepExecutionColumns[12], stepExecutionColumns[11],
+                    stepExecutionColumns[9], stepExecutionColumns[5],
                 stepExecutionColumns[17], stepExecutionColumns[14], stepExecutionColumns[3], stepExecutionColumns[8]);
-            this.updateStepExecutionStatus = String.format(SQL.STEP_EXECUTION_UPDATE_STATUS, stepExecutionTable, stepExecutionColumns[8], stepExecutionColumns[1], stepExecutionColumns[4], stepExecutionColumns[6],
+            this.updateStepExecutionStatus = String.format(SQL.STEP_EXECUTION_UPDATE_STATUS, stepExecutionTable, stepExecutionColumns[8], stepExecutionColumns[1],
+                    stepExecutionColumns[4], stepExecutionColumns[6],
                 stepExecutionColumns[7], stepExecutionColumns[13], stepExecutionColumns[0]);
-            this.updateStepExecution = String.format(SQL.STEP_EXECUTION_UPDATE, stepExecutionTable, stepExecutionColumns[18], stepExecutionColumns[1], stepExecutionColumns[4], stepExecutionColumns[15],
-                stepExecutionColumns[10], stepExecutionColumns[16], stepExecutionColumns[2], stepExecutionColumns[12], stepExecutionColumns[11], stepExecutionColumns[9], stepExecutionColumns[5],
+            this.updateStepExecution = String.format(SQL.STEP_EXECUTION_UPDATE, stepExecutionTable, stepExecutionColumns[18], stepExecutionColumns[1],
+                    stepExecutionColumns[4], stepExecutionColumns[15],
+                stepExecutionColumns[10], stepExecutionColumns[16], stepExecutionColumns[2], stepExecutionColumns[12], stepExecutionColumns[11],
+                    stepExecutionColumns[9], stepExecutionColumns[5],
                 stepExecutionColumns[17], stepExecutionColumns[14], stepExecutionColumns[3], stepExecutionColumns[8], stepExecutionColumns[0]);
-            this.findStepExecutionByJobInstanceAndStepName = String.format(SQL.STEP_EXECUTION_BY_INSTANCE_AND_STEP, stepExecutionColumns[0], stepExecutionColumns[13], stepExecutionColumns[1],
+            this.findStepExecutionByJobInstanceAndStepName = String.format(SQL.STEP_EXECUTION_BY_INSTANCE_AND_STEP, stepExecutionColumns[0],
+                    stepExecutionColumns[13], stepExecutionColumns[1],
                 stepExecutionColumns[4], stepExecutionColumns[8], stepExecutionColumns[6], stepExecutionColumns[7], stepExecutionColumns[18], jobExecutionTable, stepExecutionTable,
                 jobExecutionColumns[0], stepExecutionColumns[18], jobExecutionColumns[8], stepExecutionColumns[15]);
-            this.deleteStepExecution = String.format(SQL.DELETE_STEP_EXECUTION, jobExecutionTable, stepExecutionTable, jobExecutionColumns[0], stepExecutionColumns[18], jobExecutionColumns[8]);
+            this.deleteStepExecution = String.format(SQL.DELETE_STEP_EXECUTION, jobExecutionTable, stepExecutionTable, jobExecutionColumns[0],
+                    stepExecutionColumns[18], jobExecutionColumns[8]);
         }
     }
 

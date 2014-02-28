@@ -28,7 +28,8 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 
 public final class Groovys {
-    public static <T> GroovyInstance<T> newInstance(final Class<T> expected, final String path, final JobContext jobContext, final StepContext stepContext) throws IllegalAccessException, InstantiationException {
+    public static <T> GroovyInstance<T> newInstance(final Class<T> expected, final String path, final JobContext jobContext, final StepContext stepContext)
+            throws IllegalAccessException, InstantiationException {
         if (path == null) {
             throw new BatchRuntimeException("no script configured expected");
         }

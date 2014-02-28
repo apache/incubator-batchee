@@ -36,6 +36,11 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 public class DependencyInjections {
+
+    private DependencyInjections() {
+        // private utility class ct
+    }
+
     public static void injectReferences(final Object artifact, final InjectionReferences injectionRefs) {
         final Map<String, Field> propertyMap = findPropertyFields(artifact);
         if (injectionRefs.getProps() != null) {

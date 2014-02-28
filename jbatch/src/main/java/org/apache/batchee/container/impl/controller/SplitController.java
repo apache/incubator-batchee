@@ -22,7 +22,6 @@ import org.apache.batchee.container.impl.JobContextImpl;
 import org.apache.batchee.container.impl.jobinstance.RuntimeFlowInSplitExecution;
 import org.apache.batchee.container.impl.jobinstance.RuntimeJobExecution;
 import org.apache.batchee.container.services.BatchKernelService;
-import org.apache.batchee.container.services.ServicesManager;
 import org.apache.batchee.container.status.ExecutionStatus;
 import org.apache.batchee.container.status.ExtendedBatchStatus;
 import org.apache.batchee.container.status.SplitExecutionStatus;
@@ -91,7 +90,8 @@ public class SplitController implements ExecutionElementController {
     }
 
     @Override
-    public SplitExecutionStatus execute() throws JobRestartException, JobStartException, JobExecutionAlreadyCompleteException, JobExecutionNotMostRecentException, NoSuchJobExecutionException {
+    public SplitExecutionStatus execute()
+            throws JobRestartException, JobStartException, JobExecutionAlreadyCompleteException, JobExecutionNotMostRecentException, NoSuchJobExecutionException {
         // Build all sub jobs from partitioned step
         buildSubJobBatchWorkUnits();
 
@@ -174,7 +174,8 @@ public class SplitController implements ExecutionElementController {
     // A <fail> and an uncaught exception are peers.  They each take precedence over a <stop>, which take precedence over an <end>.
     // Among peers the last one seen gets to set the exit stauts.
     //
-    private ExtendedBatchStatus aggregateTerminatingStatusFromSingleFlow(final ExtendedBatchStatus aggregateStatus, final ExecutionStatus flowStatus, final SplitExecutionStatus splitStatus) {
+    private ExtendedBatchStatus aggregateTerminatingStatusFromSingleFlow(final ExtendedBatchStatus aggregateStatus, final ExecutionStatus flowStatus,
+                                                                         final SplitExecutionStatus splitStatus) {
         final String exitStatus = flowStatus.getExitStatus();
         final String restartOn = flowStatus.getRestartOn();
         final ExtendedBatchStatus flowBatchStatus = flowStatus.getExtendedBatchStatus();
@@ -201,8 +202,8 @@ public class SplitController implements ExecutionElementController {
                     }
                 } else if (aggregateStatus.equals(ExtendedBatchStatus.JSL_FAIL) || aggregateStatus.equals(ExtendedBatchStatus.EXCEPTION_THROWN)) {
                     if (flowBatchStatus.equals(ExtendedBatchStatus.JSL_FAIL) || flowBatchStatus.equals(ExtendedBatchStatus.EXCEPTION_THROWN)) {
-                        logger.warning("Current flow's batch and exit status will take precedence over and override earlier one from <fail> transition element or exception thrown. " +
-                            "Overriding, setting exit status if non-null and preparing to end job.");
+                        logger.warning("Current flow's batch and exit status will take precedence over and override earlier one from <fail> transition element  " +
+                            "or exception thrown. Overriding, setting exit status if non-null and preparing to end job.");
                         setInJobContext(flowBatchStatus, exitStatus, restartOn);
                         return flowBatchStatus;
                     }

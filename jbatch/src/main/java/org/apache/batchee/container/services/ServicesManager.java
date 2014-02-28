@@ -57,7 +57,6 @@ public class ServicesManager implements BatchContainerConstants {
     private static final Map<String, String> SERVICE_IMPL_CLASS_NAMES = new ConcurrentHashMap<String, String>();
     static {
         SERVICE_IMPL_CLASS_NAMES.put(TransactionManagementService.class.getName(), DefaultBatchTransactionService.class.getName());
-        // SERVICE_IMPL_CLASS_NAMES.put(PersistenceManagerService.class.getName(), JDBCPersistenceManager.class.getName()); // too slow in embedded mode to be usable because of init step
         SERVICE_IMPL_CLASS_NAMES.put(PersistenceManagerService.class.getName(), MemoryPersistenceManager.class.getName());
         SERVICE_IMPL_CLASS_NAMES.put(JobStatusManagerService.class.getName(), DefaultJobStatusManager.class.getName());
         SERVICE_IMPL_CLASS_NAMES.put(BatchThreadPoolService.class.getName(), DefaultThreadPoolService.class.getName());

@@ -126,9 +126,9 @@ public class JobOperatorImpl implements JobOperator {
         }
 
         /*
-		 * The whole point of this method is to have JobStartException serve as a blanket exception for anything other 
-		 * than the rest of the more specific exceptions declared on the throws clause.  So we won't log but just rethrow.
-		 */
+         * The whole point of this method is to have JobStartException serve as a blanket exception for anything other
+         * than the rest of the more specific exceptions declared on the throws clause.  So we won't log but just rethrow.
+         */
         try {
             return startInternal(jobXMLName, jobParameters);
         } catch (final JobSecurityException e) {
@@ -336,11 +336,12 @@ public class JobOperatorImpl implements JobOperator {
     }
 
     @Override
-    public long restart(long oldExecutionId, Properties restartParameters) throws JobExecutionAlreadyCompleteException, NoSuchJobExecutionException, JobExecutionNotMostRecentException, JobRestartException, JobSecurityException {
-		/*
-		 * The whole point of this method is to have JobRestartException serve as a blanket exception for anything other 
-		 * than the rest of the more specific exceptions declared on the throws clause.  So we won't log but just rethrow.
-		 */
+    public long restart(long oldExecutionId, Properties restartParameters)
+            throws JobExecutionAlreadyCompleteException, NoSuchJobExecutionException, JobExecutionNotMostRecentException, JobRestartException, JobSecurityException {
+        /*
+         * The whole point of this method is to have JobRestartException serve as a blanket exception for anything other
+         * than the rest of the more specific exceptions declared on the throws clause.  So we won't log but just rethrow.
+         */
         try {
             return restartInternal(oldExecutionId, restartParameters);
         } catch (JobExecutionAlreadyCompleteException e) {
@@ -356,7 +357,8 @@ public class JobOperatorImpl implements JobOperator {
         }
     }
 
-    private long restartInternal(final long oldExecutionId, final Properties restartParameters) throws JobExecutionAlreadyCompleteException, NoSuchJobExecutionException, JobExecutionNotMostRecentException, JobRestartException, JobSecurityException {
+    private long restartInternal(final long oldExecutionId, final Properties restartParameters)
+            throws JobExecutionAlreadyCompleteException, NoSuchJobExecutionException, JobExecutionNotMostRecentException, JobRestartException, JobSecurityException {
         if (!securityService.isAuthorized(persistenceManagerService.getJobInstanceIdByExecutionId(oldExecutionId))) {
             throw new JobSecurityException("The current user is not authorized to perform this operation");
         }

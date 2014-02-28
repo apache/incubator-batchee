@@ -16,7 +16,6 @@
  */
 package org.apache.batchee.container.impl.jobinstance;
 
-import org.apache.batchee.container.services.ServicesManager;
 import org.apache.batchee.container.status.ExecutionStatus;
 import org.apache.batchee.spi.PersistenceManagerService;
 

@@ -31,7 +31,7 @@ public class ExceptionClassesPropertyResolver extends AbstractPropertyResolver<E
     public ExceptionClassFilter substituteProperties(ExceptionClassFilter exceptionClassFilter,
                                                      Properties submittedProps, Properties parentProps) {
     
-		/*
+        /*
         <xs:complexType name="ExceptionClassFilter">
             <xs:sequence>
                 <xs:element name="include" minOccurs="0" maxOccurs="unbounded">
@@ -48,7 +48,7 @@ public class ExceptionClassesPropertyResolver extends AbstractPropertyResolver<E
                 </xs:element>
             </xs:sequence>
         </xs:complexType>
-		*/
+        */
 
         // Resolve ExceptionClassFilter properties
         if (exceptionClassFilter.getIncludeList() != null) {

@@ -42,6 +42,11 @@ import javax.batch.runtime.JobInstance;
 import java.util.Properties;
 
 public class JobExecutionHelper {
+
+    private JobExecutionHelper() {
+        // private utility class ct
+    }
+
     private static ModelNavigator<JSLJob> getResolvedJobNavigator(final String jobXml, final Properties jobParameters, final boolean parallelExecution) {
         final JSLJob jobModel = new JobModelResolver().resolveModel(jobXml);
         final PropertyResolver<JSLJob> propResolver = PropertyResolverFactory.createJobPropertyResolver(parallelExecution);
@@ -94,7 +99,8 @@ public class JobExecutionHelper {
         final ModelNavigator<JSLJob> jobNavigator = getResolvedJobNavigator(jobModel, jobParameters, false);
         final JobContextImpl jobContext = getJobContext(jobNavigator);
         final JobInstance jobInstance = getNewJobInstance(servicesManager, jobNavigator.getRootModelElement().getId(), jobXML);
-        final RuntimeJobExecution executionHelper = servicesManager.service(PersistenceManagerService.class).createJobExecution(jobInstance, jobParameters, jobContext.getBatchStatus());
+        final RuntimeJobExecution executionHelper =
+                servicesManager.service(PersistenceManagerService.class).createJobExecution(jobInstance, jobParameters, jobContext.getBatchStatus());
 
         executionHelper.prepareForExecution(jobContext);
 
@@ -109,7 +115,8 @@ public class JobExecutionHelper {
         final ModelNavigator<JSLJob> jobNavigator = getResolvedJobNavigator(jobModel, null, true);
         final JobContextImpl jobContext = getJobContext(jobNavigator);
         final JobInstance jobInstance = getNewSubJobInstance(servicesManager, jobNavigator.getRootModelElement().getId());
-        final RuntimeFlowInSplitExecution executionHelper = servicesManager.service(PersistenceManagerService.class).createFlowInSplitExecution(jobInstance, jobContext.getBatchStatus());
+        final RuntimeFlowInSplitExecution executionHelper =
+                servicesManager.service(PersistenceManagerService.class).createFlowInSplitExecution(jobInstance, jobContext.getBatchStatus());
 
         executionHelper.prepareForExecution(jobContext);
 
@@ -126,7 +133,8 @@ public class JobExecutionHelper {
 
         final JobInstance jobInstance = getNewSubJobInstance(servicesManager, jobNavigator.getRootModelElement().getId());
 
-        final RuntimeJobExecution executionHelper = servicesManager.service(PersistenceManagerService.class).createJobExecution(jobInstance, jobParameters, jobContext.getBatchStatus());
+        final RuntimeJobExecution executionHelper =
+                servicesManager.service(PersistenceManagerService.class).createJobExecution(jobInstance, jobParameters, jobContext.getBatchStatus());
 
         executionHelper.prepareForExecution(jobContext);
 
@@ -149,30 +157,33 @@ public class JobExecutionHelper {
         }
     }
 
-    private static void validateJobExecutionIsMostRecent(final PersistenceManagerService persistenceManagerService, final long jobInstanceId, final long executionId) throws JobExecutionNotMostRecentException {
+    private static void validateJobExecutionIsMostRecent(final PersistenceManagerService persistenceManagerService, final long jobInstanceId, final long executionId)
+            throws JobExecutionNotMostRecentException {
         final long mostRecentExecutionId = persistenceManagerService.getMostRecentExecutionId(jobInstanceId);
         if (mostRecentExecutionId != executionId) {
             throw new JobExecutionNotMostRecentException("ExecutionId: " + executionId + " is not the most recent execution.");
         }
     }
 
-    public static RuntimeJobExecution restartPartition(final ServicesManager servicesManager, final long execId, final JSLJob gennedJobModel, final Properties partitionProps) throws JobRestartException,
+    public static RuntimeJobExecution restartPartition(final ServicesManager servicesManager, final long execId, final JSLJob gennedJobModel, final Properties partitionProps)
+            throws JobRestartException,
         JobExecutionAlreadyCompleteException, JobExecutionNotMostRecentException, NoSuchJobExecutionException {
         return restartExecution(servicesManager, execId, gennedJobModel, partitionProps, true, false);
     }
 
-    public static RuntimeFlowInSplitExecution restartFlowInSplit(final ServicesManager servicesManager, final long execId, final JSLJob gennedJobModel) throws JobRestartException,
-        JobExecutionAlreadyCompleteException, JobExecutionNotMostRecentException, NoSuchJobExecutionException {
+    public static RuntimeFlowInSplitExecution restartFlowInSplit(final ServicesManager servicesManager, final long execId, final JSLJob gennedJobModel)
+            throws JobRestartException, JobExecutionAlreadyCompleteException, JobExecutionNotMostRecentException, NoSuchJobExecutionException {
         return (RuntimeFlowInSplitExecution) restartExecution(servicesManager, execId, gennedJobModel, null, true, true);
     }
 
-    public static RuntimeJobExecution restartJob(final ServicesManager servicesManager, final long executionId, final Properties restartJobParameters) throws JobRestartException,
-        JobExecutionAlreadyCompleteException, JobExecutionNotMostRecentException, NoSuchJobExecutionException {
+    public static RuntimeJobExecution restartJob(final ServicesManager servicesManager, final long executionId, final Properties restartJobParameters)
+            throws JobRestartException, JobExecutionAlreadyCompleteException, JobExecutionNotMostRecentException, NoSuchJobExecutionException {
         return restartExecution(servicesManager, executionId, null, restartJobParameters, false, false);
     }
 
-    private static RuntimeJobExecution restartExecution(final ServicesManager servicesManager, final long executionId, final JSLJob gennedJobModel, final Properties restartJobParameters, final boolean parallelExecution, final boolean flowInSplit) throws JobRestartException,
-        JobExecutionAlreadyCompleteException, JobExecutionNotMostRecentException, NoSuchJobExecutionException {
+    private static RuntimeJobExecution restartExecution(final ServicesManager servicesManager, final long executionId, final JSLJob gennedJobModel,
+                                                        final Properties restartJobParameters, final boolean parallelExecution, final boolean flowInSplit)
+            throws JobRestartException, JobExecutionAlreadyCompleteException, JobExecutionNotMostRecentException, NoSuchJobExecutionException {
 
         final PersistenceManagerService persistenceManagerService = servicesManager.service(PersistenceManagerService.class);
         final JobStatusManagerService jobStatusManagerService = servicesManager.service(JobStatusManagerService.class);
@@ -210,7 +221,8 @@ public class JobExecutionHelper {
         return executionHelper;
     }
 
-    public static InternalJobExecution getPersistedJobOperatorJobExecution(final PersistenceManagerService persistenceManagerService, final long jobExecutionId) throws NoSuchJobExecutionException {
+    public static InternalJobExecution getPersistedJobOperatorJobExecution(final PersistenceManagerService persistenceManagerService, final long jobExecutionId)
+            throws NoSuchJobExecutionException {
         return persistenceManagerService.jobOperatorGetJobExecution(jobExecutionId);
     }
 

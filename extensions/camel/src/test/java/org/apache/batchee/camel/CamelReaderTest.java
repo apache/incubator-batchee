@@ -30,16 +30,16 @@ import java.util.Properties;
 
 import static org.testng.Assert.assertEquals;
 
-public class CamelReaderTest extends CamelBridge {
+public class CamelReaderTest {
     @Test
     public void read() throws Exception {
-        final ProducerTemplate tpl = CONTEXT.createProducerTemplate();
+        final ProducerTemplate tpl = CamelBridge.CONTEXT.createProducerTemplate();
 
         final JobOperator jobOperator = BatchRuntime.getJobOperator();
 
         final long id = jobOperator.start("camel-reader", new Properties());
 
-        while (DirectEndpoint.class.cast(CONTEXT.getEndpoint("direct:reader")).getConsumer() == null) {
+        while (DirectEndpoint.class.cast(CamelBridge.CONTEXT.getEndpoint("direct:reader")).getConsumer() == null) {
             Thread.sleep(100);
         }
 

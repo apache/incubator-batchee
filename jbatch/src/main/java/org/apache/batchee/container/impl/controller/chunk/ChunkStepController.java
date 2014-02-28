@@ -62,8 +62,7 @@ import java.util.logging.Logger;
 
 public class ChunkStepController extends SingleThreadedStepController {
 
-    private final static String sourceClass = ChunkStepController.class.getName();
-    private final static Logger logger = Logger.getLogger(sourceClass);
+    private final static Logger logger = Logger.getLogger(ChunkStepController.class.getName());
 
     private final PersistenceManagerService persistenceManagerService;
     private final BatchArtifactFactory artifactFactory;
@@ -76,7 +75,8 @@ public class ChunkStepController extends SingleThreadedStepController {
     private CheckpointAlgorithm chkptAlg = null;
     private CheckpointManager checkpointManager;
     private SkipHandler skipHandler = null;
-    private CheckpointDataKey readerChkptDK, writerChkptDK = null;
+    private CheckpointDataKey readerChkptDK = null;
+    private CheckpointDataKey writerChkptDK = null;
     private List<ChunkListenerProxy> chunkListeners = null;
     private List<ItemReadListenerProxy> itemReadListeners = null;
     private List<ItemProcessListenerProxy> itemProcessListeners = null;
@@ -678,12 +678,18 @@ public class ChunkStepController extends SingleThreadedStepController {
             this.itemReadListeners = jobExecutionImpl.getListenerFactory().getItemReadListeners(step, injectionRef, stepContext, jobExecutionImpl);
             this.itemProcessListeners = jobExecutionImpl.getListenerFactory().getItemProcessListeners(step, injectionRef, stepContext, jobExecutionImpl);
             this.itemWriteListeners = jobExecutionImpl.getListenerFactory().getItemWriteListeners(step, injectionRef, stepContext, jobExecutionImpl);
-            final List<SkipProcessListenerProxy> skipProcessListeners = jobExecutionImpl.getListenerFactory().getSkipProcessListeners(step, injectionRef, stepContext, jobExecutionImpl);
-            final List<SkipReadListenerProxy> skipReadListeners = jobExecutionImpl.getListenerFactory().getSkipReadListeners(step, injectionRef, stepContext, jobExecutionImpl);
-            final List<SkipWriteListenerProxy> skipWriteListeners = jobExecutionImpl.getListenerFactory().getSkipWriteListeners(step, injectionRef, stepContext, jobExecutionImpl);
-            final List<RetryProcessListenerProxy> retryProcessListeners = jobExecutionImpl.getListenerFactory().getRetryProcessListeners(step, injectionRef, stepContext, jobExecutionImpl);
-            final List<RetryReadListenerProxy> retryReadListeners = jobExecutionImpl.getListenerFactory().getRetryReadListeners(step, injectionRef, stepContext, jobExecutionImpl);
-            final List<RetryWriteListenerProxy> retryWriteListeners = jobExecutionImpl.getListenerFactory().getRetryWriteListeners(step, injectionRef, stepContext, jobExecutionImpl);
+            final List<SkipProcessListenerProxy> skipProcessListeners
+                    = jobExecutionImpl.getListenerFactory().getSkipProcessListeners(step, injectionRef, stepContext, jobExecutionImpl);
+            final List<SkipReadListenerProxy> skipReadListeners
+                    = jobExecutionImpl.getListenerFactory().getSkipReadListeners(step, injectionRef, stepContext, jobExecutionImpl);
+            final List<SkipWriteListenerProxy> skipWriteListeners
+                    = jobExecutionImpl.getListenerFactory().getSkipWriteListeners(step, injectionRef, stepContext, jobExecutionImpl);
+            final List<RetryProcessListenerProxy> retryProcessListeners
+                    = jobExecutionImpl.getListenerFactory().getRetryProcessListeners(step, injectionRef, stepContext, jobExecutionImpl);
+            final List<RetryReadListenerProxy> retryReadListeners
+                    = jobExecutionImpl.getListenerFactory().getRetryReadListeners(step, injectionRef, stepContext, jobExecutionImpl);
+            final List<RetryWriteListenerProxy> retryWriteListeners
+                    = jobExecutionImpl.getListenerFactory().getRetryWriteListeners(step, injectionRef, stepContext, jobExecutionImpl);
 
             if ("item".equals(checkpointProxy.getCheckpointType())) {
                 chkptAlg = new ItemCheckpointAlgorithm();
@@ -692,7 +698,8 @@ public class ChunkStepController extends SingleThreadedStepController {
                 chkptAlg = checkpointProxy;
             }
 
-            checkpointManager = new CheckpointManager(readerProxy, writerProxy, chkptAlg, jobExecutionImpl.getJobInstance().getInstanceId(), step.getId(), persistenceManagerService);
+            checkpointManager
+                    = new CheckpointManager(readerProxy, writerProxy, chkptAlg, jobExecutionImpl.getJobInstance().getInstanceId(), step.getId(), persistenceManagerService);
 
             skipHandler = new SkipHandler(chunk);
             skipHandler.addSkipProcessListener(skipProcessListeners);

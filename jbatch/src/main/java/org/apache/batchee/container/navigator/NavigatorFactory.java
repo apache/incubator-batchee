@@ -20,6 +20,10 @@ import org.apache.batchee.jaxb.Flow;
 import org.apache.batchee.jaxb.JSLJob;
 
 public class NavigatorFactory {
+    private NavigatorFactory() {
+        // private utility class ct
+    }
+
     public static JobNavigator createJobNavigator(JSLJob job) {
         return new JobNavigator(job);
     }

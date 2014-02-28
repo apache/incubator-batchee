@@ -19,8 +19,9 @@ package org.apache.batchee.servlet;
 import javax.batch.runtime.Metric;
 
 public final class MetricsHelper {
-    public MetricsHelper() {
-        // no-op
+
+    private MetricsHelper() {
+        // private utility class ct
     }
 
     public static String toString(final Metric[] metrics) {

@@ -139,6 +139,8 @@ public abstract class AbstractPropertyResolver<B> implements PropertyResolver<B>
                     startIndex = startIndex + lengthDifference; // move start index for next property
                     str = str.replace("#{partitionPlan['" + nextProp.propName + "']}" + nextProp.getDefaultValExprWithDelimitersIfExists(), nextPropValue);
                     break;
+                default:
+                    throw new IllegalStateException("unknown PROPERTY_TYPE " + nextProp.propType);
 
             }
 
@@ -196,6 +198,10 @@ public abstract class AbstractPropertyResolver<B> implements PropertyResolver<B>
                     return value;
                 }
                 break;
+
+            default:
+                throw new IllegalStateException("unknown PROPERTY_TYPE " + propType);
+
         }
 
 

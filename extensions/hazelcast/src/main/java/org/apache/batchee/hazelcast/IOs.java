@@ -22,6 +22,11 @@ import java.io.IOException;
 import java.io.InputStream;
 
 final class IOs {
+
+    private IOs() {
+        // private utility class ct
+    }
+
     public static InputStream findConfiguration(final String path) throws IOException {
         if (new File(path).exists()) {
             return new FileInputStream(path);

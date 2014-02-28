@@ -60,10 +60,12 @@ public class JsefaConfigurations {
             configuration.setValidationMode(ValidationMode.valueOf(validationMode));
         }
         if (objectAccessorProvider != null) {
-            configuration.setObjectAccessorProvider(ObjectAccessorProvider.class.cast(Thread.currentThread().getContextClassLoader().loadClass(objectAccessorProvider).newInstance()));
+            configuration.setObjectAccessorProvider(ObjectAccessorProvider.class.cast(
+                    Thread.currentThread().getContextClassLoader().loadClass(objectAccessorProvider).newInstance()));
         }
         if (simpleTypeProvider != null) {
-            configuration.setSimpleTypeConverterProvider(SimpleTypeConverterProvider.class.cast(Thread.currentThread().getContextClassLoader().loadClass(simpleTypeProvider).newInstance()));
+            configuration.setSimpleTypeConverterProvider(SimpleTypeConverterProvider.class.cast(
+                    Thread.currentThread().getContextClassLoader().loadClass(simpleTypeProvider).newInstance()));
         }
         if (typeMappingRegistry != null) {
             configuration.setTypeMappingRegistry((A) Thread.currentThread().getContextClassLoader().loadClass(typeMappingRegistry).newInstance());
@@ -73,12 +75,14 @@ public class JsefaConfigurations {
         }
     }
 
+//CHECKSTYLE:OFF
     public static <A extends RbfLowLevelConfiguration> void setRbfConfiguration(final RbfConfiguration<A> configuration,
                                                                                 final String validationMode, final String validationProvider,
                                                                                 final String lowLevelConfiguration, final String objectAccessorProvider,
                                                                                 final String lineFilter, final String lineFilterLimit,
                                                                                 final String specialRecordDelimiter, final String simpleTypeProvider,
                                                                                 final String typeMappingRegistry) throws Exception {
+//CHECKSTYLE:ON
         setConfiguration(configuration, validationMode, validationProvider, objectAccessorProvider, simpleTypeProvider, typeMappingRegistry);
         if (lineFilter != null) {
             configuration.setLineFilter(LineFilter.class.cast(Thread.currentThread().getContextClassLoader().loadClass(lineFilter).newInstance()));
@@ -94,34 +98,40 @@ public class JsefaConfigurations {
         }
     }
 
+//CHECKSTYLE:OFF
     public static XmlConfiguration newXmlConfiguration(final String lineBreak, final String dataTypeDefaultNameRegistry, final String lineIndentation,
                                             final String lowLevelConfiguration, final String namespaceManager, final String dataTypeAttributeName,
                                             final String validationMode, final String validationProvider,
                                             final String objectAccessorProvider, final String simpleTypeProvider,
                                             final String typeMappingRegistry) throws Exception {
+//CHECKSTYLE:ON
         final XmlConfiguration configuration = new XmlConfiguration();
         JsefaConfigurations.setConfiguration(configuration, validationMode, validationProvider, objectAccessorProvider, simpleTypeProvider, typeMappingRegistry);
         if (lineBreak != null) {
             configuration.setLineBreak(lineBreak);
         }
         if (dataTypeDefaultNameRegistry != null) {
-            configuration.setDataTypeDefaultNameRegistry(XmlDataTypeDefaultNameRegistry.class.cast(Thread.currentThread().getContextClassLoader().loadClass(dataTypeDefaultNameRegistry).newInstance()));
+            configuration.setDataTypeDefaultNameRegistry(XmlDataTypeDefaultNameRegistry.class.cast(
+                    Thread.currentThread().getContextClassLoader().loadClass(dataTypeDefaultNameRegistry).newInstance()));
         }
         if (lineIndentation != null) {
             configuration.setLineIndentation(lineIndentation);
         }
         if (lowLevelConfiguration != null) {
-            configuration.setLowLevelConfiguration(XmlLowLevelConfiguration.class.cast(Thread.currentThread().getContextClassLoader().loadClass(lowLevelConfiguration).newInstance()));
+            configuration.setLowLevelConfiguration(XmlLowLevelConfiguration.class.cast(
+                    Thread.currentThread().getContextClassLoader().loadClass(lowLevelConfiguration).newInstance()));
         }
         if (namespaceManager != null) {
             configuration.setNamespaceManager(NamespaceManager.class.cast(Thread.currentThread().getContextClassLoader().loadClass(namespaceManager).newInstance()));
         }
         if (dataTypeAttributeName != null) {
-            configuration.setDataTypeAttributeName(QName.create(dataTypeAttributeName.substring(1, dataTypeAttributeName.indexOf("}")), dataTypeAttributeName.substring(dataTypeAttributeName.indexOf("}") + 1))); // allow {xxx}yyy syntax
+            configuration.setDataTypeAttributeName(QName.create(dataTypeAttributeName.substring(1, dataTypeAttributeName.indexOf("}")),
+                    dataTypeAttributeName.substring(dataTypeAttributeName.indexOf("}") + 1))); // allow {xxx}yyy syntax
         }
         return configuration;
     }
 
+//CHECKSTYLE:OFF
     public static CsvConfiguration newCsvConfiguration(final String defaultNoValueString, final String defaultQuoteMode,
                                                        final String fieldDelimiter, final String lineBreak, final String quoteCharacter,
                                                        final String quoteCharacterEscapeMode, final String useDelimiterAfterLastField,
@@ -130,6 +140,7 @@ public class JsefaConfigurations {
                                                        final String lineFilterLimit, final String objectAccessorProvider,
                                                        final String specialRecordDelimiter, final String simpleTypeProvider,
                                                        final String typeMappingRegistry) throws Exception {
+//CHECKSTYLE:ON
         final CsvConfiguration configuration = new CsvConfiguration();
         setRbfConfiguration(configuration, validationMode, validationProvider, lowLevelConfiguration, objectAccessorProvider,
             lineFilter, lineFilterLimit, specialRecordDelimiter, simpleTypeProvider, typeMappingRegistry);
@@ -157,12 +168,14 @@ public class JsefaConfigurations {
         return configuration;
     }
 
+//CHECKSTYLE:OFF
     public static FlrConfiguration newFlrConfiguration(final String defaultPadCharacter, final String lineBreak,
                                                        final String validationMode, final String validationProvider,
                                                        final String lineFilter, final String lowLevelConfiguration,
                                                        final String lineFilterLimit, final String objectAccessorProvider,
                                                        final String specialRecordDelimiter, final String simpleTypeProvider,
                                                        final String typeMappingRegistry) throws Exception {
+//CHECKSTYLE:ON
         final FlrConfiguration configuration = new FlrConfiguration();
         setRbfConfiguration(configuration, validationMode, validationProvider, lowLevelConfiguration, objectAccessorProvider,
             lineFilter, lineFilterLimit, specialRecordDelimiter, simpleTypeProvider, typeMappingRegistry);

@@ -42,7 +42,8 @@ import java.util.Set;
  * An implementation of JobOperator delegating to real JBatch implementation
  * but waiting for start/stop/restart method.
  *
- * Note: would be great to keep this class portable, if not we should just extend BatchKernel and use org.apache.batchee.container.services.kernel.DefaultBatchKernel#jobExecutionDone(org.apache.batchee.container.impl.jobinstance.RuntimeJobExecution)
+ * Note: would be great to keep this class portable, if not we should just extend BatchKernel and use
+ * org.apache.batchee.container.services.kernel.DefaultBatchKernel#jobExecutionDone(org.apache.batchee.container.impl.jobinstance.RuntimeJobExecution)
  */
 public class SynchronousJobOperator implements JobOperator {
     private static final Collection<BatchStatus> BATCH_END_STATUSES = Arrays.asList(BatchStatus.COMPLETED, BatchStatus.FAILED, BatchStatus.STOPPED, BatchStatus.ABANDONED);
@@ -89,7 +90,8 @@ public class SynchronousJobOperator implements JobOperator {
     }
 
     @Override
-    public long restart(final long id, final Properties properties) throws JobExecutionAlreadyCompleteException, NoSuchJobExecutionException, JobExecutionNotMostRecentException, JobRestartException, JobSecurityException {
+    public long restart(final long id, final Properties properties)
+            throws JobExecutionAlreadyCompleteException, NoSuchJobExecutionException, JobExecutionNotMostRecentException, JobRestartException, JobSecurityException {
         final long newId = getOrCreateDelegate().restart(id, properties);
         waitEnd(newId);
         return newId;

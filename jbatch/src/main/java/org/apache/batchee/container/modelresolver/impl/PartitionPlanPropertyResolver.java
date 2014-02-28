@@ -34,15 +34,15 @@ public class PartitionPlanPropertyResolver extends
     public PartitionPlan substituteProperties(PartitionPlan partitionPlan,
                                               Properties submittedProps, Properties parentProps) {
     
-		/*
+        /*
         <xs:complexType name="PartitionPlan">
-			<xs:sequence>
-				<xs:element name="properties" type="jsl:Properties" minOccurs="0" maxOccurs="unbounded" />
-			</xs:sequence>
-			<xs:attribute name="instances" use="optional" type="xs:string" />
-			<xs:attribute name="threads" use="optional" type="xs:string" />
-		</xs:complexType>
-		*/
+            <xs:sequence>
+                <xs:element name="properties" type="jsl:Properties" minOccurs="0" maxOccurs="unbounded" />
+            </xs:sequence>
+            <xs:attribute name="instances" use="optional" type="xs:string" />
+            <xs:attribute name="threads" use="optional" type="xs:string" />
+        </xs:complexType>
+        */
 
         partitionPlan.setPartitions(this.replaceAllProperties(partitionPlan.getPartitions(), submittedProps, parentProps));
         partitionPlan.setThreads(this.replaceAllProperties(partitionPlan.getThreads(), submittedProps, parentProps));

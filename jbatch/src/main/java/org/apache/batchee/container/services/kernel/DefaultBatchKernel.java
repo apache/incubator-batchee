@@ -100,7 +100,8 @@ public class DefaultBatchKernel implements BatchKernelService {
     }
 
     @Override
-    public InternalJobExecution restartJob(final long executionId, final Properties jobOverrideProps) throws JobRestartException, JobExecutionAlreadyCompleteException, JobExecutionNotMostRecentException, NoSuchJobExecutionException {
+    public InternalJobExecution restartJob(final long executionId, final Properties jobOverrideProps)
+            throws JobRestartException, JobExecutionAlreadyCompleteException, JobExecutionNotMostRecentException, NoSuchJobExecutionException {
         final RuntimeJobExecution jobExecution = JobExecutionHelper.restartJob(servicesManager, executionId, jobOverrideProps);
         final BatchWorkUnit batchWork = new BatchWorkUnit(servicesManager, jobExecution);
 
@@ -185,7 +186,8 @@ public class DefaultBatchKernel implements BatchKernelService {
     }
 
     @Override
-    public List<BatchPartitionWorkUnit> buildOnRestartParallelPartitions(final PartitionsBuilderConfig config) throws JobRestartException, JobExecutionAlreadyCompleteException, JobExecutionNotMostRecentException {
+    public List<BatchPartitionWorkUnit> buildOnRestartParallelPartitions(final PartitionsBuilderConfig config)
+            throws JobRestartException, JobExecutionAlreadyCompleteException, JobExecutionNotMostRecentException {
 
         final List<JSLJob> jobModels = config.getJobModels();
         final Properties[] partitionProperties = config.getPartitionProperties();
@@ -205,7 +207,8 @@ public class DefaultBatchKernel implements BatchKernelService {
                     jobExecution = JobExecutionHelper.restartPartition(servicesManager, execId, parallelJob, partitionProps);
                     jobExecution.setPartitionInstance(instance);
                 } catch (final NoSuchJobExecutionException e) {
-                    throw new IllegalStateException("Caught NoSuchJobExecutionException but this is an internal JobExecution so this shouldn't have happened: execId =" + execId, e);
+                    throw new IllegalStateException("Caught NoSuchJobExecutionException but this is an internal JobExecution so this shouldn't have happened: execId ="
+                            + execId, e);
                 }
 
                 final BatchPartitionWorkUnit batchWork = new BatchPartitionWorkUnit(jobExecution, config, servicesManager);

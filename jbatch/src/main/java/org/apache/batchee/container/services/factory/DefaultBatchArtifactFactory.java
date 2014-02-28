@@ -40,7 +40,10 @@ import java.util.Properties;
 
 public class DefaultBatchArtifactFactory implements BatchArtifactFactory, XMLStreamConstants {
     private final static String BATCH_XML = "META-INF/batch.xml";
-    private final static String BATCHEE_XML = "META-INF/batchee.xml"; // used for out extensions to get short names, spec doesn't impose to read multiple batch.xml so using it as a workaround
+
+    // used for out extensions to get short names, spec doesn't impose to read multiple batch.xml so using it as a workaround
+    private final static String BATCHEE_XML = "META-INF/batchee.xml";
+
     private final static QName BATCH_ROOT_ELEM = new QName("http://xmlns.jcp.org/xml/ns/javaee", "batch-artifacts");
 
     // Uses TCCL

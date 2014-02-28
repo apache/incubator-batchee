@@ -50,4 +50,4 @@ public class JobNavigator extends AbstractNavigator<JSLJob> implements ModelNavi
     }
 }
 
-	
+

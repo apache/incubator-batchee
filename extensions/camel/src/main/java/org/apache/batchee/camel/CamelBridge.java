@@ -22,9 +22,13 @@ import org.apache.camel.ProducerTemplate;
 import org.apache.camel.impl.DefaultCamelContext;
 
 public class CamelBridge {
-    protected static final DefaultCamelContext CONTEXT = new DefaultCamelContext();
-    protected static final ProducerTemplate PRODUCER_TEMPLATE = CONTEXT.createProducerTemplate();
-    protected static final ConsumerTemplate CONSUMER_TEMPLATE = CONTEXT.createConsumerTemplate();
+    static final DefaultCamelContext CONTEXT = new DefaultCamelContext();
+    static final ProducerTemplate PRODUCER_TEMPLATE = CONTEXT.createProducerTemplate();
+    static final ConsumerTemplate CONSUMER_TEMPLATE = CONTEXT.createConsumerTemplate();
+
+    private CamelBridge() {
+        // private utility class ct
+    }
 
     protected static Object process(final String locator, final String endpoint, final Object body) throws Exception {
         final BeanLocator.LocatorInstance<CamelTemplateLocator> locatorInstance = locator(locator);

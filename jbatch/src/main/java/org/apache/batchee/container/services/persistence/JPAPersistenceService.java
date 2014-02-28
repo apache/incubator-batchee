@@ -270,6 +270,7 @@ public class JPAPersistenceService implements PersistenceManagerService {
         }
     }
 
+//CHECKSTYLE:OFF
     private void setStepData(final EntityManager em,
                              final long jobExecId, final StepContextImpl stepContext,
                              final long readCount, final long writeCount,
@@ -277,6 +278,7 @@ public class JPAPersistenceService implements PersistenceManagerService {
                              final long readSkipCount, final long processSkipCount,
                              final long filterCount, final long writeSkipCount,
                              final StepExecutionEntity entity) {
+//CHECKSTYLE:ON
         entity.setExecution(em.find(JobExecutionEntity.class, jobExecId));
         entity.setBatchStatus(stepContext.getBatchStatus());
         entity.setExitStatus(stepContext.getExitStatus());

@@ -34,10 +34,10 @@ import java.util.concurrent.TimeUnit;
 
 import static org.testng.Assert.assertTrue;
 
-public class CamelWriterTest extends CamelBridge {
+public class CamelWriterTest {
     @Test
     public void write() throws Exception {
-        final ConsumerTemplate tpl = CONTEXT.createConsumerTemplate();
+        final ConsumerTemplate tpl = CamelBridge.CONTEXT.createConsumerTemplate();
         final Collection<Object> received = new ArrayList<Object>(2);
 
         final ExecutorService thread = Executors.newSingleThreadExecutor();
@@ -53,7 +53,7 @@ public class CamelWriterTest extends CamelBridge {
 
         do { // starting the listener in another thread w can get timing issues so ensuring we are in the right state
             Thread.sleep(20);
-        } while (DirectEndpoint.class.cast(CONTEXT.getEndpoint("direct:writer")).getConsumer() == null);
+        } while (DirectEndpoint.class.cast(CamelBridge.CONTEXT.getEndpoint("direct:writer")).getConsumer() == null);
 
         final JobOperator jobOperator = BatchRuntime.getJobOperator();
         Batches.waitForEnd(jobOperator, jobOperator.start("camel-writer", new Properties()));

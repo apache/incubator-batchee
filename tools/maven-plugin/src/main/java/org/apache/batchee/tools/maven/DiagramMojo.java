@@ -40,7 +40,6 @@ import edu.uci.ics.jung.visualization.renderers.BasicEdgeLabelRenderer;
 import edu.uci.ics.jung.visualization.renderers.Renderer;
 import edu.uci.ics.jung.visualization.transform.shape.GraphicsDecorator;
 import org.apache.batchee.container.jsl.ExecutionElement;
-import org.apache.batchee.container.jsl.IllegalTransitionException;
 import org.apache.batchee.container.jsl.JobModelResolver;
 import org.apache.batchee.container.jsl.TransitionElement;
 import org.apache.batchee.container.navigator.JobNavigator;
