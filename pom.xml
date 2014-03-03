@@ -38,6 +38,7 @@
         <url>https://git-wip-us.apache.org/repos/asf?p=incubator-batchee.git;a=summary</url>
     </scm>
 
+
     <properties>
         <atinject.version>1.0</atinject.version>
         <batch-api.version>1.0</batch-api.version>
@@ -462,6 +463,14 @@
         </repository>
     </repositories>
     <pluginRepositories>
+        <pluginRepository>
+            <id>apache.snapshots</id>
+            <url>http://repository.apache.org/content/groups/snapshots</url>
+            <releases><enabled>false</enabled></releases>
+            <snapshots><enabled>true</enabled></snapshots>
+        </pluginRepository>
+
+        <!-- WTF? surely not! -->
         <pluginRepository>
             <id>sonatype-public-repository</id>
             <url>https://oss.sonatype.org/content/groups/public</url>

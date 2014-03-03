@@ -43,8 +43,8 @@ public class JTAUserTransactionAdapter implements TransactionManagerAdapter {
         "com.arjuna.jta.JTA_TransactionManager.transactionManager", // hp
         "com.bluestone.jta.SaTransactionManagerFactory.SaGetTransactionManager",
         "com.sun.jts.jta.TransactionManagerImpl.getTransactionManagerImpl",
-        "com.inprise.visitransact.jta.TransactionManagerImpl."
-            + "getTransactionManagerImpl", // borland
+        "com.inprise.visitransact.jta.TransactionManagerImpl.getTransactionManagerImpl", // borland
+        "com.ibm.tx.jta.TransactionManagerFactory.getTransactionManager" // IBM WebSphere 8
     };
 
     protected TransactionManager mgr = null;
@@ -67,6 +67,9 @@ public class JTAUserTransactionAdapter implements TransactionManagerAdapter {
                 try {
                     mgr = TransactionManager.class.cast(
                         Thread.currentThread().getContextClassLoader().loadClass(clazz).getMethod(methodName).invoke(null));
+                    if (mgr != null) {
+                        break;
+                    }
                 } catch (final Throwable e) {
                     // no-op
                 }
