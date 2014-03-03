@@ -77,7 +77,7 @@ public class AsynchronousItemProcessor<T> implements ItemProcessor {
     }
 
     public static class DaemonThreadFactory implements ThreadFactory {
-        private static final AtomicInteger ids = new AtomicInteger(0);
+        private static AtomicInteger ids = new AtomicInteger(0);
 
         private final ThreadGroup group;
 
