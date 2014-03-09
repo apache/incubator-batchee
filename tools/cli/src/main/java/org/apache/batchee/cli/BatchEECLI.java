@@ -32,7 +32,7 @@ import org.apache.batchee.cli.command.Stop;
 public class BatchEECLI {
     public static void main(final String[] args) {
         final Cli.CliBuilder<Runnable> builder = Cli.<Runnable>builder("batchee")
-                .withDescription("the stupid content tracker")
+                .withDescription("BatchEE CLI")
                 .withDefaultCommand(Help.class)
                 .withCommands(Help.class,
                         Names.class,
