@@ -203,19 +203,34 @@
             <goals>
               <goal>attached</goal>
             </goals>
+            <configuration>
+              <descriptors>
+                <descriptor>src/main/assembly/bin.xml</descriptor>
+              </descriptors>
+              <finalName>apache-batchee-${project.version}</finalName>
+            </configuration>
+          </execution>
+          <execution>
+            <id>assembly-bin-openejb-distributions</id>
+            <phase>package</phase>
+            <goals>
+              <goal>attached</goal>
+            </goals>
+            <configuration>
+              <descriptors>
+                <descriptor>src/main/assembly/bin-openejb.xml</descriptor>
+              </descriptors>
+              <finalName>apache-batchee-openejb-${project.version}</finalName>
+            </configuration>
           </execution>
         </executions>
         <configuration>
           <appendAssemblyId>false</appendAssemblyId>
-          <descriptors>
-            <descriptor>src/main/assembly/bin.xml</descriptor>
-          </descriptors>
           <archive>
             <manifest>
               <mainClass>org.apache.batchee.cli.BatchEECLI</mainClass>
             </manifest>
           </archive>
-          <finalName>apache-batchee-${project.version}</finalName>
         </configuration>
       </plugin>
     </plugins>

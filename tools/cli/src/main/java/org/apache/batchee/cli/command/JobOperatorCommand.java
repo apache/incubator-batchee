@@ -104,8 +104,8 @@ public abstract class JobOperatorCommand implements Runnable {
     @Option(name = "-archive", description = "a bar archive")
     private String archive = null;
 
-    @Option(name = "-work", description = "work directory (default to java.io.tmp)")
-    private String work = System.getProperty("batchee.home", System.getProperty("java.io.tmpdir")) + "/batchee";
+    @Option(name = "-work", description = "work directory (default to java.io.tmp/work)")
+    private String work = System.getProperty("batchee.home", System.getProperty("java.io.tmpdir")) + "/work";
 
     @Option(name = "-shared-libs", description = "folder containing shared libraries, the folder is added too to the loader")
     private String sharedLibs = null;
