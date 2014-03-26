@@ -28,7 +28,6 @@
 
   <artifactId>batchee-servlet</artifactId>
   <name>BatchEE :: GUI :: Servlet</name>
-  <packaging>war</packaging>
 
   <dependencies>
     <dependency>
