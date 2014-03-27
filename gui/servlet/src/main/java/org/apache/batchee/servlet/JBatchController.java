@@ -16,6 +16,8 @@
  */
 package org.apache.batchee.servlet;
 
+import org.apache.batchee.servlet.spi.JobOperatorClassLoaderFinder;
+
 import javax.batch.operations.BatchRuntimeException;
 import javax.batch.operations.JobExecutionNotRunningException;
 import javax.batch.operations.JobOperator;
@@ -33,6 +35,9 @@ import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
 import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -55,12 +60,15 @@ public class JBatchController extends HttpServlet {
     private static final String START_MAPPING = "/start/";
     private static final String DO_START_MAPPING = "/doStart/";
     private static final String VIEW_MAPPING = "/view/";
+    public static final String BATCHEE_CLASSLOADER_FINDER_KEY = "batchee.classloader-finder";
 
     private JobOperator operator;
 
     private String context;
     private String mapping = DEFAULT_MAPPING_SERVLET25;
     private int executionByPage = DEFAULT_PAGE_SIZE;
+    private ClassLoader controllerLoader;
+    private JobOperatorClassLoaderFinder classLoaderFinder;
 
     public JBatchController mapping(final String rawMapping) {
         this.mapping = rawMapping.substring(0, rawMapping.length() - 2); // mapping pattern is /xxx/*
@@ -74,7 +82,29 @@ public class JBatchController extends HttpServlet {
 
     @Override
     public void init(final ServletConfig config) throws ServletException {
-        this.operator = BatchRuntime.getJobOperator();
+        controllerLoader = Thread.currentThread().getContextClassLoader();
+
+        final JobOperator delegate = BatchRuntime.getJobOperator();
+        classLoaderFinder = newClassLoaderFinder(
+                System.getProperty(BATCHEE_CLASSLOADER_FINDER_KEY, config.getInitParameter(BATCHEE_CLASSLOADER_FINDER_KEY)),
+                controllerLoader);
+
+        this.operator = JobOperator.class.cast(Proxy.newProxyInstance(
+                controllerLoader,
+                new Class<?>[] { JobOperator.class },
+                new InvocationHandler() {
+                    @Override
+                    public Object invoke(final Object proxy, final Method method, final Object[] args) throws Throwable {
+                        final Thread thread = Thread.currentThread();
+                        final ClassLoader original = thread.getContextClassLoader();
+                        thread.setContextClassLoader(findLoaderToUse(original, method.getName(), args));
+                        try {
+                            return method.invoke(delegate, args);
+                        } finally {
+                            thread.setContextClassLoader(original);
+                        }
+                    }
+                }));
 
         this.context = config.getServletContext().getContextPath();
         if ("/".equals(context)) {
@@ -82,6 +112,29 @@ public class JBatchController extends HttpServlet {
         }
 
         mapping = context + mapping;
+    }
+
+    private JobOperatorClassLoaderFinder newClassLoaderFinder(final String initParameter, final ClassLoader webappLoader) {
+        if (initParameter == null) {
+            return null;
+        }
+        try {
+            return JobOperatorClassLoaderFinder.class.cast(
+                    controllerLoader.loadClass(initParameter.trim()).getConstructor(ClassLoader.class)
+                            .newInstance(webappLoader));
+        } catch (final Exception e) {
+            throw new BatchRuntimeException(e.getMessage(), e);
+        }
+    }
+
+    protected ClassLoader findLoaderToUse(final ClassLoader original, String name, Object[] args) {
+        if (classLoaderFinder != null) {
+            final ClassLoader found = classLoaderFinder.find(name, args);
+            if (found != null) {
+                return found;
+            }
+        }
+        return original;
     }
 
     @Override
