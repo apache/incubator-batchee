@@ -83,7 +83,7 @@ public class StaxItemWriter implements ItemWriter {
 
         marshaller = JAXBContextFactory.getJaxbContext(marshallingPackage, marshallingClasses).createMarshaller();
         final File file = new File(output);
-        if (!file.getParentFile().exists() && file.getParentFile().mkdirs()) {
+        if (!file.getParentFile().exists() && !file.getParentFile().mkdirs()) {
             throw new BatchRuntimeException("Output parent file can't be created");
         }
 
