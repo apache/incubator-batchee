@@ -29,6 +29,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.net.HttpURLConnection;
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Set;
 
@@ -61,12 +62,24 @@ public class JBatchServletInitializer implements ServletContainerInitializer {
             byPage += byPage;
         }
 
-        ctx.addServlet("JBatch Servlet", new JBatchController().mapping(mapping).executionByPage(Integer.parseInt(byPage))).addMapping(mapping);
+        ctx.addServlet("JBatch Servlet", new JBatchController()
+                                            .readOnly(isReadOnly(ctx.getClassLoader()))
+                                            .mapping(mapping)
+                                            .executionByPage(Integer.parseInt(byPage)))
+                                            .addMapping(mapping);
 
         final String activePrivateFilter = ctx.getInitParameter(ACTIVE_PRIVATE_FILTER);
         if (activePrivateFilter == null || Boolean.parseBoolean(activePrivateFilter)) {
             ctx.addFilter("JBatch Private Filter", PrivateFilter.class)
                 .addMappingForUrlPatterns(EnumSet.of(DispatcherType.REQUEST), false, "/*");
+        }
+    }
+
+    private static boolean isReadOnly(final ClassLoader classLoader) {
+        try {
+            return Collections.list(classLoader.getResources("META-INF/batch-jobs")).isEmpty();
+        } catch (final IOException e) {
+            return false;
         }
     }
 

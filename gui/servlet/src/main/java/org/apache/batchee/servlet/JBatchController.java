@@ -61,6 +61,7 @@ public class JBatchController extends HttpServlet {
     private String context;
     private String mapping = DEFAULT_MAPPING_SERVLET25;
     private int executionByPage = DEFAULT_PAGE_SIZE;
+    private boolean readOnly = false;
 
     public JBatchController mapping(final String rawMapping) {
         this.mapping = rawMapping.substring(0, rawMapping.length() - 2); // mapping pattern is /xxx/*
@@ -69,6 +70,11 @@ public class JBatchController extends HttpServlet {
 
     public JBatchController executionByPage(final int byPage) {
         executionByPage = byPage;
+        return this;
+    }
+
+    public JBatchController readOnly(final boolean readOnly) {
+        this.readOnly = readOnly;
         return this;
     }
 
@@ -103,20 +109,32 @@ public class JBatchController extends HttpServlet {
             final String name = URLDecoder.decode(path.substring(VIEW_MAPPING.length()), "UTF-8");
             view(req, name);
         } else if (path != null && path.startsWith(START_MAPPING)) {
-            final String name = URLDecoder.decode(path.substring(START_MAPPING.length()), "UTF-8");
-            start(req, name);
-        } else if (path != null && path.startsWith(DO_START_MAPPING)) {
-            String name = URLDecoder.decode(path.substring(DO_START_MAPPING.length()), "UTF-8");
-            if (name.isEmpty()) {
-                name = req.getParameter(FORM_JOB_NAME);
+            if (readOnly) {
+                reportReadOnly(req);
+            } else {
+                final String name = URLDecoder.decode(path.substring(START_MAPPING.length()), "UTF-8");
+                start(req, name);
             }
+        } else if (path != null && path.startsWith(DO_START_MAPPING)) {
+            if (readOnly) {
+                reportReadOnly(req);
+            } else {
+                String name = URLDecoder.decode(path.substring(DO_START_MAPPING.length()), "UTF-8");
+                if (name.isEmpty()) {
+                    name = req.getParameter(FORM_JOB_NAME);
+                }
 
-            doStart(req, name, readProperties(req));
+                doStart(req, name, readProperties(req));
+            }
         } else {
             listJobs(req);
         }
 
         req.getRequestDispatcher("/internal/batchee/layout.jsp").forward(req, resp);
+    }
+
+    private void reportReadOnly(final HttpServletRequest req) {
+        req.setAttribute("view", "read-only");
     }
 
     private void view(final HttpServletRequest req, final String name) {
@@ -169,7 +187,7 @@ public class JBatchController extends HttpServlet {
     }
 
     private void listExecutions(final HttpServletRequest req, final String name, final int pageSize, final int inStart) {
-        { // can be an auto refresh asking for a stop
+        if (!readOnly) { // can be an auto refresh asking for a stop
             final String stopId = req.getParameter("stop");
             if (stopId != null) {
                 try {
@@ -180,6 +198,9 @@ public class JBatchController extends HttpServlet {
                     // no-op
                 }
             }
+        } else {
+            reportReadOnly(req);
+            return;
         }
 
         final int jobInstanceCount = operator.getJobInstanceCount(name);
