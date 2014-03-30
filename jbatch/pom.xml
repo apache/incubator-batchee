@@ -159,7 +159,7 @@
                         <configuration>
                             <skip>${maven.test.skip}</skip>
                             <systemProperties>
-                                <PersistenceManagerService>org.apache.batchee.container.services.persistence.MemoryPersistenceManager</PersistenceManagerService>
+                                <PersistenceManagerService>org.apache.batchee.container.services.persistence.MemoryPersistenceManagerService</PersistenceManagerService>
                             </systemProperties>
                             <suiteXmlFiles>
                                 <suiteXmlFile>${tck.suite}</suiteXmlFile>
@@ -178,7 +178,7 @@
                         <configuration>
                             <skip>${maven.test.skip}</skip>
                             <systemProperties>
-                                <PersistenceManagerService>org.apache.batchee.container.services.persistence.JDBCPersistenceManager</PersistenceManagerService>
+                                <PersistenceManagerService>org.apache.batchee.container.services.persistence.JDBCPersistenceManagerService</PersistenceManagerService>
                             </systemProperties>
                             <suiteXmlFiles>
                                 <suiteXmlFile>${tck.suite}</suiteXmlFile>
@@ -197,7 +197,7 @@
                         <configuration>
                             <skip>${maven.test.skip}</skip>
                             <systemProperties>
-                                <PersistenceManagerService>org.apache.batchee.container.services.persistence.JPAPersistenceService</PersistenceManagerService>
+                                <PersistenceManagerService>org.apache.batchee.container.services.persistence.JPAPersistenceManagerService</PersistenceManagerService>
                             </systemProperties>
                             <suiteXmlFiles>
                                 <suiteXmlFile>${tck.suite}</suiteXmlFile>

@@ -54,7 +54,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicLong;
 
-public class MemoryPersistenceManager implements PersistenceManagerService {
+public class MemoryPersistenceManagerService implements PersistenceManagerService {
     private static final Collection<BatchStatus> RUNNING_STATUSES = new CopyOnWriteArrayList<BatchStatus>() {{
         add(BatchStatus.STARTED);
         add(BatchStatus.STARTING);

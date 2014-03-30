@@ -72,7 +72,7 @@ import java.util.Set;
 import static org.apache.batchee.container.util.Serializations.deserialize;
 import static org.apache.batchee.container.util.Serializations.serialize;
 
-public class JDBCPersistenceManager implements PersistenceManagerService {
+public class JDBCPersistenceManagerService implements PersistenceManagerService {
     private static final Charset UTF_8 = Charset.forName("UTF-8");
 
     static interface Defaults {

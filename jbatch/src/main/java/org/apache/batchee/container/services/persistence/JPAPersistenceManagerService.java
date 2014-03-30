@@ -63,7 +63,7 @@ import java.util.Set;
 import static org.apache.batchee.container.util.Serializations.deserialize;
 import static org.apache.batchee.container.util.Serializations.serialize;
 
-public class JPAPersistenceService implements PersistenceManagerService {
+public class JPAPersistenceManagerService implements PersistenceManagerService {
     private static final String[] DELETE_QUERIES = {
         StepExecutionEntity.Queries.DELETE_BY_INSTANCE_ID, CheckpointEntity.Queries.DELETE_BY_INSTANCE_ID,
         JobExecutionEntity.Queries.DELETE_BY_INSTANCE_ID, JobInstanceEntity.Queries.DELETE_BY_INSTANCE_ID

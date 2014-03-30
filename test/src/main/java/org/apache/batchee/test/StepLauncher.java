@@ -27,7 +27,7 @@ import org.apache.batchee.container.proxy.InjectionReferences;
 import org.apache.batchee.container.proxy.ListenerFactory;
 import org.apache.batchee.container.services.JobStatusManagerService;
 import org.apache.batchee.container.services.ServicesManager;
-import org.apache.batchee.container.services.persistence.MemoryPersistenceManager;
+import org.apache.batchee.container.services.persistence.MemoryPersistenceManagerService;
 import org.apache.batchee.container.util.PartitionDataWrapper;
 import org.apache.batchee.jaxb.JSLJob;
 import org.apache.batchee.jaxb.JSLProperties;
@@ -50,7 +50,7 @@ public class StepLauncher {
     private static final Properties TEST_PROPERTIES = new Properties();
 
     static { // default ATM but could be TestMemoryPersistenceManager
-        TEST_PROPERTIES.put(PersistenceManagerService.class.getName(), MemoryPersistenceManager.class.getName());
+        TEST_PROPERTIES.put(PersistenceManagerService.class.getName(), MemoryPersistenceManagerService.class.getName());
     }
 
     public static StepExecution execute(final Step step) {
