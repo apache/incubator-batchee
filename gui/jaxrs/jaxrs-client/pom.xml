@@ -34,12 +34,14 @@
             <artifactId>geronimo-jbatch_1.0_spec</artifactId>
         </dependency>
         <dependency>
+            <!-- Needed for JAX-RS 2.0 ClientBuilder -->
             <groupId>javax.ws.rs</groupId>
             <artifactId>javax.ws.rs-api</artifactId>
             <version>2.0</version>
             <scope>provided</scope>
         </dependency>
-        <dependency> <!-- cxf for "jaxrs 1" servers like TomEE only -->
+        <dependency>
+            <!-- cxf for "jaxrs 1" servers like TomEE only -->
             <groupId>org.apache.cxf</groupId>
             <artifactId>cxf-rt-frontend-jaxrs</artifactId>
             <version>2.6.9</version>
