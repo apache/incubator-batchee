@@ -54,28 +54,28 @@ public class StepExecutionEntity {
 
     private String stepName;
 
-    @Column(name="EXEC_READ")
+    @Column(name="exec_read")
     private long read;
 
-    @Column(name="EXEC_WRITE")
+    @Column(name="exec_write")
     private long write;
 
-    @Column(name="EXEC_COMMIT")
+    @Column(name="exec_commit")
     private long commit;
 
-    @Column(name="EXEC_ROLLBACK")
+    @Column(name="exec_rollback")
     private long rollback;
 
-    @Column(name="EXEC_READSKIP")
+    @Column(name="exec_readskip")
     private long readSkip;
 
-    @Column(name="EXEC_PROCESSSKIP")
+    @Column(name="exec_processskip")
     private long processSkip;
 
-    @Column(name="EXEC_FILTER")
+    @Column(name="exec_filter")
     private long filter;
 
-    @Column(name="EXEC_WRITESKIP")
+    @Column(name="exec_writeskip")
     private long writeSkip;
 
     @Temporal(TemporalType.TIMESTAMP)
