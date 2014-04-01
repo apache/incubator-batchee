@@ -27,7 +27,7 @@
     </parent>
 
     <groupId>org.apache.batchee</groupId>
-    <artifactId>batchee-parent</artifactId>
+    <artifactId>batchee</artifactId>
     <version>0.1-incubating-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>BatchEE</name>
