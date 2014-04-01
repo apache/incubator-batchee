@@ -15,9 +15,7 @@
   See the License for the specific language governing permissions and
   limitations under the License.
 -->
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
@@ -28,7 +26,7 @@
 
     <groupId>org.apache.batchee</groupId>
     <artifactId>batchee</artifactId>
-    <version>0.1-incubating-SNAPSHOT</version>
+    <version>0.1-incubating</version>
     <packaging>pom</packaging>
     <name>BatchEE</name>
 
@@ -36,7 +34,8 @@
         <connection>scm:git:https://git-wip-us.apache.org/repos/asf/incubator-batchee.git</connection>
         <developerConnection>scm:git:https://git-wip-us.apache.org/repos/asf/incubator-batchee.git</developerConnection>
         <url>https://git-wip-us.apache.org/repos/asf?p=incubator-batchee.git;a=summary</url>
-    </scm>
+      <tag>batchee-0.1-incubating</tag>
+  </scm>
 
 
     <properties>
@@ -228,23 +227,23 @@
                     <logViolationsToConsole>true</logViolationsToConsole>
                     <checkstyleRules>
                         <module name="Checker">
-                            <module name="SuppressionCommentFilter"/>
+                            <module name="SuppressionCommentFilter" />
 
                             <!-- Checks for Size Violations.                    -->
                             <!-- See http://checkstyle.sf.net/config_sizes.html -->
                             <module name="FileLength">
                                 <property name="max" value="3500" />
-                                <property name="fileExtensions" value="java"/>
+                                <property name="fileExtensions" value="java" />
                             </module>
 
                             <!-- Checks for whitespace                               -->
                             <!-- See http://checkstyle.sf.net/config_whitespace.html -->
-                            <module name="FileTabCharacter"/>
+                            <module name="FileTabCharacter" />
 
 
                             <module name="TreeWalker">
                                 <!-- needed for the SuppressionCommentFilter -->
-                                <module name="FileContentsHolder"/>
+                                <module name="FileContentsHolder" />
 
                                 <!-- Checks for Javadoc comments.                     -->
                                 <!-- See http://checkstyle.sf.net/config_javadoc.html -->
@@ -257,7 +256,7 @@
                                 <!-- See http://checkstyle.sf.net/config_naming.html -->
                                 <!--
                                         <module name="MemberName">
-                                          <property name="format" value="^_[a-z][a-zA-Z0-9]*$"/>
+                                          <property name="format" value="^_[a-z][a-zA-Z0-9]*$" />
                                         </module>
                                 -->
 
@@ -271,35 +270,34 @@
                                        -    name rules to vary by the type of the constant, and no other alternative seems
                                        -    any better.
                                        -->
-                                    <property name="format"
-                                              value="^_?((log)|(logger)|([a-z][a-zA-Z]*ThreadLocal)|([A-Z][A-Z0-9]*(_[A-Z0-9]+)*))$"/>
+                                    <property name="format" value="^_?((log)|(logger)|([a-z][a-zA-Z]*ThreadLocal)|([A-Z][A-Z0-9]*(_[A-Z0-9]+)*))$" />
                                 </module>
 
-                                <module name="LocalVariableName"/>
+                                <module name="LocalVariableName" />
                                 <module name="MethodName">
-                                    <property name="format" value="^_?[a-z][a-zA-Z0-9]*$"/>
+                                    <property name="format" value="^_?[a-z][a-zA-Z0-9]*$" />
                                 </module>
-                                <module name="PackageName"/>
-                                <module name="LocalFinalVariableName"/>
-                                <module name="ParameterName"/>
-                                <module name="StaticVariableName"/>
+                                <module name="PackageName" />
+                                <module name="LocalFinalVariableName" />
+                                <module name="ParameterName" />
+                                <module name="StaticVariableName" />
                                 <module name="TypeName">
-                                    <property name="format" value="^_?[A-Z][a-zA-Z0-9]*$"/>
+                                    <property name="format" value="^_?[A-Z][a-zA-Z0-9]*$" />
                                 </module>
 
                                 <!-- Checks for imports                              -->
                                 <!-- See http://checkstyle.sf.net/config_import.html -->
                                 <module name="AvoidStarImport">
-                                    <property name="excludes" value="java.io,java.net,java.util,javax.enterprise.inject.spi,javax.enterprise.context"/>
+                                    <property name="excludes" value="java.io,java.net,java.util,javax.enterprise.inject.spi,javax.enterprise.context" />
                                 </module>
-                                <module name="IllegalImport"/>
-                                <module name="RedundantImport"/>
-                                <module name="UnusedImports"/>
+                                <module name="IllegalImport" />
+                                <module name="RedundantImport" />
+                                <module name="UnusedImports" />
 
 
                                 <module name="LineLength">
                                     <property name="max" value="180" />
-                                    <property name="ignorePattern" value="@version|@see"/>
+                                    <property name="ignorePattern" value="@version|@see" />
                                 </module>
                                 <module name="MethodLength">
                                     <property name="max" value="250" />
@@ -311,45 +309,45 @@
                                 <!-- Checks for blocks. You know, those {}'s         -->
                                 <!-- See http://checkstyle.sf.net/config_blocks.html -->
                                 <module name="EmptyBlock">
-                                    <property name="option" value="text"/>
+                                    <property name="option" value="text" />
                                 </module>
 
-                                <module name="NeedBraces"/>
+                                <module name="NeedBraces" />
                                 <module name="LeftCurly">
-                                    <property name="option" value="EOL"/>
+                                    <property name="option" value="EOL" />
                                 </module>
                                 <module name="RightCurly">
-                                    <property name="option" value="SAME"/>
+                                    <property name="option" value="SAME" />
                                 </module>
 
                                 <!-- Checks for common coding problems               -->
                                 <!-- See http://checkstyle.sf.net/config_coding.html -->
-                                <module name="EmptyStatement"/>
-                                <module name="EqualsHashCode"/>
-                                <module name="DefaultComesLast"/>
-                                <module name="MissingSwitchDefault"/>
-                                <module name="FallThrough"/>
-                                <module name="MultipleVariableDeclarations"/>
+                                <module name="EmptyStatement" />
+                                <module name="EqualsHashCode" />
+                                <module name="DefaultComesLast" />
+                                <module name="MissingSwitchDefault" />
+                                <module name="FallThrough" />
+                                <module name="MultipleVariableDeclarations" />
 
                                 <!-- Checks for class design                         -->
                                 <!-- See http://checkstyle.sf.net/config_design.html -->
                                 <!-- module name="DesignForExtension"/ -->
                                 <module name="com.puppycrawl.tools.checkstyle.checks.design.DesignForExtensionCheck">
-                                    <property name="severity" value="ignore"/>
+                                    <property name="severity" value="ignore" />
                                 </module>
 
                                 <!-- module name="FinalClass"/ -->
 
-                                <module name="HideUtilityClassConstructor"/>
+                                <module name="HideUtilityClassConstructor" />
 
                                 <!-- module name="InterfaceIsType"/ -->
                                 <!-- module name="VisibilityModifier"/ -->
 
                                 <module name="com.puppycrawl.tools.checkstyle.checks.design.VisibilityModifierCheck">
-                                    <property name="packageAllowed" value="false"/>
-                                    <property name="protectedAllowed" value="true"/>
-                                    <property name="publicMemberPattern" value="^serialVersionUID"/>
-                                    <property name="severity" value="warning"/>
+                                    <property name="packageAllowed" value="false" />
+                                    <property name="protectedAllowed" value="true" />
+                                    <property name="publicMemberPattern" value="^serialVersionUID" />
+                                    <property name="severity" value="warning" />
                                 </module>
 
 
@@ -359,11 +357,11 @@
                                 <!-- module name="FinalParameters"/ -->
                                 <!-- Line with Trailing Spaces (disabled as it's to noisy)
                                 <module name="GenericIllegalRegexp">
-                                    <property name="format" value="\s+$"/>
-                                    <property name="message" value="Line has trailing spaces."/>
+                                    <property name="format" value="\s+$" />
+                                    <property name="message" value="Line has trailing spaces." />
                                 </module>
                                   -->
-                                <module name="UpperEll"/>
+                                <module name="UpperEll" />
 
                             </module>
 
