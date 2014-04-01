@@ -456,19 +456,7 @@
         </plugins>
     </build>
 
-    <repositories>
-        <repository>
-            <id>apache-snapshot-repository</id>
-            <url>https://repository.apache.org/snapshots/</url>
-        </repository>
-    </repositories>
     <pluginRepositories>
-        <pluginRepository>
-            <id>apache.snapshots</id>
-            <url>http://repository.apache.org/content/groups/snapshots</url>
-            <releases><enabled>false</enabled></releases>
-            <snapshots><enabled>true</enabled></snapshots>
-        </pluginRepository>
 
         <!-- WTF? surely not! -->
         <pluginRepository>
