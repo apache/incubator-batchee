@@ -29,6 +29,14 @@
     <artifactId>batchee-jbatch</artifactId>
     <name>BatchEE :: JBatch</name>
 
+    <properties>
+        <openjpa.version>2.3.0</openjpa.version>
+
+        <tck.suite>${project.basedir}/src/test/resources/suites/tck.xml</tck.suite>
+        <tck.unpack.dir>${project.build.directory}/tck</tck.unpack.dir>
+        <tck.dir>${tck.unpack.dir}/jsr352-tck-1.0/artifacts</tck.dir>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>org.apache.geronimo.specs</groupId>
@@ -264,12 +272,124 @@
                     </execution>
                 </executions>
             </plugin>
+
+            <plugin>
+                <!--
+                 * We use the openjpa-maven-plugin just for generating the
+                 * CREATE TABLE statements for various databases.
+                 * Those will later be zipped and added as attached artifact.
+                 -->
+                <groupId>org.apache.openjpa</groupId>
+                <artifactId>openjpa-maven-plugin</artifactId>
+                <version>${openjpa.version}</version>
+
+                <configuration>
+                    <includes>org/apache/batchee/container/services/persistence/jpa/domain/*.class</includes>
+                    <addDefaultConstructor>true</addDefaultConstructor>
+                    <enforcePropertyRestrictions>true</enforcePropertyRestrictions>
+                    <persistenceXmlFile>${project.basedir}/src/test/resources/META-INF/persistence-createdb.xml</persistenceXmlFile>
+                    <sqlAction>build</sqlAction>
+                    <toolProperties>
+                        <MappingDefaults>ForeignKeyDeleteAction=restrict,JoinForeignKeyDeleteAction=restrict</MappingDefaults>
+                    </toolProperties>
+                </configuration>
+
+                <executions>
+                    <execution>
+                        <id>oracle</id>
+                        <goals><goal>sql</goal></goals>
+                        <phase>process-classes</phase>
+                        <configuration>
+                            <sqlFile>${project.build.directory}/database-oracle.sql</sqlFile>
+                            <toolProperties>
+                                <MappingDefaults>ForeignKeyDeleteAction=restrict,JoinForeignKeyDeleteAction=restrict</MappingDefaults>
+                                <DBDictionary>org.apache.openjpa.jdbc.sql.OracleDictionary</DBDictionary>
+                            </toolProperties>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>mysql</id>
+                        <goals><goal>sql</goal></goals>
+                        <phase>process-classes</phase>
+                        <configuration>
+                            <sqlFile>${project.build.directory}/database-myslq.sql</sqlFile>
+                            <toolProperties>
+                                <MappingDefaults>ForeignKeyDeleteAction=restrict,JoinForeignKeyDeleteAction=restrict</MappingDefaults>
+                                <DBDictionary>org.apache.openjpa.jdbc.sql.MySQLDictionary</DBDictionary>
+                            </toolProperties>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>h2</id>
+                        <goals><goal>sql</goal></goals>
+                        <phase>process-classes</phase>
+                        <configuration>
+                            <sqlFile>${project.build.directory}/database-h2.sql</sqlFile>
+                            <toolProperties>
+                                <MappingDefaults>ForeignKeyDeleteAction=restrict,JoinForeignKeyDeleteAction=restrict</MappingDefaults>
+                                <DBDictionary>org.apache.openjpa.jdbc.sql.H2Dictionary</DBDictionary>
+                            </toolProperties>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>DB2</id>
+                        <goals><goal>sql</goal></goals>
+                        <phase>process-classes</phase>
+                        <configuration>
+                            <sqlFile>${project.build.directory}/database-db2.sql</sqlFile>
+                            <toolProperties>
+                                <MappingDefaults>ForeignKeyDeleteAction=restrict,JoinForeignKeyDeleteAction=restrict</MappingDefaults>
+                                <DBDictionary>org.apache.openjpa.jdbc.sql.DB2Dictionary</DBDictionary>
+                            </toolProperties>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>hsqldb</id>
+                        <goals><goal>sql</goal></goals>
+                        <phase>process-classes</phase>
+                        <configuration>
+                            <sqlFile>${project.build.directory}/database-hsqldb.sql</sqlFile>
+                            <toolProperties>
+                                <MappingDefaults>ForeignKeyDeleteAction=restrict,JoinForeignKeyDeleteAction=restrict</MappingDefaults>
+                                <DBDictionary>org.apache.openjpa.jdbc.sql.HSQLDictionary</DBDictionary>
+                            </toolProperties>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>derby</id>
+                        <goals><goal>sql</goal></goals>
+                        <phase>process-classes</phase>
+                        <configuration>
+                            <sqlFile>${project.build.directory}/database-derby.sql</sqlFile>
+                            <toolProperties>
+                                <MappingDefaults>ForeignKeyDeleteAction=restrict,JoinForeignKeyDeleteAction=restrict</MappingDefaults>
+                                <DBDictionary>org.apache.openjpa.jdbc.sql.DerbyDictionary</DBDictionary>
+                            </toolProperties>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <version>2.4</version>
+                <configuration>
+                    <tarLongFileMode>gnu</tarLongFileMode>
+                    <descriptors>
+                        <descriptor>src/main/assembly/dbscripts-assembly.xml</descriptor>
+                    </descriptors>
+                </configuration>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
         </plugins>
     </build>
 
-    <properties>
-        <tck.suite>${project.basedir}/src/test/resources/suites/tck.xml</tck.suite>
-        <tck.unpack.dir>${project.build.directory}/tck</tck.unpack.dir>
-        <tck.dir>${tck.unpack.dir}/jsr352-tck-1.0/artifacts</tck.dir>
-    </properties>
 </project>
