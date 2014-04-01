@@ -28,5 +28,6 @@
       <class>org.apache.batchee.container.services.persistence.jpa.domain.JobExecutionEntity</class>
       <class>org.apache.batchee.container.services.persistence.jpa.domain.JobInstanceEntity</class>
       <class>org.apache.batchee.container.services.persistence.jpa.domain.StepExecutionEntity</class>
+      <exclude-unlisted-classes>true</exclude-unlisted-classes>
   </persistence-unit>
 </persistence>
