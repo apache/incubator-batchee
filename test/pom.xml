@@ -21,7 +21,7 @@
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
-    <artifactId>batchee-parent</artifactId>
+    <artifactId>batchee</artifactId>
     <groupId>org.apache.batchee</groupId>
     <version>0.1-incubating-SNAPSHOT</version>
   </parent>
