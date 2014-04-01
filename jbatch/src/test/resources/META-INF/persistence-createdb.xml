@@ -23,6 +23,10 @@
                                  http://java.sun.com/xml/ns/persistence/persistence_2_0.xsd">
 
   <persistence-unit name="batchee" transaction-type="RESOURCE_LOCAL">
-      <!-- can be empty, we just need this to make the openjpa SQL generator happy -->
+      <!-- This persistence unit is an example of how you could use batchee via JPA -->
+      <class>org.apache.batchee.container.services.persistence.jpa.domain.CheckpointEntity</class>
+      <class>org.apache.batchee.container.services.persistence.jpa.domain.JobExecutionEntity</class>
+      <class>org.apache.batchee.container.services.persistence.jpa.domain.JobInstanceEntity</class>
+      <class>org.apache.batchee.container.services.persistence.jpa.domain.StepExecutionEntity</class>
   </persistence-unit>
 </persistence>

@@ -31,6 +31,10 @@ under the License.
         <file>
             <source>src/main/resources/META-INF/LICENSE</source>
         </file>
+        <file>
+            <source>src/test/resources/META-INF/persistence-createdb.xml</source>
+            <destName>persistence.xml</destName>
+        </file>
     </files>
 
     <fileSets>
