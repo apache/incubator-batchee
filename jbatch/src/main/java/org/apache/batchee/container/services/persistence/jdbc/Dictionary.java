@@ -72,8 +72,9 @@ public class Dictionary {
         String JOB_EXECUTION_MOST_RECENT = SELECT + "%s" + FROM + "%s" + WHERE + "%s = ? ORDER BY %s DESC";
         String DELETE_JOB_EXECUTION = DELETE + "%s" + WHERE + "%s = ?";
 
-        String[] STEP_EXECUTION_COLUMNS = { "id", "batchStatus", "commit", "endTime", "exitStatus", "filter", "lastRunStepExecutionId", "numPartitions",
-                "persistentData", "processSkip", "read", "readSkip", "rollback", "startCount", "startTime", "stepName", "write", "writeSkip", "EXECUTION_EXECUTIONID" };
+        String[] STEP_EXECUTION_COLUMNS = { "id", "batchStatus", "EXEC_COMMIT", "endTime", "exitStatus", "EXEC_FILTER", "lastRunStepExecutionId", "numPartitions",
+                "persistentData", "EXEC_PROCESSSKIP", "EXEC_READ", "EXEC_READSKIP", "EXEC_ROLLBACK", "startCount", "startTime", "stepName",
+                "EXEC_WRITE", "EXEC_WRITESKIP", "EXECUTION_EXECUTIONID" };
 
         String CREATE_STEP_EXECUTION = CREATE_TABLE +
                 "%s(%s %s %s" + ", %s %s, %s %s, %s %s, %s %s, %s %s, %s %s, %s %s, %s %s, %s %s, %s %s, %s %s, %s %s, %s %s, %s %s, %s %s, %s %s, %s %s, %s %s, PRIMARY KEY (id))";

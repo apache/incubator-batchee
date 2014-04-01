@@ -17,6 +17,7 @@
 package org.apache.batchee.container.services.persistence.jpa.domain;
 
 import javax.batch.runtime.BatchStatus;
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -52,13 +53,29 @@ public class StepExecutionEntity {
     private BatchStatus batchStatus;
 
     private String stepName;
+
+    @Column(name="EXEC_READ")
     private long read;
+
+    @Column(name="EXEC_WRITE")
     private long write;
+
+    @Column(name="EXEC_COMMIT")
     private long commit;
+
+    @Column(name="EXEC_ROLLBACK")
     private long rollback;
+
+    @Column(name="EXEC_READSKIP")
     private long readSkip;
+
+    @Column(name="EXEC_PROCESSSKIP")
     private long processSkip;
+
+    @Column(name="EXEC_FILTER")
     private long filter;
+
+    @Column(name="EXEC_WRITESKIP")
     private long writeSkip;
 
     @Temporal(TemporalType.TIMESTAMP)
