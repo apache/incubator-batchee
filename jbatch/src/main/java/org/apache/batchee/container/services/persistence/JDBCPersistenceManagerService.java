@@ -146,10 +146,10 @@ public class JDBCPersistenceManagerService implements PersistenceManagerService 
         try {
             final Database database = Database.class.cast(Thread.currentThread().getContextClassLoader().loadClass(type).newInstance());
             dictionary = new Dictionary(
-                batchConfig.getProperty("persistence.database.tables.checkpoint", "checkpointentity"),
-                batchConfig.getProperty("persistence.database.tables.job-instance", "jobinstanceentity"),
-                batchConfig.getProperty("persistence.database.tables.job-execution", "jobexecutionentity"),
-                batchConfig.getProperty("persistence.database.tables.step-execution", "stepexecutionentity"),
+                batchConfig.getProperty("persistence.database.tables.checkpoint", "JB_CHECKPOINT"),
+                batchConfig.getProperty("persistence.database.tables.job-instance", "JB_JOBINSTANCE"),
+                batchConfig.getProperty("persistence.database.tables.job-execution", "JOB_EXECUTION"),
+                batchConfig.getProperty("persistence.database.tables.step-execution", "JB_STEPEXECUTION"),
                 database);
         } catch (final Exception e) {
             throw new BatchContainerServiceException(e);
