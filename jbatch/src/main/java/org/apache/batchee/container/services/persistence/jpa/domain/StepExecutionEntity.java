@@ -27,6 +27,7 @@ import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
+import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import java.sql.Timestamp;
@@ -38,6 +39,7 @@ import java.sql.Timestamp;
     @NamedQuery(name = StepExecutionEntity.Queries.FIND_BY_INSTANCE_AND_NAME,
                 query = "select se FROM StepExecutionEntity se where se.execution.instance.jobInstanceId = :instanceId and se.stepName = :step")
 })
+@Table(name = "JB_STEPEXECUTION")
 public class StepExecutionEntity {
     public static interface Queries {
         String FIND_BY_EXECUTION = "org.apache.batchee.container.services.persistence.jpa.domain.StepExecutionEntity.findByExecution";

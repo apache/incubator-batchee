@@ -26,6 +26,7 @@ import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
+import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import java.sql.Timestamp;
@@ -41,6 +42,7 @@ import java.util.Properties;
     @NamedQuery(name = JobExecutionEntity.Queries.DELETE_BY_INSTANCE_ID, query =  "delete from JobExecutionEntity e where e.instance.jobInstanceId = :instanceId"),
     @NamedQuery(name = JobExecutionEntity.Queries.FIND_RUNNING, query =  "SELECT e FROM JobExecutionEntity e WHERE e.batchStatus in :statuses and e.instance.name = :name")
 })
+@Table(name = "JOB_EXECUTION")
 public class JobExecutionEntity {
     public static interface Queries {
         String MOST_RECENT = "org.apache.batchee.container.services.persistence.jpa.domain.JobExecutionEntity.mostRecent";
