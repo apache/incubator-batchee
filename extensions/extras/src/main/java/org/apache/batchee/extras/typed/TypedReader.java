@@ -19,10 +19,19 @@ package org.apache.batchee.extras.typed;
 import javax.batch.api.chunk.ItemReader;
 import java.io.Serializable;
 
+/**
+ * Typesafe abstraction of an ItemReader.
+ *
+ * @param <R> The type of the item returned in {@link #readItem()}.
+ * @param <C> The type of the Checkpoint. See {@link #doCheckpointInfo()} and {@link #doRead()}
+ */
 public abstract class TypedReader<R, C extends Serializable> implements ItemReader {
     protected abstract void doOpen(C checkpoint);
-    protected abstract C doCheckpointInfo();
     protected abstract R doRead();
+
+    protected C doCheckpointInfo() {
+        return null;
+    }
 
     @Override
     public void open(Serializable checkpoint) throws Exception {
