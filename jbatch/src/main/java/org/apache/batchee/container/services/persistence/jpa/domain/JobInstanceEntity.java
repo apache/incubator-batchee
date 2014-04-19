@@ -29,6 +29,8 @@ import javax.persistence.Lob;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
+import javax.persistence.Table;
+
 import java.util.List;
 
 @Entity
@@ -41,6 +43,7 @@ import java.util.List;
     @NamedQuery(name = JobInstanceEntity.Queries.FIND_BY_NAME, query = "select j from JobInstanceEntity j where j.name = :name"),
     @NamedQuery(name = JobInstanceEntity.Queries.DELETE_BY_INSTANCE_ID, query = "delete from JobInstanceEntity e where e.jobInstanceId = :instanceId")
 })
+@Table(name=JobInstanceEntity.TABLE_NAME)
 public class JobInstanceEntity {
     public static interface Queries {
         String COUNT_BY_NAME_AND_TAG = "org.apache.batchee.container.services.persistence.jpa.domain.JobInstanceEntity.countByNameAndTag";
@@ -51,6 +54,8 @@ public class JobInstanceEntity {
         String FIND_FROM_EXECUTION = "org.apache.batchee.container.services.persistence.jpa.domain.JobInstanceEntity.findByExecution";
         String DELETE_BY_INSTANCE_ID = "org.apache.batchee.container.services.persistence.jpa.domain.JobInstanceEntity.deleteFromInstanceId";
     }
+
+    public static final String TABLE_NAME = "BATCH_JOBINSTANCE";
 
     @Id
     @GeneratedValue

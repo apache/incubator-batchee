@@ -32,6 +32,10 @@ import org.apache.batchee.container.services.InternalJobExecution;
 import org.apache.batchee.container.services.persistence.jdbc.Dictionary;
 import org.apache.batchee.container.services.persistence.jdbc.database.Database;
 import org.apache.batchee.container.services.persistence.jdbc.database.DerbyDatabase;
+import org.apache.batchee.container.services.persistence.jpa.domain.CheckpointEntity;
+import org.apache.batchee.container.services.persistence.jpa.domain.JobExecutionEntity;
+import org.apache.batchee.container.services.persistence.jpa.domain.JobInstanceEntity;
+import org.apache.batchee.container.services.persistence.jpa.domain.StepExecutionEntity;
 import org.apache.batchee.container.status.JobStatus;
 import org.apache.batchee.container.status.StepStatus;
 import org.apache.batchee.container.util.TCCLObjectInputStream;
@@ -146,10 +150,10 @@ public class JDBCPersistenceManagerService implements PersistenceManagerService 
         try {
             final Database database = Database.class.cast(Thread.currentThread().getContextClassLoader().loadClass(type).newInstance());
             dictionary = new Dictionary(
-                batchConfig.getProperty("persistence.database.tables.checkpoint", "checkpointentity"),
-                batchConfig.getProperty("persistence.database.tables.job-instance", "jobinstanceentity"),
-                batchConfig.getProperty("persistence.database.tables.job-execution", "jobexecutionentity"),
-                batchConfig.getProperty("persistence.database.tables.step-execution", "stepexecutionentity"),
+                batchConfig.getProperty("persistence.database.tables.checkpoint", CheckpointEntity.TABLE_NAME),
+                batchConfig.getProperty("persistence.database.tables.job-instance", JobInstanceEntity.TABLE_NAME),
+                batchConfig.getProperty("persistence.database.tables.job-execution", JobExecutionEntity.TABLE_NAME),
+                batchConfig.getProperty("persistence.database.tables.step-execution", StepExecutionEntity.TABLE_NAME),
                 database);
         } catch (final Exception e) {
             throw new BatchContainerServiceException(e);

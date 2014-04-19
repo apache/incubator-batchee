@@ -27,6 +27,7 @@ import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
+import javax.persistence.Table;
 
 @Entity
 @NamedQueries({
@@ -34,11 +35,14 @@ import javax.persistence.NamedQuery;
                 query = "select c from CheckpointEntity c where c.instance.jobInstanceId = :jobInstanceId and c.stepName = :stepName and c.type = :type"),
     @NamedQuery(name = CheckpointEntity.Queries.DELETE_BY_INSTANCE_ID, query = "delete from CheckpointEntity e where e.instance.jobInstanceId = :id")
 })
+@Table(name=CheckpointEntity.TABLE_NAME)
 public class CheckpointEntity {
     public static interface Queries {
         String FIND = "org.apache.batchee.container.services.persistence.jpa.domain.CheckpointEntity.find";
         String DELETE_BY_INSTANCE_ID = "org.apache.batchee.container.services.persistence.jpa.domain.CheckpointEntity.deleteByInstanceId";
     }
+
+    public static final String TABLE_NAME = "BATCH_CHECKPOINT";
 
     @Id
     @GeneratedValue
