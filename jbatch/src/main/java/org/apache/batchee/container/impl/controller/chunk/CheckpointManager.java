@@ -18,24 +18,25 @@ package org.apache.batchee.container.impl.controller.chunk;
 
 import org.apache.batchee.container.exception.BatchContainerRuntimeException;
 import org.apache.batchee.container.exception.BatchContainerServiceException;
-import org.apache.batchee.container.proxy.ItemReaderProxy;
 import org.apache.batchee.container.proxy.ItemWriterProxy;
 import org.apache.batchee.spi.PersistenceManagerService;
 
 import javax.batch.api.chunk.CheckpointAlgorithm;
+import javax.batch.api.chunk.ItemReader;
+
 import java.io.ByteArrayOutputStream;
 import java.io.ObjectOutputStream;
 
 public class CheckpointManager {
     private final PersistenceManagerService persistenceManagerService;
-    private final ItemReaderProxy readerProxy;
+    private final ItemReader readerProxy;
     private final ItemWriterProxy writerProxy;
     private final CheckpointAlgorithm checkpointAlgorithm;
     private final String stepId;
     private final long jobInstanceID;
 
 
-    public CheckpointManager(final ItemReaderProxy reader, final ItemWriterProxy writer,
+    public CheckpointManager(final ItemReader reader, final ItemWriterProxy writer,
                              final CheckpointAlgorithm chkptAlg,
                              final long jobInstanceID, final String stepId,
                              final PersistenceManagerService persistenceManagerService) {

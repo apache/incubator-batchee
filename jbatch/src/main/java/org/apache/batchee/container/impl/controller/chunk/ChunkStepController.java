@@ -28,7 +28,6 @@ import org.apache.batchee.container.proxy.InjectionReferences;
 import org.apache.batchee.container.proxy.ItemProcessListenerProxy;
 import org.apache.batchee.container.proxy.ItemProcessorProxy;
 import org.apache.batchee.container.proxy.ItemReadListenerProxy;
-import org.apache.batchee.container.proxy.ItemReaderProxy;
 import org.apache.batchee.container.proxy.ItemWriteListenerProxy;
 import org.apache.batchee.container.proxy.ItemWriterProxy;
 import org.apache.batchee.container.proxy.ProxyFactory;
@@ -43,7 +42,6 @@ import org.apache.batchee.container.util.PartitionDataWrapper;
 import org.apache.batchee.container.util.TCCLObjectInputStream;
 import org.apache.batchee.jaxb.Chunk;
 import org.apache.batchee.jaxb.ItemProcessor;
-import org.apache.batchee.jaxb.ItemReader;
 import org.apache.batchee.jaxb.ItemWriter;
 import org.apache.batchee.jaxb.Property;
 import org.apache.batchee.jaxb.Step;
@@ -51,6 +49,7 @@ import org.apache.batchee.spi.BatchArtifactFactory;
 import org.apache.batchee.spi.PersistenceManagerService;
 
 import javax.batch.api.chunk.CheckpointAlgorithm;
+import javax.batch.api.chunk.ItemReader;
 import javax.batch.runtime.BatchStatus;
 import java.io.ByteArrayInputStream;
 import java.io.Serializable;
@@ -68,7 +67,7 @@ public class ChunkStepController extends SingleThreadedStepController {
     private final BatchArtifactFactory artifactFactory;
 
     private Chunk chunk = null;
-    private ItemReaderProxy readerProxy = null;
+    private ItemReader readerProxy = null;
     private ItemProcessorProxy processorProxy = null;
     private ItemWriterProxy writerProxy = null;
     private CheckpointAlgorithmProxy checkpointProxy = null;
@@ -602,7 +601,11 @@ public class ChunkStepController extends SingleThreadedStepController {
 
     private void rollback(final Throwable t) {
         transactionManager.setRollbackOnly();
-        readerProxy.close();
+        try {
+            readerProxy.close();
+        } catch (Exception e) {
+            // ignore, we blow up anyway
+        }
         writerProxy.close();
         transactionManager.rollback();
         throw new BatchContainerRuntimeException("Failure in Read-Process-Write Loop", t);
@@ -637,7 +640,7 @@ public class ChunkStepController extends SingleThreadedStepController {
         final int timeInterval = ChunkHelper.getTimeLimit(chunk);
 
         {
-            final ItemReader itemReader = chunk.getReader();
+            final org.apache.batchee.jaxb.ItemReader itemReader = chunk.getReader();
             final List<Property> itemReaderProps = itemReader.getProperties() == null ? null : itemReader.getProperties().getPropertyList();
             final InjectionReferences injectionRef = new InjectionReferences(jobExecutionImpl.getJobContext(), stepContext, itemReaderProps);
             readerProxy = ProxyFactory.createItemReaderProxy(artifactFactory, itemReader.getRef(), injectionRef, stepContext, jobExecutionImpl);
@@ -735,7 +738,12 @@ public class ChunkStepController extends SingleThreadedStepController {
             } else {
                 // no chkpt data exists in the backing store
                 readerChkptData = null;
-                readerProxy.open(null);
+                try {
+                    readerProxy.open(null);
+                } catch (final Exception ex) {
+                    // is this what I should be throwing here?
+                    throw new BatchContainerServiceException("Cannot persist the checkpoint data for [" + step.getId() + "]", ex);
+                }
             }
         } catch (final ClassCastException e) {
             throw new IllegalStateException("Expected CheckpointData but found" + readerChkptData);
@@ -861,7 +869,12 @@ public class ChunkStepController extends SingleThreadedStepController {
             } else {
                 // no chkpt data exists in the backing store
                 readerData = null;
-                readerProxy.open(null);
+                try {
+                    readerProxy.open(null);
+                } catch (final Exception ex) {
+                    // is this what I should be throwing here?
+                    throw new BatchContainerServiceException("Cannot persist the checkpoint data for [" + step.getId() + "]", ex);
+                }
             }
         } catch (final ClassCastException e) {
             throw new IllegalStateException("Expected CheckpointData but found" + readerData);
