@@ -55,7 +55,7 @@ public class BatchProxyInvocationHandler implements InvocationHandler {
             return method.invoke(delegate, args);
         } catch (Throwable e) {
             if (e instanceof InvocationTargetException) {
-                e = ((InvocationTargetException) e).getCause();
+                e = e.getCause();
             }
 
             if (nonExceptionHandlingMethods == null || Arrays.binarySearch(nonExceptionHandlingMethods, method.getName()) < 0) {
