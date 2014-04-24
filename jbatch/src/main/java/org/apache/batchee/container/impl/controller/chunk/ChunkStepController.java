@@ -25,11 +25,6 @@ import org.apache.batchee.container.impl.jobinstance.RuntimeJobExecution;
 import org.apache.batchee.container.proxy.CheckpointAlgorithmProxy;
 import org.apache.batchee.container.proxy.ChunkListenerProxy;
 import org.apache.batchee.container.proxy.InjectionReferences;
-import org.apache.batchee.container.proxy.ItemProcessListenerProxy;
-import org.apache.batchee.container.proxy.ItemProcessorProxy;
-import org.apache.batchee.container.proxy.ItemReadListenerProxy;
-import org.apache.batchee.container.proxy.ItemWriteListenerProxy;
-import org.apache.batchee.container.proxy.ItemWriterProxy;
 import org.apache.batchee.container.proxy.ProxyFactory;
 import org.apache.batchee.container.proxy.RetryProcessListenerProxy;
 import org.apache.batchee.container.proxy.RetryReadListenerProxy;
@@ -41,15 +36,18 @@ import org.apache.batchee.container.services.ServicesManager;
 import org.apache.batchee.container.util.PartitionDataWrapper;
 import org.apache.batchee.container.util.TCCLObjectInputStream;
 import org.apache.batchee.jaxb.Chunk;
-import org.apache.batchee.jaxb.ItemProcessor;
-import org.apache.batchee.jaxb.ItemWriter;
 import org.apache.batchee.jaxb.Property;
 import org.apache.batchee.jaxb.Step;
 import org.apache.batchee.spi.BatchArtifactFactory;
 import org.apache.batchee.spi.PersistenceManagerService;
 
 import javax.batch.api.chunk.CheckpointAlgorithm;
+import javax.batch.api.chunk.ItemProcessor;
 import javax.batch.api.chunk.ItemReader;
+import javax.batch.api.chunk.ItemWriter;
+import javax.batch.api.chunk.listener.ItemProcessListener;
+import javax.batch.api.chunk.listener.ItemReadListener;
+import javax.batch.api.chunk.listener.ItemWriteListener;
 import javax.batch.runtime.BatchStatus;
 import java.io.ByteArrayInputStream;
 import java.io.Serializable;
@@ -68,8 +66,8 @@ public class ChunkStepController extends SingleThreadedStepController {
 
     private Chunk chunk = null;
     private ItemReader readerProxy = null;
-    private ItemProcessorProxy processorProxy = null;
-    private ItemWriterProxy writerProxy = null;
+    private ItemProcessor processorProxy = null;
+    private ItemWriter writerProxy = null;
     private CheckpointAlgorithmProxy checkpointProxy = null;
     private CheckpointAlgorithm chkptAlg = null;
     private CheckpointManager checkpointManager;
@@ -77,9 +75,9 @@ public class ChunkStepController extends SingleThreadedStepController {
     private CheckpointDataKey readerChkptDK = null;
     private CheckpointDataKey writerChkptDK = null;
     private List<ChunkListenerProxy> chunkListeners = null;
-    private List<ItemReadListenerProxy> itemReadListeners = null;
-    private List<ItemProcessListenerProxy> itemProcessListeners = null;
-    private List<ItemWriteListenerProxy> itemWriteListeners = null;
+    private List<ItemReadListener> itemReadListeners = null;
+    private List<ItemProcessListener> itemProcessListeners = null;
+    private List<ItemWriteListener> itemWriteListeners = null;
     private RetryHandler retryHandler;
 
     private boolean rollbackRetry = false;
@@ -232,13 +230,13 @@ public class ChunkStepController extends SingleThreadedStepController {
 
         try {
             // call read listeners before and after the actual read
-            for (ItemReadListenerProxy readListenerProxy : itemReadListeners) {
+            for (ItemReadListener readListenerProxy : itemReadListeners) {
                 readListenerProxy.beforeRead();
             }
 
             itemRead = readerProxy.readItem();
 
-            for (ItemReadListenerProxy readListenerProxy : itemReadListeners) {
+            for (ItemReadListener readListenerProxy : itemReadListeners) {
                 readListenerProxy.afterRead(itemRead);
             }
 
@@ -250,13 +248,21 @@ public class ChunkStepController extends SingleThreadedStepController {
             }
         } catch (Exception e) {
             stepContext.setException(e);
-            for (ItemReadListenerProxy readListenerProxy : itemReadListeners) {
-                readListenerProxy.onReadError(e);
+            for (ItemReadListener readListenerProxy : itemReadListeners) {
+                try {
+                    readListenerProxy.onReadError(e);
+                } catch (Exception e1) {
+                    handleBatchException(e1);
+                }
             }
             if (!rollbackRetry) {
                 if (retryReadException(e)) {
-                    for (ItemReadListenerProxy readListenerProxy : itemReadListeners) {
-                        readListenerProxy.onReadError(e);
+                    for (ItemReadListener readListenerProxy : itemReadListeners) {
+                        try {
+                            readListenerProxy.onReadError(e);
+                        } catch (Exception e1) {
+                            handleBatchException(e1);
+                        }
                     }
                     // if not a rollback exception, just retry the current item
                     if (!retryHandler.isRollbackException(e)) {
@@ -300,6 +306,14 @@ public class ChunkStepController extends SingleThreadedStepController {
         return itemRead;
     }
 
+    private void handleBatchException(Exception e) {
+        if (e instanceof RuntimeException) {
+            throw (RuntimeException) e;
+        } else {
+            throw new BatchContainerRuntimeException(e);
+        }
+    }
+
     /**
      * Process an item previously read by the reader
      *
@@ -318,7 +332,7 @@ public class ChunkStepController extends SingleThreadedStepController {
         try {
 
             // call process listeners before and after the actual process call
-            for (final ItemProcessListenerProxy processListenerProxy : itemProcessListeners) {
+            for (final ItemProcessListener processListenerProxy : itemProcessListeners) {
                 processListenerProxy.beforeProcess(itemRead);
             }
 
@@ -330,20 +344,28 @@ public class ChunkStepController extends SingleThreadedStepController {
                 status.setFiltered(true);
             }
 
-            for (final ItemProcessListenerProxy processListenerProxy : itemProcessListeners) {
+            for (final ItemProcessListener processListenerProxy : itemProcessListeners) {
                 processListenerProxy.afterProcess(itemRead, processedItem);
             }
         } catch (final Exception e) {
-            for (final ItemProcessListenerProxy processListenerProxy : itemProcessListeners) {
-                processListenerProxy.onProcessError(processedItem, e);
+            for (final ItemProcessListener processListenerProxy : itemProcessListeners) {
+                try {
+                    processListenerProxy.onProcessError(processedItem, e);
+                } catch (Exception e1) {
+                    handleBatchException(e1);
+                }
             }
             if (!rollbackRetry) {
                 if (retryProcessException(e, itemRead)) {
                     if (!retryHandler.isRollbackException(e)) {
                         // call process listeners before and after the actual
                         // process call
-                        for (ItemProcessListenerProxy processListenerProxy : itemProcessListeners) {
-                            processListenerProxy.beforeProcess(itemRead);
+                        for (ItemProcessListener processListenerProxy : itemProcessListeners) {
+                            try {
+                                processListenerProxy.beforeProcess(itemRead);
+                            } catch (Exception e1) {
+                                handleBatchException(e1);
+                            }
                         }
                         processedItem = processItem(itemRead, status);
                         if (processedItem == null) {
@@ -352,8 +374,12 @@ public class ChunkStepController extends SingleThreadedStepController {
                             status.setFiltered(true);
                         }
 
-                        for (final ItemProcessListenerProxy processListenerProxy : itemProcessListeners) {
-                            processListenerProxy.afterProcess(itemRead, processedItem);
+                        for (final ItemProcessListener processListenerProxy : itemProcessListeners) {
+                            try {
+                                processListenerProxy.afterProcess(itemRead, processedItem);
+                            } catch (Exception e1) {
+                                handleBatchException(e1);
+                            }
                         }
                     } else {
                         status.setRollback(true);
@@ -375,8 +401,12 @@ public class ChunkStepController extends SingleThreadedStepController {
                     if (!retryHandler.isRollbackException(e)) {
                         // call process listeners before and after the actual
                         // process call
-                        for (final ItemProcessListenerProxy processListenerProxy : itemProcessListeners) {
-                            processListenerProxy.beforeProcess(itemRead);
+                        for (final ItemProcessListener processListenerProxy : itemProcessListeners) {
+                            try {
+                                processListenerProxy.beforeProcess(itemRead);
+                            } catch (Exception e1) {
+                                handleBatchException(e1);
+                            }
                         }
                         processedItem = processItem(itemRead, status);
                         if (processedItem == null) {
@@ -385,8 +415,12 @@ public class ChunkStepController extends SingleThreadedStepController {
                             status.setFiltered(true);
                         }
 
-                        for (final ItemProcessListenerProxy processListenerProxy : itemProcessListeners) {
-                            processListenerProxy.afterProcess(itemRead, processedItem);
+                        for (final ItemProcessListener processListenerProxy : itemProcessListeners) {
+                            try {
+                                processListenerProxy.afterProcess(itemRead, processedItem);
+                            } catch (Exception e1) {
+                                handleBatchException(e1);
+                            }
                         }
                     } else {
                         status.setRollback(true);
@@ -416,20 +450,24 @@ public class ChunkStepController extends SingleThreadedStepController {
             try {
 
                 // call read listeners before and after the actual read
-                for (ItemWriteListenerProxy writeListenerProxy : itemWriteListeners) {
+                for (ItemWriteListener writeListenerProxy : itemWriteListeners) {
                     writeListenerProxy.beforeWrite(theChunk);
                 }
 
                 writerProxy.writeItems(theChunk);
 
-                for (ItemWriteListenerProxy writeListenerProxy : itemWriteListeners) {
+                for (ItemWriteListener writeListenerProxy : itemWriteListeners) {
                     writeListenerProxy.afterWrite(theChunk);
                 }
                 stepContext.getMetric(MetricImpl.MetricType.WRITE_COUNT).incValueBy(theChunk.size());
             } catch (Exception e) {
                 this.stepContext.setException(e);
-                for (ItemWriteListenerProxy writeListenerProxy : itemWriteListeners) {
-                    writeListenerProxy.onWriteError(theChunk, e);
+                for (ItemWriteListener writeListenerProxy : itemWriteListeners) {
+                    try {
+                        writeListenerProxy.onWriteError(theChunk, e);
+                    } catch (Exception e1) {
+                        handleBatchException(e1);
+                    }
                 }
                 if (!rollbackRetry) {
                     if (retryWriteException(e, theChunk)) {
@@ -603,10 +641,10 @@ public class ChunkStepController extends SingleThreadedStepController {
         transactionManager.setRollbackOnly();
         try {
             readerProxy.close();
+            writerProxy.close();
         } catch (Exception e) {
             // ignore, we blow up anyway
         }
-        writerProxy.close();
         transactionManager.rollback();
         throw new BatchContainerRuntimeException("Failure in Read-Process-Write Loop", t);
     }
@@ -647,7 +685,7 @@ public class ChunkStepController extends SingleThreadedStepController {
         }
 
         {
-            final ItemProcessor itemProcessor = chunk.getProcessor();
+            final org.apache.batchee.jaxb.ItemProcessor itemProcessor = chunk.getProcessor();
             if (itemProcessor != null) {
                 final List<Property> itemProcessorProps = itemProcessor.getProperties() == null ? null : itemProcessor.getProperties().getPropertyList();
                 final InjectionReferences injectionRef = new InjectionReferences(jobExecutionImpl.getJobContext(), stepContext, itemProcessorProps);
@@ -656,7 +694,7 @@ public class ChunkStepController extends SingleThreadedStepController {
         }
 
         {
-            final ItemWriter itemWriter = chunk.getWriter();
+            final org.apache.batchee.jaxb.ItemWriter itemWriter = chunk.getWriter();
             final List<Property> itemWriterProps = itemWriter.getProperties() == null ? null : itemWriter.getProperties().getPropertyList();
             final InjectionReferences injectionRef = new InjectionReferences(jobExecutionImpl.getJobContext(), stepContext, itemWriterProps);
             writerProxy = ProxyFactory.createItemWriterProxy(artifactFactory, itemWriter.getRef(), injectionRef, stepContext, jobExecutionImpl);
@@ -733,7 +771,7 @@ public class ChunkStepController extends SingleThreadedStepController {
                     readerOIS.close();
                 } catch (final Exception ex) {
                     // is this what I should be throwing here?
-                    throw new BatchContainerServiceException("Cannot persist the checkpoint data for [" + step.getId() + "]", ex);
+                    throw new BatchContainerServiceException("Cannot read the checkpoint data for [" + step.getId() + "]", ex);
                 }
             } else {
                 // no chkpt data exists in the backing store
@@ -742,7 +780,7 @@ public class ChunkStepController extends SingleThreadedStepController {
                     readerProxy.open(null);
                 } catch (final Exception ex) {
                     // is this what I should be throwing here?
-                    throw new BatchContainerServiceException("Cannot persist the checkpoint data for [" + step.getId() + "]", ex);
+                    throw new BatchContainerServiceException("Exception while opening step [" + step.getId() + "]", ex);
                 }
             }
         } catch (final ClassCastException e) {
@@ -762,24 +800,20 @@ public class ChunkStepController extends SingleThreadedStepController {
                     writerProxy.open((Serializable) writerOIS.readObject());
                     writerOIS.close();
                 } catch (final Exception ex) {
-                    // is this what I should be throwing here?
                     throw new BatchContainerServiceException("Cannot persist the checkpoint data for [" + step.getId() + "]", ex);
                 }
             } else {
                 // no chkpt data exists in the backing store
                 writerChkptData = null;
-                writerProxy.open(null);
+                try {
+                    writerProxy.open(null);
+                } catch (Exception e) {
+                    handleBatchException(e);
+                }
             }
         } catch (final ClassCastException e) {
             throw new IllegalStateException("Expected Checkpoint but found" + writerChkptData);
         }
-
-        // set up metrics
-        // stepContext.addMetric(MetricImpl.Counter.valueOf("READ_COUNT"), 0);
-        // stepContext.addMetric(MetricImpl.Counter.valueOf("WRITE_COUNT"), 0);
-        // stepContext.addMetric(MetricImpl.Counter.valueOf("READ_SKIP_COUNT"), 0);
-        // stepContext.addMetric(MetricImpl.Counter.valueOf("PROCESS_SKIP_COUNT"), 0);
-        // stepContext.addMetric(MetricImpl.Counter.valueOf("WRITE_SKIP_COUNT"), 0);
     }
 
     @Override
@@ -897,12 +931,16 @@ public class ChunkStepController extends SingleThreadedStepController {
                     writerOIS.close();
                 } catch (Exception ex) {
                     // is this what I should be throwing here?
-                    throw new BatchContainerServiceException("Cannot persist the checkpoint data for [" + step.getId() + "]", ex);
+                    throw new BatchContainerServiceException("Cannot read the checkpoint data for [" + step.getId() + "]", ex);
                 }
             } else {
                 // no chkpt data exists in the backing store
                 writerData = null;
-                writerProxy.open(null);
+                try {
+                    writerProxy.open(null);
+                } catch (Exception ex) {
+                    throw new BatchContainerServiceException("Cannot open the step [" + step.getId() + "]", ex);
+                }
             }
         } catch (ClassCastException e) {
             throw new IllegalStateException("Expected CheckpointData but found" + writerData);
