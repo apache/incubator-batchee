@@ -17,8 +17,8 @@
 package org.apache.batchee.container.proxy;
 
 import java.lang.reflect.Proxy;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.apache.batchee.container.impl.StepContextImpl;
 import org.apache.batchee.container.impl.jobinstance.RuntimeJobExecution;
@@ -68,6 +68,13 @@ public class ProxyFactory {
         return INJECTION_CONTEXT.get();
     }
 
+    public static <T> T createProxy(T delegate, StepContextImpl stepContext, String... nonExceptionHandlingMethods) {
+        return (T) Proxy.newProxyInstance(delegate.getClass().getClassLoader(), getInterfaces(delegate.getClass()),
+                new BatchProxyInvocationHandler(delegate, stepContext, nonExceptionHandlingMethods));
+
+    }
+
+
     /*
      * Decider
      */
@@ -102,45 +109,21 @@ public class ProxyFactory {
     public static ItemReader createItemReaderProxy(final BatchArtifactFactory factory, final String id, final InjectionReferences injectionRefs,
                                                         final StepContextImpl stepContext, final RuntimeJobExecution execution) {
         final ItemReader loadedArtifact = (ItemReader) loadArtifact(factory, id, injectionRefs, execution);
-        return (ItemReader) Proxy.newProxyInstance(loadedArtifact.getClass().getClassLoader(), getInterfaces(loadedArtifact.getClass()),
-                new BatchProxyInvocationHandler(loadedArtifact, stepContext, "readItem"));
+        return createProxy(loadedArtifact, stepContext, "readItem");
     }
 
-    /**
-     * @return all the interfaces fo the given class and it's superclasses
-     */
-    private static Class<?>[] getInterfaces(Class<?> clazz) {
-        if (clazz.getSuperclass() == Object.class) {
-            return clazz.getInterfaces();
-        } else {
-            List<Class<?>> clazzes = new ArrayList<Class<?>>();
-            while (clazz != Object.class) {
-                for (Class<?> interfaceClass : clazz.getInterfaces()) {
-                    clazzes.add(interfaceClass);
-                }
-                clazz = clazz.getSuperclass();
-            }
-
-            return clazzes.toArray(new Class<?>[clazzes.size()]);
-        }
-    }
-
-    public static ItemProcessorProxy createItemProcessorProxy(final BatchArtifactFactory factory, final String id, final InjectionReferences injectionRefs,
+    public static ItemProcessor createItemProcessorProxy(final BatchArtifactFactory factory, final String id, final InjectionReferences injectionRefs,
                                                               final StepContextImpl stepContext, final RuntimeJobExecution execution) {
         final ItemProcessor loadedArtifact = (ItemProcessor) loadArtifact(factory, id, injectionRefs, execution);
-        final ItemProcessorProxy proxy = new ItemProcessorProxy(loadedArtifact);
-        proxy.setStepContext(stepContext);
-        return proxy;
+        return createProxy(loadedArtifact, stepContext, "processItem");
     }
 
-    public static ItemWriterProxy createItemWriterProxy(final BatchArtifactFactory factory, final String id, final InjectionReferences injectionRefs,
+    public static ItemWriter createItemWriterProxy(final BatchArtifactFactory factory, final String id, final InjectionReferences injectionRefs,
                                                         final StepContextImpl stepContext, final RuntimeJobExecution execution) {
         final ItemWriter loadedArtifact = (ItemWriter) loadArtifact(factory, id, injectionRefs, execution);
-        final ItemWriterProxy proxy = new ItemWriterProxy(loadedArtifact);
-        proxy.setStepContext(stepContext);
-        return proxy;
+        return createProxy(loadedArtifact, stepContext, "writeItems");
     }
-        
+
     /*
      * The four partition-related artifacts
      */
@@ -175,5 +158,24 @@ public class ProxyFactory {
         final PartitionCollectorProxy proxy = new PartitionCollectorProxy(loadedArtifact);
         proxy.setStepContext(stepContext);
         return proxy;
+    }
+
+    /**
+     * @return all the interfaces fo the given class and it's superclasses
+     */
+    private static Class<?>[] getInterfaces(Class<?> clazz) {
+        if (clazz.getSuperclass() == Object.class) {
+            return clazz.getInterfaces();
+        } else {
+            Set<Class<?>> clazzes = new HashSet<Class<?>>();
+            while (clazz != Object.class) {
+                for (Class<?> interfaceClass : clazz.getInterfaces()) {
+                    clazzes.add(interfaceClass);
+                }
+                clazz = clazz.getSuperclass();
+            }
+
+            return clazzes.toArray(new Class<?>[clazzes.size()]);
+        }
     }
 }
