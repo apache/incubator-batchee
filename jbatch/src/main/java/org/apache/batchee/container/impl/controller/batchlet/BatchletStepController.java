@@ -50,7 +50,7 @@ public class BatchletStepController extends SingleThreadedStepController {
         final String batchletId = batchlet.getRef();
         final List<Property> propList = (batchlet.getProperties() == null) ? null : batchlet.getProperties().getPropertyList();
         final InjectionReferences injectionRef = new InjectionReferences(jobExecutionImpl.getJobContext(), stepContext, propList);
-        batchletProxy = ProxyFactory.createBatchletProxy(factory, batchletId, injectionRef, stepContext, jobExecutionImpl);
+        batchletProxy = ProxyFactory.createBatchletProxy(factory, batchletId, injectionRef, jobExecutionImpl);
 
         if (!wasStopIssued()) {
             String processRetVal = null;

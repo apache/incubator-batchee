@@ -136,7 +136,7 @@ public class PartitionedStepController extends BaseStepController {
             // Some of them may be null
             final InjectionReferences injectionRef = new InjectionReferences(jobExecutionImpl.getJobContext(), stepContext, propertyList);
             final PartitionMapper partitionMapperProxy =
-                    ProxyFactory.createPartitionMapperProxy(factory, partitionMapper.getRef(), injectionRef, stepContext, jobExecutionImpl);
+                    ProxyFactory.createPartitionMapperProxy(factory, partitionMapper.getRef(), injectionRef, jobExecutionImpl);
 
 
             PartitionPlan mapperPlan = null;
@@ -431,14 +431,14 @@ public class PartitionedStepController extends BaseStepController {
         if (analyzer != null) {
             final List<Property> propList = analyzer.getProperties() == null ? null : analyzer.getProperties().getPropertyList();
             injectionRef = new InjectionReferences(jobExecutionImpl.getJobContext(), stepContext, propList);
-            analyzerProxy = ProxyFactory.createPartitionAnalyzerProxy(factory, analyzer.getRef(), injectionRef, stepContext, jobExecutionImpl);
+            analyzerProxy = ProxyFactory.createPartitionAnalyzerProxy(factory, analyzer.getRef(), injectionRef, jobExecutionImpl);
         }
 
         final org.apache.batchee.jaxb.PartitionReducer partitionReducer = step.getPartition().getReducer();
         if (partitionReducer != null) {
             final List<Property> propList = partitionReducer.getProperties() == null ? null : partitionReducer.getProperties().getPropertyList();
             injectionRef = new InjectionReferences(jobExecutionImpl.getJobContext(), stepContext, propList);
-            partitionReducerProxy = ProxyFactory.createPartitionReducerProxy(factory, partitionReducer.getRef(), injectionRef, stepContext, jobExecutionImpl);
+            partitionReducerProxy = ProxyFactory.createPartitionReducerProxy(factory, partitionReducer.getRef(), injectionRef, jobExecutionImpl);
         }
 
     }

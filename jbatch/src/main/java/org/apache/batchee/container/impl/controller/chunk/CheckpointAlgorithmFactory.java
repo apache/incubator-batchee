@@ -17,7 +17,6 @@
 package org.apache.batchee.container.impl.controller.chunk;
 
 
-import org.apache.batchee.container.impl.StepContextImpl;
 import org.apache.batchee.container.impl.jobinstance.RuntimeJobExecution;
 import org.apache.batchee.container.proxy.CheckpointAlgorithmProxy;
 import org.apache.batchee.container.proxy.InjectionReferences;
@@ -28,12 +27,12 @@ import org.apache.batchee.spi.BatchArtifactFactory;
 
 public final class CheckpointAlgorithmFactory {
     public static CheckpointAlgorithmProxy getCheckpointAlgorithmProxy(final BatchArtifactFactory factory, final Step step, final InjectionReferences injectionReferences,
-                                                                       final StepContextImpl stepContext, final RuntimeJobExecution jobExecution) {
+                                                                       final RuntimeJobExecution jobExecution) {
         final Chunk chunk = step.getChunk();
         final String checkpointType = chunk.getCheckpointPolicy();
         final CheckpointAlgorithmProxy proxy;
         if ("custom".equalsIgnoreCase(checkpointType)) {
-            proxy = ProxyFactory.createCheckpointAlgorithmProxy(factory, chunk.getCheckpointAlgorithm().getRef(), injectionReferences, stepContext, jobExecution);
+            proxy = ProxyFactory.createCheckpointAlgorithmProxy(factory, chunk.getCheckpointAlgorithm().getRef(), injectionReferences, jobExecution);
         } else /* "item" */ {
             proxy = new CheckpointAlgorithmProxy(new ItemCheckpointAlgorithm());
         }

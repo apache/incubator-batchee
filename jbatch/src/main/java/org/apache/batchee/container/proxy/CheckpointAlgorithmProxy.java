@@ -24,7 +24,6 @@ import javax.batch.api.chunk.CheckpointAlgorithm;
 public class CheckpointAlgorithmProxy extends AbstractProxy<CheckpointAlgorithm> implements CheckpointAlgorithm {
 
     private String checkpointType = null;
-    private String checkpointName = null;
 
     /*
      * Allow this to be public as a special case so we can easily treat the built-in algorithms
@@ -35,10 +34,8 @@ public class CheckpointAlgorithmProxy extends AbstractProxy<CheckpointAlgorithm>
 
         if (delegate instanceof ItemCheckpointAlgorithm) {
             checkpointType = "item";
-            checkpointName = ItemCheckpointAlgorithm.class.getName();
         } else {
             checkpointType = "custom";
-            checkpointName = delegate.getClass().getName();
         }
 
     }
@@ -48,9 +45,6 @@ public class CheckpointAlgorithmProxy extends AbstractProxy<CheckpointAlgorithm>
         return checkpointType;
     }
 
-    public String getCheckpointAlgorithmClassName() {
-        return checkpointName;
-    }
 
     @Override
     public void beginCheckpoint() {

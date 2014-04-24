@@ -77,7 +77,7 @@ public abstract class SingleThreadedStepController extends BaseStepController im
                  * contexts may be null
                  */
                 injectionRef = new InjectionReferences(jobExecutionImpl.getJobContext(), stepContext, propList);
-                this.collectorProxy = ProxyFactory.createPartitionCollectorProxy(factory, collector.getRef(), injectionRef, this.stepContext, jobExecutionImpl);
+                this.collectorProxy = ProxyFactory.createPartitionCollectorProxy(factory, collector.getRef(), injectionRef, jobExecutionImpl);
             }
         }
     }
