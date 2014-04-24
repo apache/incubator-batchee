@@ -78,9 +78,9 @@ public class ProxyFactory {
     /*
      * Decider
      */
-    public static DeciderProxy createDeciderProxy(final BatchArtifactFactory factory, final String id, final InjectionReferences injectionRefs,
+    public static Decider createDeciderProxy(final BatchArtifactFactory factory, final String id, final InjectionReferences injectionRefs,
                                                   final RuntimeJobExecution execution) {
-        return new DeciderProxy(Decider.class.cast(loadArtifact(factory, id, injectionRefs, execution)));
+        return createProxy((Decider) loadArtifact(factory, id, injectionRefs, execution), injectionRefs);
     }
 
     /*
@@ -126,36 +126,28 @@ public class ProxyFactory {
      * The four partition-related artifacts
      */
 
-    public static PartitionReducerProxy createPartitionReducerProxy(final BatchArtifactFactory factory, final String id, final InjectionReferences injectionRefs,
+    public static PartitionReducer createPartitionReducerProxy(final BatchArtifactFactory factory, final String id, final InjectionReferences injectionRefs,
                                                                     final StepContextImpl stepContext, final RuntimeJobExecution execution) {
         final PartitionReducer loadedArtifact = (PartitionReducer) loadArtifact(factory, id, injectionRefs, execution);
-        final PartitionReducerProxy proxy = new PartitionReducerProxy(loadedArtifact);
-        proxy.setStepContext(stepContext);
-        return proxy;
+        return createProxy(loadedArtifact, injectionRefs);
     }
 
-    public static PartitionMapperProxy createPartitionMapperProxy(final BatchArtifactFactory factory, final String id, final InjectionReferences injectionRefs,
+    public static PartitionMapper createPartitionMapperProxy(final BatchArtifactFactory factory, final String id, final InjectionReferences injectionRefs,
                                                                   final StepContextImpl stepContext, final RuntimeJobExecution execution) {
         final PartitionMapper loadedArtifact = (PartitionMapper) loadArtifact(factory, id, injectionRefs, execution);
-        final PartitionMapperProxy proxy = new PartitionMapperProxy(loadedArtifact);
-        proxy.setStepContext(stepContext);
-        return proxy;
+        return createProxy(loadedArtifact, injectionRefs);
     }
 
-    public static PartitionAnalyzerProxy createPartitionAnalyzerProxy(final BatchArtifactFactory factory, final String id, final InjectionReferences injectionRefs,
+    public static PartitionAnalyzer createPartitionAnalyzerProxy(final BatchArtifactFactory factory, final String id, final InjectionReferences injectionRefs,
                                                                       final StepContextImpl stepContext, final RuntimeJobExecution execution) {
         final PartitionAnalyzer loadedArtifact = (PartitionAnalyzer) loadArtifact(factory, id, injectionRefs, execution);
-        final PartitionAnalyzerProxy proxy = new PartitionAnalyzerProxy(loadedArtifact);
-        proxy.setStepContext(stepContext);
-        return proxy;
+        return createProxy(loadedArtifact, injectionRefs);
     }
 
-    public static PartitionCollectorProxy createPartitionCollectorProxy(final BatchArtifactFactory factory, final String id, final InjectionReferences injectionRefs,
+    public static PartitionCollector createPartitionCollectorProxy(final BatchArtifactFactory factory, final String id, final InjectionReferences injectionRefs,
                                                                         final StepContextImpl stepContext, final RuntimeJobExecution execution) {
         final PartitionCollector loadedArtifact = (PartitionCollector) loadArtifact(factory, id, injectionRefs, execution);
-        final PartitionCollectorProxy proxy = new PartitionCollectorProxy(loadedArtifact);
-        proxy.setStepContext(stepContext);
-        return proxy;
+        return createProxy(loadedArtifact, injectionRefs);
     }
 
     /**

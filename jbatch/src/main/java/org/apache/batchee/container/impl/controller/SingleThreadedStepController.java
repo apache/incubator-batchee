@@ -18,11 +18,10 @@ package org.apache.batchee.container.impl.controller;
 
 import org.apache.batchee.container.Controller;
 import org.apache.batchee.container.impl.StepContextImpl;
+import org.apache.batchee.container.impl.controller.chunk.ExceptionConfig;
 import org.apache.batchee.container.impl.jobinstance.RuntimeJobExecution;
 import org.apache.batchee.container.proxy.InjectionReferences;
-import org.apache.batchee.container.proxy.PartitionCollectorProxy;
 import org.apache.batchee.container.proxy.ProxyFactory;
-import org.apache.batchee.container.proxy.StepListenerProxy;
 import org.apache.batchee.container.services.ServicesManager;
 import org.apache.batchee.container.util.PartitionDataWrapper;
 import org.apache.batchee.container.util.PartitionDataWrapper.PartitionEventType;
@@ -35,6 +34,9 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
 
+import javax.batch.api.listener.StepListener;
+import javax.batch.api.partition.PartitionCollector;
+
 /**
  * When a partitioned step is run, this controller will only be used for the partition threads,
  * NOT the top-level main thread that the step executes upon.
@@ -46,7 +48,7 @@ public abstract class SingleThreadedStepController extends BaseStepController im
     private final BatchArtifactFactory factory;
 
     // Collector only used from partition threads, not main thread
-    protected PartitionCollectorProxy collectorProxy = null;
+    protected PartitionCollector collectorProxy = null;
 
     protected SingleThreadedStepController(final RuntimeJobExecution jobExecutionImpl, final Step step,
                                            final StepContextImpl stepContext, final long rootJobExecutionId,
@@ -56,7 +58,7 @@ public abstract class SingleThreadedStepController extends BaseStepController im
         factory = servicesManager.service(BatchArtifactFactory.class);
     }
 
-    List<StepListenerProxy> stepListeners = null;
+    List<StepListener> stepListeners = null;
 
     protected void setupStepArtifacts() {
         // set up listeners
@@ -85,8 +87,12 @@ public abstract class SingleThreadedStepController extends BaseStepController im
         // Don't call beforeStep() in the partitioned case, since we are now on a partition thread, and
         // have already called beforeStep() on the main thread as the spec says.
         if ((stepListeners != null) && (this.jobExecutionImpl.getPartitionInstance() == null)) {
-            for (StepListenerProxy listenerProxy : stepListeners) {
-                listenerProxy.beforeStep();
+            for (StepListener listenerProxy : stepListeners) {
+                try {
+                    listenerProxy.beforeStep();
+                } catch (Exception e) {
+                    ExceptionConfig.wrapBatchException(e);
+                }
             }
         }
     }
@@ -96,16 +102,24 @@ public abstract class SingleThreadedStepController extends BaseStepController im
         // Don't call beforeStep() in the partitioned case, since we are now on a partition thread, and
         // have already called beforeStep() on the main thread as the spec says.
         if ((stepListeners != null) && (this.jobExecutionImpl.getPartitionInstance() == null)) {
-            for (StepListenerProxy listenerProxy : stepListeners) {
-                listenerProxy.afterStep();
+            for (StepListener listenerProxy : stepListeners) {
+                try {
+                    listenerProxy.afterStep();
+                } catch (Exception e) {
+                    ExceptionConfig.wrapBatchException(e);
+                }
             }
         }
     }
 
     protected void invokeCollectorIfPresent() {
         if (collectorProxy != null) {
-            final Serializable data = collectorProxy.collectPartitionData();
-            sendCollectorDataToAnalyzerIfPresent(data);
+            try {
+                final Serializable data = collectorProxy.collectPartitionData();
+                sendCollectorDataToAnalyzerIfPresent(data);
+            } catch (Exception e) {
+                ExceptionConfig.wrapBatchException(e);
+            }
         }
     }
 

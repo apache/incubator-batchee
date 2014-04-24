@@ -284,14 +284,13 @@ public class ListenerFactory {
         return retVal;
     }
 
-    public List<StepListenerProxy> getStepListeners(final Step step, final InjectionReferences injectionRefs, final StepContextImpl stepContext,
+    public List<StepListener> getStepListeners(final Step step, final InjectionReferences injectionRefs, final StepContextImpl stepContext,
                                                     final RuntimeJobExecution execution) {
         final List<ListenerInfo> stepListenerInfo = getStepListenerInfo(factory, step, injectionRefs, execution);
-        final List<StepListenerProxy> retVal = new ArrayList<StepListenerProxy>();
+        final List<StepListener> retVal = new ArrayList<StepListener>();
         for (final ListenerInfo li : stepListenerInfo) {
             if (li.isStepListener()) {
-                final StepListenerProxy proxy = new StepListenerProxy((StepListener) li.getArtifact());
-                proxy.setStepContext(stepContext);
+                final StepListener proxy = ProxyFactory.createProxy((StepListener) li.getArtifact(), injectionRefs);
                 retVal.add(proxy);
             }
         }

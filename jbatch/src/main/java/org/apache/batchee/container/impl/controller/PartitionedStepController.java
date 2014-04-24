@@ -18,14 +18,11 @@ package org.apache.batchee.container.impl.controller;
 
 import org.apache.batchee.container.exception.BatchContainerRuntimeException;
 import org.apache.batchee.container.impl.StepContextImpl;
+import org.apache.batchee.container.impl.controller.chunk.ExceptionConfig;
 import org.apache.batchee.container.impl.jobinstance.RuntimeJobExecution;
 import org.apache.batchee.container.jsl.CloneUtility;
 import org.apache.batchee.container.proxy.InjectionReferences;
-import org.apache.batchee.container.proxy.PartitionAnalyzerProxy;
-import org.apache.batchee.container.proxy.PartitionMapperProxy;
-import org.apache.batchee.container.proxy.PartitionReducerProxy;
 import org.apache.batchee.container.proxy.ProxyFactory;
-import org.apache.batchee.container.proxy.StepListenerProxy;
 import org.apache.batchee.container.services.ServicesManager;
 import org.apache.batchee.container.util.BatchPartitionPlan;
 import org.apache.batchee.container.util.BatchPartitionWorkUnit;
@@ -36,13 +33,15 @@ import org.apache.batchee.container.util.PartitionsBuilderConfig;
 import org.apache.batchee.jaxb.Analyzer;
 import org.apache.batchee.jaxb.JSLJob;
 import org.apache.batchee.jaxb.JSLProperties;
-import org.apache.batchee.jaxb.PartitionMapper;
-import org.apache.batchee.jaxb.PartitionReducer;
 import org.apache.batchee.jaxb.Property;
 import org.apache.batchee.jaxb.Step;
 import org.apache.batchee.spi.BatchArtifactFactory;
 
+import javax.batch.api.listener.StepListener;
+import javax.batch.api.partition.PartitionAnalyzer;
+import javax.batch.api.partition.PartitionMapper;
 import javax.batch.api.partition.PartitionPlan;
+import javax.batch.api.partition.PartitionReducer;
 import javax.batch.api.partition.PartitionReducer.PartitionStatus;
 import javax.batch.operations.JobExecutionAlreadyCompleteException;
 import javax.batch.operations.JobExecutionNotMostRecentException;
@@ -70,15 +69,15 @@ public class PartitionedStepController extends BaseStepController {
 
     private volatile List<BatchPartitionWorkUnit> parallelBatchWorkUnits;
 
-    private PartitionReducerProxy partitionReducerProxy = null;
+    private PartitionReducer partitionReducerProxy = null;
 
     // On invocation this will be re-primed to reflect already-completed partitions from a previous execution.
     int numPreviouslyCompleted = 0;
 
-    private PartitionAnalyzerProxy analyzerProxy = null;
+    private PartitionAnalyzer analyzerProxy = null;
 
     final List<JSLJob> subJobs = new ArrayList<JSLJob>();
-    protected List<StepListenerProxy> stepListeners = null;
+    protected List<StepListener> stepListeners = null;
 
     List<BatchPartitionWorkUnit> completedWork = new ArrayList<BatchPartitionWorkUnit>();
 
@@ -121,7 +120,7 @@ public class PartitionedStepController extends BaseStepController {
 
         PartitionPlan plan = null;
         Integer previousNumPartitions = null;
-        final PartitionMapper partitionMapper = step.getPartition().getMapper();
+        final org.apache.batchee.jaxb.PartitionMapper partitionMapper = step.getPartition().getMapper();
 
         //from persisted plan from previous run
         if (stepStatus.getNumPartitions() != null) {
@@ -136,11 +135,16 @@ public class PartitionedStepController extends BaseStepController {
             // Set all the contexts associated with this controller.
             // Some of them may be null
             final InjectionReferences injectionRef = new InjectionReferences(jobExecutionImpl.getJobContext(), stepContext, propertyList);
-            final PartitionMapperProxy partitionMapperProxy =
+            final PartitionMapper partitionMapperProxy =
                     ProxyFactory.createPartitionMapperProxy(factory, partitionMapper.getRef(), injectionRef, stepContext, jobExecutionImpl);
 
 
-            final PartitionPlan mapperPlan = partitionMapperProxy.mapPartitions();
+            PartitionPlan mapperPlan = null;
+            try {
+                mapperPlan = partitionMapperProxy.mapPartitions();
+            } catch (Exception e) {
+                ExceptionConfig.wrapBatchException(e);
+            }
 
             //Set up the new partition plan
             plan = new BatchPartitionPlan();
@@ -255,7 +259,11 @@ public class PartitionedStepController extends BaseStepController {
          */
         if (plan.getPartitionsOverride()) {
             if (this.partitionReducerProxy != null) {
-                this.partitionReducerProxy.rollbackPartitionedStep();
+                try {
+                    this.partitionReducerProxy.rollbackPartitionedStep();
+                } catch (Exception e) {
+                    ExceptionConfig.wrapBatchException(e);
+                }
             }
         }
 
@@ -325,10 +333,18 @@ public class PartitionedStepController extends BaseStepController {
                 if (analyzerProxy != null) {
                     PartitionDataWrapper dataWrapper = analyzerStatusQueue.take();
                     if (PartitionEventType.ANALYZE_COLLECTOR_DATA.equals(dataWrapper.getEventType())) {
-                        analyzerProxy.analyzeCollectorData(dataWrapper.getCollectorData());
+                        try {
+                            analyzerProxy.analyzeCollectorData(dataWrapper.getCollectorData());
+                        } catch (Exception e) {
+                            ExceptionConfig.wrapBatchException(e);
+                        }
                         continue; // without being ready to submit another
                     } else if (PartitionEventType.ANALYZE_STATUS.equals(dataWrapper.getEventType())) {
-                        analyzerProxy.analyzeStatus(dataWrapper.getBatchstatus(), dataWrapper.getExitStatus());
+                        try {
+                            analyzerProxy.analyzeStatus(dataWrapper.getBatchstatus(), dataWrapper.getExitStatus());
+                        } catch (Exception e) {
+                            ExceptionConfig.wrapBatchException(e);
+                        }
                         completedWork.add(completedWorkQueue.take());  // Shouldn't be a a long wait.
                     } else {
                         throw new IllegalStateException("Invalid partition state");
@@ -388,12 +404,20 @@ public class PartitionedStepController extends BaseStepController {
         //We are assuming that not providing a rollback was intentional
         if (rollback) {
             if (this.partitionReducerProxy != null) {
-                this.partitionReducerProxy.rollbackPartitionedStep();
+                try {
+                    this.partitionReducerProxy.rollbackPartitionedStep();
+                } catch (Exception e) {
+                    ExceptionConfig.wrapBatchException(e);
+                }
             }
             throw new BatchContainerRuntimeException("One or more partitions failed");
         } else {
             if (this.partitionReducerProxy != null) {
-                this.partitionReducerProxy.beforePartitionedStepCompletion();
+                try {
+                    this.partitionReducerProxy.beforePartitionedStepCompletion();
+                } catch (Exception e) {
+                    ExceptionConfig.wrapBatchException(e);
+                }
             }
         }
     }
@@ -410,7 +434,7 @@ public class PartitionedStepController extends BaseStepController {
             analyzerProxy = ProxyFactory.createPartitionAnalyzerProxy(factory, analyzer.getRef(), injectionRef, stepContext, jobExecutionImpl);
         }
 
-        final PartitionReducer partitionReducer = step.getPartition().getReducer();
+        final org.apache.batchee.jaxb.PartitionReducer partitionReducer = step.getPartition().getReducer();
         if (partitionReducer != null) {
             final List<Property> propList = partitionReducer.getProperties() == null ? null : partitionReducer.getProperties().getPropertyList();
             injectionRef = new InjectionReferences(jobExecutionImpl.getJobContext(), stepContext, propList);
@@ -423,16 +447,24 @@ public class PartitionedStepController extends BaseStepController {
     protected void invokePreStepArtifacts() {
 
         if (stepListeners != null) {
-            for (StepListenerProxy listenerProxy : stepListeners) {
+            for (StepListener listenerProxy : stepListeners) {
                 // Call beforeStep on all the step listeners
-                listenerProxy.beforeStep();
+                try {
+                    listenerProxy.beforeStep();
+                } catch (Exception e) {
+                    ExceptionConfig.wrapBatchException(e);
+                }
             }
         }
 
         // Invoke the reducer before all parallel steps start (must occur
         // before mapper as well)
         if (this.partitionReducerProxy != null) {
-            this.partitionReducerProxy.beginPartitionedStep();
+            try {
+                this.partitionReducerProxy.beginPartitionedStep();
+            } catch (Exception e) {
+                ExceptionConfig.wrapBatchException(e);
+            }
         }
 
     }
@@ -442,19 +474,26 @@ public class PartitionedStepController extends BaseStepController {
         // Invoke the reducer after all parallel steps are done
         if (this.partitionReducerProxy != null) {
 
-            if ((BatchStatus.COMPLETED).equals(stepContext.getBatchStatus())) {
-                this.partitionReducerProxy.afterPartitionedStepCompletion(PartitionStatus.COMMIT);
-            } else {
-                this.partitionReducerProxy.afterPartitionedStepCompletion(PartitionStatus.ROLLBACK);
+            try {
+                if ((BatchStatus.COMPLETED).equals(stepContext.getBatchStatus())) {
+                    this.partitionReducerProxy.afterPartitionedStepCompletion(PartitionStatus.COMMIT);
+                } else {
+                    this.partitionReducerProxy.afterPartitionedStepCompletion(PartitionStatus.ROLLBACK);
+                }
+            } catch (Exception e) {
+                ExceptionConfig.wrapBatchException(e);
             }
-
         }
 
         // Called in spec'd order, e.g. Sec. 11.7
         if (stepListeners != null) {
-            for (StepListenerProxy listenerProxy : stepListeners) {
+            for (StepListener listenerProxy : stepListeners) {
                 // Call afterStep on all the step listeners
-                listenerProxy.afterStep();
+                try {
+                    listenerProxy.afterStep();
+                } catch (Exception e) {
+                    ExceptionConfig.wrapBatchException(e);
+                }
             }
         }
     }

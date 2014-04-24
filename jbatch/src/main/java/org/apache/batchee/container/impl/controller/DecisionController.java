@@ -18,9 +18,9 @@ package org.apache.batchee.container.impl.controller;
 
 import org.apache.batchee.container.ExecutionElementController;
 import org.apache.batchee.container.exception.BatchContainerRuntimeException;
+import org.apache.batchee.container.impl.controller.chunk.ExceptionConfig;
 import org.apache.batchee.container.impl.jobinstance.RuntimeJobExecution;
 import org.apache.batchee.container.jsl.ExecutionElement;
-import org.apache.batchee.container.proxy.DeciderProxy;
 import org.apache.batchee.container.proxy.InjectionReferences;
 import org.apache.batchee.container.proxy.ProxyFactory;
 import org.apache.batchee.container.services.ServicesManager;
@@ -31,6 +31,7 @@ import org.apache.batchee.jaxb.Property;
 import org.apache.batchee.spi.BatchArtifactFactory;
 import org.apache.batchee.spi.PersistenceManagerService;
 
+import javax.batch.api.Decider;
 import javax.batch.runtime.StepExecution;
 import java.util.List;
 
@@ -64,9 +65,14 @@ public class DecisionController implements ExecutionElementController {
         //so two of these contexts will always be null
         final InjectionReferences injectionRef = new InjectionReferences(jobExecution.getJobContext(), null, propList);
 
-        final DeciderProxy deciderProxy = ProxyFactory.createDeciderProxy(factory, deciderId, injectionRef, jobExecution);
+        final Decider deciderProxy = ProxyFactory.createDeciderProxy(factory, deciderId, injectionRef, jobExecution);
 
-        final String exitStatus = deciderProxy.decide(this.previousStepExecutions);
+        String exitStatus = null;
+        try {
+            exitStatus = deciderProxy.decide(this.previousStepExecutions);
+        } catch (Exception e) {
+            ExceptionConfig.wrapBatchException(e);
+        }
 
         //Set the value returned from the decider as the job context exit status.
         this.jobExecution.getJobContext().setExitStatus(exitStatus);
