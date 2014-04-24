@@ -23,15 +23,8 @@ import org.apache.batchee.container.impl.StepContextImpl;
 import org.apache.batchee.container.impl.controller.SingleThreadedStepController;
 import org.apache.batchee.container.impl.jobinstance.RuntimeJobExecution;
 import org.apache.batchee.container.proxy.CheckpointAlgorithmProxy;
-import org.apache.batchee.container.proxy.ChunkListenerProxy;
 import org.apache.batchee.container.proxy.InjectionReferences;
 import org.apache.batchee.container.proxy.ProxyFactory;
-import org.apache.batchee.container.proxy.RetryProcessListenerProxy;
-import org.apache.batchee.container.proxy.RetryReadListenerProxy;
-import org.apache.batchee.container.proxy.RetryWriteListenerProxy;
-import org.apache.batchee.container.proxy.SkipProcessListenerProxy;
-import org.apache.batchee.container.proxy.SkipReadListenerProxy;
-import org.apache.batchee.container.proxy.SkipWriteListenerProxy;
 import org.apache.batchee.container.services.ServicesManager;
 import org.apache.batchee.container.util.PartitionDataWrapper;
 import org.apache.batchee.container.util.TCCLObjectInputStream;
@@ -45,9 +38,16 @@ import javax.batch.api.chunk.CheckpointAlgorithm;
 import javax.batch.api.chunk.ItemProcessor;
 import javax.batch.api.chunk.ItemReader;
 import javax.batch.api.chunk.ItemWriter;
+import javax.batch.api.chunk.listener.ChunkListener;
 import javax.batch.api.chunk.listener.ItemProcessListener;
 import javax.batch.api.chunk.listener.ItemReadListener;
 import javax.batch.api.chunk.listener.ItemWriteListener;
+import javax.batch.api.chunk.listener.RetryProcessListener;
+import javax.batch.api.chunk.listener.RetryReadListener;
+import javax.batch.api.chunk.listener.RetryWriteListener;
+import javax.batch.api.chunk.listener.SkipProcessListener;
+import javax.batch.api.chunk.listener.SkipReadListener;
+import javax.batch.api.chunk.listener.SkipWriteListener;
 import javax.batch.runtime.BatchStatus;
 import java.io.ByteArrayInputStream;
 import java.io.Serializable;
@@ -74,7 +74,7 @@ public class ChunkStepController extends SingleThreadedStepController {
     private SkipHandler skipHandler = null;
     private CheckpointDataKey readerChkptDK = null;
     private CheckpointDataKey writerChkptDK = null;
-    private List<ChunkListenerProxy> chunkListeners = null;
+    private List<ChunkListener> chunkListeners = null;
     private List<ItemReadListener> itemReadListeners = null;
     private List<ItemProcessListener> itemProcessListeners = null;
     private List<ItemWriteListener> itemWriteListeners = null;
@@ -252,7 +252,7 @@ public class ChunkStepController extends SingleThreadedStepController {
                 try {
                     readListenerProxy.onReadError(e);
                 } catch (Exception e1) {
-                    handleBatchException(e1);
+                    ExceptionConfig.wrapBatchException(e1);
                 }
             }
             if (!rollbackRetry) {
@@ -261,7 +261,7 @@ public class ChunkStepController extends SingleThreadedStepController {
                         try {
                             readListenerProxy.onReadError(e);
                         } catch (Exception e1) {
-                            handleBatchException(e1);
+                            ExceptionConfig.wrapBatchException(e1);
                         }
                     }
                     // if not a rollback exception, just retry the current item
@@ -306,13 +306,6 @@ public class ChunkStepController extends SingleThreadedStepController {
         return itemRead;
     }
 
-    private void handleBatchException(Exception e) {
-        if (e instanceof RuntimeException) {
-            throw (RuntimeException) e;
-        } else {
-            throw new BatchContainerRuntimeException(e);
-        }
-    }
 
     /**
      * Process an item previously read by the reader
@@ -352,7 +345,7 @@ public class ChunkStepController extends SingleThreadedStepController {
                 try {
                     processListenerProxy.onProcessError(processedItem, e);
                 } catch (Exception e1) {
-                    handleBatchException(e1);
+                    ExceptionConfig.wrapBatchException(e1);
                 }
             }
             if (!rollbackRetry) {
@@ -364,7 +357,7 @@ public class ChunkStepController extends SingleThreadedStepController {
                             try {
                                 processListenerProxy.beforeProcess(itemRead);
                             } catch (Exception e1) {
-                                handleBatchException(e1);
+                                ExceptionConfig.wrapBatchException(e1);
                             }
                         }
                         processedItem = processItem(itemRead, status);
@@ -378,7 +371,7 @@ public class ChunkStepController extends SingleThreadedStepController {
                             try {
                                 processListenerProxy.afterProcess(itemRead, processedItem);
                             } catch (Exception e1) {
-                                handleBatchException(e1);
+                                ExceptionConfig.wrapBatchException(e1);
                             }
                         }
                     } else {
@@ -405,7 +398,7 @@ public class ChunkStepController extends SingleThreadedStepController {
                             try {
                                 processListenerProxy.beforeProcess(itemRead);
                             } catch (Exception e1) {
-                                handleBatchException(e1);
+                                ExceptionConfig.wrapBatchException(e1);
                             }
                         }
                         processedItem = processItem(itemRead, status);
@@ -419,7 +412,7 @@ public class ChunkStepController extends SingleThreadedStepController {
                             try {
                                 processListenerProxy.afterProcess(itemRead, processedItem);
                             } catch (Exception e1) {
-                                handleBatchException(e1);
+                                ExceptionConfig.wrapBatchException(e1);
                             }
                         }
                     } else {
@@ -466,7 +459,7 @@ public class ChunkStepController extends SingleThreadedStepController {
                     try {
                         writeListenerProxy.onWriteError(theChunk, e);
                     } catch (Exception e1) {
-                        handleBatchException(e1);
+                        ExceptionConfig.wrapBatchException(e1);
                     }
                 }
                 if (!rollbackRetry) {
@@ -530,7 +523,7 @@ public class ChunkStepController extends SingleThreadedStepController {
                         transactionManager.setTransactionTimeout(newtimeOut);
                     }
                     transactionManager.begin();
-                    for (ChunkListenerProxy chunkProxy : chunkListeners) {
+                    for (ChunkListener chunkProxy : chunkListeners) {
                         chunkProxy.beforeChunk();
                     }
 
@@ -588,7 +581,7 @@ public class ChunkStepController extends SingleThreadedStepController {
 
                     checkpointManager.checkpoint();
 
-                    for (ChunkListenerProxy chunkProxy : chunkListeners) {
+                    for (ChunkListener chunkProxy : chunkListeners) {
                         chunkProxy.afterChunk();
                     }
 
@@ -624,7 +617,7 @@ public class ChunkStepController extends SingleThreadedStepController {
         } catch (final Exception e) {
             logger.log(Level.SEVERE, "Failure in Read-Process-Write Loop", e);
             // Only try to call onError() if we have an Exception, but not an Error.
-            for (ChunkListenerProxy chunkProxy : chunkListeners) {
+            for (ChunkListener chunkProxy : chunkListeners) {
                 try {
                     chunkProxy.onError(e);
                 } catch (final Exception e1) {
@@ -719,17 +712,17 @@ public class ChunkStepController extends SingleThreadedStepController {
             this.itemReadListeners = jobExecutionImpl.getListenerFactory().getItemReadListeners(step, injectionRef, stepContext, jobExecutionImpl);
             this.itemProcessListeners = jobExecutionImpl.getListenerFactory().getItemProcessListeners(step, injectionRef, stepContext, jobExecutionImpl);
             this.itemWriteListeners = jobExecutionImpl.getListenerFactory().getItemWriteListeners(step, injectionRef, stepContext, jobExecutionImpl);
-            final List<SkipProcessListenerProxy> skipProcessListeners
+            final List<SkipProcessListener> skipProcessListeners
                     = jobExecutionImpl.getListenerFactory().getSkipProcessListeners(step, injectionRef, stepContext, jobExecutionImpl);
-            final List<SkipReadListenerProxy> skipReadListeners
+            final List<SkipReadListener> skipReadListeners
                     = jobExecutionImpl.getListenerFactory().getSkipReadListeners(step, injectionRef, stepContext, jobExecutionImpl);
-            final List<SkipWriteListenerProxy> skipWriteListeners
+            final List<SkipWriteListener> skipWriteListeners
                     = jobExecutionImpl.getListenerFactory().getSkipWriteListeners(step, injectionRef, stepContext, jobExecutionImpl);
-            final List<RetryProcessListenerProxy> retryProcessListeners
+            final List<RetryProcessListener> retryProcessListeners
                     = jobExecutionImpl.getListenerFactory().getRetryProcessListeners(step, injectionRef, stepContext, jobExecutionImpl);
-            final List<RetryReadListenerProxy> retryReadListeners
+            final List<RetryReadListener> retryReadListeners
                     = jobExecutionImpl.getListenerFactory().getRetryReadListeners(step, injectionRef, stepContext, jobExecutionImpl);
-            final List<RetryWriteListenerProxy> retryWriteListeners
+            final List<RetryWriteListener> retryWriteListeners
                     = jobExecutionImpl.getListenerFactory().getRetryWriteListeners(step, injectionRef, stepContext, jobExecutionImpl);
 
             if ("item".equals(checkpointProxy.getCheckpointType())) {
@@ -808,7 +801,7 @@ public class ChunkStepController extends SingleThreadedStepController {
                 try {
                     writerProxy.open(null);
                 } catch (Exception e) {
-                    handleBatchException(e);
+                    ExceptionConfig.wrapBatchException(e);
                 }
             }
         } catch (final ClassCastException e) {

@@ -20,10 +20,10 @@ import org.apache.batchee.container.Controller;
 import org.apache.batchee.container.ThreadRootController;
 import org.apache.batchee.container.impl.JobContextImpl;
 import org.apache.batchee.container.impl.StepContextImpl;
+import org.apache.batchee.container.impl.controller.chunk.ExceptionConfig;
 import org.apache.batchee.container.impl.jobinstance.RuntimeJobExecution;
 import org.apache.batchee.container.navigator.ModelNavigator;
 import org.apache.batchee.container.proxy.InjectionReferences;
-import org.apache.batchee.container.proxy.JobListenerProxy;
 import org.apache.batchee.container.proxy.ListenerFactory;
 import org.apache.batchee.container.services.JobStatusManagerService;
 import org.apache.batchee.container.services.ServicesManager;
@@ -34,6 +34,7 @@ import org.apache.batchee.jaxb.JSLJob;
 import org.apache.batchee.spi.BatchArtifactFactory;
 import org.apache.batchee.spi.PersistenceManagerService;
 
+import javax.batch.api.listener.JobListener;
 import javax.batch.runtime.BatchStatus;
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -261,17 +262,27 @@ public abstract class JobThreadRootController implements ThreadRootController {
 
     // Call beforeJob() on all the job listeners
     protected void jobListenersBeforeJob() {
-        final List<JobListenerProxy> jobListeners = listenerFactory.getJobListeners();
-        for (final JobListenerProxy listenerProxy : jobListeners) {
-            listenerProxy.beforeJob();
+        InjectionReferences injectionRef = new InjectionReferences(jobContext, null, null);
+        final List<JobListener> jobListeners = listenerFactory.getJobListeners(injectionRef);
+        for (final JobListener listenerProxy : jobListeners) {
+            try {
+                listenerProxy.beforeJob();
+            } catch (Exception e) {
+                ExceptionConfig.wrapBatchException(e);
+            }
         }
     }
 
     // Call afterJob() on all the job listeners
     private void jobListenersAfterJob() {
-        final List<JobListenerProxy> jobListeners = listenerFactory.getJobListeners();
-        for (final JobListenerProxy listenerProxy : jobListeners) {
-            listenerProxy.afterJob();
+        InjectionReferences injectionRef = new InjectionReferences(jobContext, null, null);
+        final List<JobListener> jobListeners = listenerFactory.getJobListeners(injectionRef);
+        for (final JobListener listenerProxy : jobListeners) {
+            try {
+                listenerProxy.afterJob();
+            } catch (Exception e) {
+                ExceptionConfig.wrapBatchException(e);
+            }
         }
     }
 

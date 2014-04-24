@@ -16,10 +16,10 @@
  */
 package org.apache.batchee.container.proxy;
 
+import org.apache.batchee.container.impl.JobContextImpl;
+import org.apache.batchee.container.impl.StepContextImpl;
 import org.apache.batchee.jaxb.Property;
 
-import javax.batch.runtime.context.JobContext;
-import javax.batch.runtime.context.StepContext;
 import java.util.List;
 
 
@@ -29,12 +29,12 @@ import java.util.List;
  */
 public class InjectionReferences {
 
-    private final JobContext jobContext;
-    private final StepContext stepContext;
+    private final JobContextImpl jobContext;
+    private final StepContextImpl stepContext;
 
     private List<Property> props;
 
-    public InjectionReferences(final JobContext jobContext, final StepContext stepContext,
+    public InjectionReferences(final JobContextImpl jobContext, final StepContextImpl stepContext,
                                final List<Property> props) {
 
         this.jobContext = jobContext;
@@ -42,11 +42,11 @@ public class InjectionReferences {
         this.props = props;
     }
 
-    public JobContext getJobContext() {
+    public JobContextImpl getJobContext() {
         return jobContext;
     }
 
-    public StepContext getStepContext() {
+    public StepContextImpl getStepContext() {
         return stepContext;
     }
 

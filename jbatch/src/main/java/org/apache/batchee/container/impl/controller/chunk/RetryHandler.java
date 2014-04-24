@@ -17,18 +17,19 @@
 package org.apache.batchee.container.impl.controller.chunk;
 
 import org.apache.batchee.container.exception.BatchContainerRuntimeException;
-import org.apache.batchee.container.proxy.RetryProcessListenerProxy;
-import org.apache.batchee.container.proxy.RetryReadListenerProxy;
-import org.apache.batchee.container.proxy.RetryWriteListenerProxy;
 import org.apache.batchee.jaxb.Chunk;
 import org.apache.batchee.jaxb.ExceptionClassFilter;
 
 import java.util.List;
 
+import javax.batch.api.chunk.listener.RetryProcessListener;
+import javax.batch.api.chunk.listener.RetryReadListener;
+import javax.batch.api.chunk.listener.RetryWriteListener;
+
 public class RetryHandler {
-    private List<RetryProcessListenerProxy> _retryProcessListeners = null;
-    private List<RetryReadListenerProxy> _retryReadListeners = null;
-    private List<RetryWriteListenerProxy> _retryWriteListeners = null;
+    private List<RetryProcessListener> _retryProcessListeners = null;
+    private List<RetryReadListener> _retryReadListeners = null;
+    private List<RetryWriteListener> _retryWriteListeners = null;
 
     private ExceptionConfig retryNoRBConfig = new ExceptionConfig();
     private ExceptionConfig retryConfig = new ExceptionConfig();
@@ -84,21 +85,21 @@ public class RetryHandler {
     /**
      * Add the user-defined RetryProcessListener.
      */
-    public void addRetryProcessListener(List<RetryProcessListenerProxy> retryProcessListeners) {
+    public void addRetryProcessListener(List<RetryProcessListener> retryProcessListeners) {
         _retryProcessListeners = retryProcessListeners;
     }
 
     /**
      * Add the user-defined RetryReadListener.
      */
-    public void addRetryReadListener(List<RetryReadListenerProxy> retryReadListeners) {
+    public void addRetryReadListener(List<RetryReadListener> retryReadListeners) {
         _retryReadListeners = retryReadListeners;
     }
 
     /**
      * Add the user-defined RetryWriteListener.
      */
-    public void addRetryWriteListener(List<RetryWriteListenerProxy> retryWriteListeners) {
+    public void addRetryWriteListener(List<RetryWriteListener> retryWriteListeners) {
         _retryWriteListeners = retryWriteListeners;
     }
 
@@ -119,8 +120,12 @@ public class RetryHandler {
         ++_retryCount;
 
         if (_retryReadListeners != null) {
-            for (final RetryReadListenerProxy retryReadListenerProxy : _retryReadListeners) {
-                retryReadListenerProxy.onRetryReadException(e);
+            for (final RetryReadListener retryReadListenerProxy : _retryReadListeners) {
+                try {
+                    retryReadListenerProxy.onRetryReadException(e);
+                } catch (Exception e1) {
+                    ExceptionConfig.wrapBatchException(e1);
+                }
             }
         }
     }
@@ -138,8 +143,12 @@ public class RetryHandler {
         ++_retryCount;
 
         if (_retryProcessListeners != null) {
-            for (final RetryProcessListenerProxy retryProcessListenerProxy : _retryProcessListeners) {
-                retryProcessListenerProxy.onRetryProcessException(w, e);
+            for (final RetryProcessListener retryProcessListenerProxy : _retryProcessListeners) {
+                try {
+                    retryProcessListenerProxy.onRetryProcessException(w, e);
+                } catch (Exception e1) {
+                    ExceptionConfig.wrapBatchException(e1);
+                }
             }
         }
     }
@@ -157,8 +166,12 @@ public class RetryHandler {
         ++_retryCount;
 
         if (_retryWriteListeners != null) {
-            for (final RetryWriteListenerProxy retryWriteListenerProxy : _retryWriteListeners) {
-                retryWriteListenerProxy.onRetryWriteException(w, e);
+            for (final RetryWriteListener retryWriteListenerProxy : _retryWriteListeners) {
+                try {
+                    retryWriteListenerProxy.onRetryWriteException(w, e);
+                } catch (Exception e1) {
+                    ExceptionConfig.wrapBatchException(e1);
+                }
             }
         }
     }

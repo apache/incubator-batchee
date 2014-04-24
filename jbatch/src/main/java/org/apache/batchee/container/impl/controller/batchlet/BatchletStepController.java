@@ -19,24 +19,24 @@ package org.apache.batchee.container.impl.controller.batchlet;
 import org.apache.batchee.container.exception.BatchContainerServiceException;
 import org.apache.batchee.container.impl.controller.SingleThreadedStepController;
 import org.apache.batchee.container.impl.StepContextImpl;
+import org.apache.batchee.container.impl.controller.chunk.ExceptionConfig;
 import org.apache.batchee.container.impl.jobinstance.RuntimeJobExecution;
-import org.apache.batchee.container.proxy.BatchletProxy;
 import org.apache.batchee.container.proxy.InjectionReferences;
 import org.apache.batchee.container.proxy.ProxyFactory;
 import org.apache.batchee.container.services.ServicesManager;
 import org.apache.batchee.container.util.PartitionDataWrapper;
-import org.apache.batchee.jaxb.Batchlet;
 import org.apache.batchee.jaxb.Property;
 import org.apache.batchee.jaxb.Step;
 import org.apache.batchee.spi.BatchArtifactFactory;
 
+import javax.batch.api.Batchlet;
 import javax.batch.runtime.BatchStatus;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
 
 public class BatchletStepController extends SingleThreadedStepController {
     private final BatchArtifactFactory factory;
-    private BatchletProxy batchletProxy;
+    private Batchlet batchletProxy;
 
     public BatchletStepController(final RuntimeJobExecution jobExecutionImpl, final Step step,
                                   final StepContextImpl stepContext, final long rootJobExecutionId,
@@ -46,14 +46,19 @@ public class BatchletStepController extends SingleThreadedStepController {
         factory = manager.service(BatchArtifactFactory.class);
     }
 
-    private void invokeBatchlet(final Batchlet batchlet) throws BatchContainerServiceException {
+    private void invokeBatchlet(final org.apache.batchee.jaxb.Batchlet batchlet) throws BatchContainerServiceException {
         final String batchletId = batchlet.getRef();
         final List<Property> propList = (batchlet.getProperties() == null) ? null : batchlet.getProperties().getPropertyList();
         final InjectionReferences injectionRef = new InjectionReferences(jobExecutionImpl.getJobContext(), stepContext, propList);
         batchletProxy = ProxyFactory.createBatchletProxy(factory, batchletId, injectionRef, stepContext, jobExecutionImpl);
 
         if (!wasStopIssued()) {
-            final String processRetVal = batchletProxy.process();
+            String processRetVal = null;
+            try {
+                processRetVal = batchletProxy.process();
+            } catch (Exception e) {
+                ExceptionConfig.wrapBatchException(e);
+            }
             stepContext.setBatchletProcessRetVal(processRetVal);
         }
     }
@@ -93,7 +98,11 @@ public class BatchletStepController extends SingleThreadedStepController {
             stepContext.setBatchStatus(BatchStatus.STOPPING);
 
             if (batchletProxy != null) {
-                batchletProxy.stop();
+                try {
+                    batchletProxy.stop();
+                } catch (Exception e) {
+                    ExceptionConfig.wrapBatchException(e);
+                }
             }
         }/* else {
             // TODO do we need to throw an error if the batchlet is already stopping/stopped

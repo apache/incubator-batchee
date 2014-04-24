@@ -17,13 +17,14 @@
 package org.apache.batchee.container.impl.controller.chunk;
 
 import org.apache.batchee.container.exception.BatchContainerRuntimeException;
-import org.apache.batchee.container.proxy.SkipProcessListenerProxy;
-import org.apache.batchee.container.proxy.SkipReadListenerProxy;
-import org.apache.batchee.container.proxy.SkipWriteListenerProxy;
 import org.apache.batchee.jaxb.Chunk;
 import org.apache.batchee.jaxb.ExceptionClassFilter;
 
 import java.util.List;
+
+import javax.batch.api.chunk.listener.SkipProcessListener;
+import javax.batch.api.chunk.listener.SkipReadListener;
+import javax.batch.api.chunk.listener.SkipWriteListener;
 
 public class SkipHandler {
 
@@ -31,9 +32,9 @@ public class SkipHandler {
      * Logic for handling skipped records.
      */
 
-    private List<SkipProcessListenerProxy> _skipProcessListener = null;
-    private List<SkipReadListenerProxy> _skipReadListener = null;
-    private List<SkipWriteListenerProxy> _skipWriteListener = null;
+    private List<SkipProcessListener> _skipProcessListener = null;
+    private List<SkipReadListener> _skipReadListener = null;
+    private List<SkipWriteListener> _skipWriteListener = null;
 
     private final ExceptionConfig config = new ExceptionConfig();
 
@@ -73,21 +74,21 @@ public class SkipHandler {
     /**
      * Add the user-defined SkipReadListeners.
      */
-    public void addSkipReadListener(List<SkipReadListenerProxy> skipReadListener) {
+    public void addSkipReadListener(List<SkipReadListener> skipReadListener) {
         _skipReadListener = skipReadListener;
     }
 
     /**
      * Add the user-defined SkipWriteListeners.
      */
-    public void addSkipWriteListener(List<SkipWriteListenerProxy> skipWriteListener) {
+    public void addSkipWriteListener(List<SkipWriteListener> skipWriteListener) {
         _skipWriteListener = skipWriteListener;
     }
 
     /**
      * Add the user-defined SkipReadListeners.
      */
-    public void addSkipProcessListener(List<SkipProcessListenerProxy> skipProcessListener) {
+    public void addSkipProcessListener(List<SkipProcessListener> skipProcessListener) {
         _skipProcessListener = skipProcessListener;
     }
 
@@ -104,8 +105,12 @@ public class SkipHandler {
         ++_skipCount;
 
         if (_skipReadListener != null) {
-            for (final SkipReadListenerProxy skipReadListenerProxy : _skipReadListener) {
-                skipReadListenerProxy.onSkipReadItem(e);
+            for (final SkipReadListener skipReadListenerProxy : _skipReadListener) {
+                try {
+                    skipReadListenerProxy.onSkipReadItem(e);
+                } catch (Exception e1) {
+                    ExceptionConfig.wrapBatchException(e1);
+                }
             }
         }
     }
@@ -122,8 +127,12 @@ public class SkipHandler {
         ++_skipCount;
 
         if (_skipProcessListener != null) {
-            for (SkipProcessListenerProxy skipProcessListenerProxy : _skipProcessListener) {
-                skipProcessListenerProxy.onSkipProcessItem(w, e);
+            for (SkipProcessListener skipProcessListenerProxy : _skipProcessListener) {
+                try {
+                    skipProcessListenerProxy.onSkipProcessItem(w, e);
+                } catch (Exception e1) {
+                    ExceptionConfig.wrapBatchException(e1);
+                }
             }
         }
     }
@@ -140,8 +149,12 @@ public class SkipHandler {
         ++_skipCount;
 
         if (_skipWriteListener != null) {
-            for (SkipWriteListenerProxy skipWriteListenerProxy : _skipWriteListener) {
-                skipWriteListenerProxy.onSkipWriteItem(items, e);
+            for (SkipWriteListener skipWriteListenerProxy : _skipWriteListener) {
+                try {
+                    skipWriteListenerProxy.onSkipWriteItem(items, e);
+                } catch (Exception e1) {
+                    ExceptionConfig.wrapBatchException(e1);
+                }
             }
         }
     }

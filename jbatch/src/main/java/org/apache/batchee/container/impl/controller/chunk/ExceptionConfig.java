@@ -21,10 +21,24 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+import org.apache.batchee.container.exception.BatchContainerRuntimeException;
+
 public class ExceptionConfig {
     protected final Set<String> includes = new HashSet<String>();
     protected final Set<String> excludes = new HashSet<String>();
     private final ConcurrentMap<Class<? extends Exception>, Boolean> cache  = new ConcurrentHashMap<Class<? extends Exception>, Boolean>();
+
+    /**
+     * Helper method to wrap unknown Exceptions into a {@link org.apache.batchee.container.exception.BatchContainerRuntimeException}.
+     * This method can be used to handle Exceptions which are actually already catched inside of our proxies.
+     */
+    public static void wrapBatchException(Exception e) {
+        if (e instanceof RuntimeException) {
+            throw (RuntimeException) e;
+        } else {
+            throw new BatchContainerRuntimeException(e);
+        }
+    }
 
     public Set<String> getIncludes() {
         return includes;
@@ -92,4 +106,5 @@ public class ExceptionConfig {
         }
         return score;
     }
+
 }

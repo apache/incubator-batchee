@@ -22,7 +22,6 @@ import java.lang.reflect.Method;
 import java.util.Arrays;
 
 import org.apache.batchee.container.exception.BatchContainerRuntimeException;
-import org.apache.batchee.container.impl.StepContextImpl;
 
 /**
  * Proxy handler for all our Batch parts like ItemReader,
@@ -33,19 +32,19 @@ import org.apache.batchee.container.impl.StepContextImpl;
  */
 public class BatchProxyInvocationHandler implements InvocationHandler {
 
-    private final StepContextImpl stepContext;
+    private final InjectionReferences injectionRefs;
     private final Object delegate;
     private final String[] nonExceptionHandlingMethods;
 
     /**
      *
      * @param delegate the internal delegate which does the real job
-     * @param stepContext used to store any Exceptions
+     * @param injectionRefs used to store any Exceptions and for CDI support
      * @param nonExceptionHandlingMethods array of methods which should not cause the Exceptions to be stored in the StepContext
      */
-    public BatchProxyInvocationHandler(Object delegate, StepContextImpl stepContext, String... nonExceptionHandlingMethods) {
+    public BatchProxyInvocationHandler(Object delegate, InjectionReferences injectionRefs, String... nonExceptionHandlingMethods) {
         this.delegate = delegate;
-        this.stepContext = stepContext;
+        this.injectionRefs = injectionRefs;
         this.nonExceptionHandlingMethods = nonExceptionHandlingMethods;
     }
 
@@ -60,7 +59,9 @@ public class BatchProxyInvocationHandler implements InvocationHandler {
 
             if (nonExceptionHandlingMethods == null || Arrays.binarySearch(nonExceptionHandlingMethods, method.getName()) < 0) {
                 if (e instanceof Exception) {
-                    this.stepContext.setException((Exception) e);
+                    if (injectionRefs.getStepContext() != null) {
+                        injectionRefs.getStepContext().setException((Exception) e);
+                    }
                     throw new BatchContainerRuntimeException(e);
                 }
             }

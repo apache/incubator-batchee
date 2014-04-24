@@ -68,9 +68,9 @@ public class ProxyFactory {
         return INJECTION_CONTEXT.get();
     }
 
-    public static <T> T createProxy(T delegate, StepContextImpl stepContext, String... nonExceptionHandlingMethods) {
+    public static <T> T createProxy(T delegate, InjectionReferences injectionRefs, String... nonExceptionHandlingMethods) {
         return (T) Proxy.newProxyInstance(delegate.getClass().getClassLoader(), getInterfaces(delegate.getClass()),
-                new BatchProxyInvocationHandler(delegate, stepContext, nonExceptionHandlingMethods));
+                new BatchProxyInvocationHandler(delegate, injectionRefs, nonExceptionHandlingMethods));
 
     }
 
@@ -86,12 +86,10 @@ public class ProxyFactory {
     /*
      * Batchlet artifact
      */
-    public static BatchletProxy createBatchletProxy(final BatchArtifactFactory factory, final String id, final InjectionReferences injectionRefs,
+    public static Batchlet createBatchletProxy(final BatchArtifactFactory factory, final String id, final InjectionReferences injectionRefs,
                                                     final StepContextImpl stepContext, final RuntimeJobExecution execution) {
         final Batchlet loadedArtifact = (Batchlet) loadArtifact(factory, id, injectionRefs, execution);
-        final BatchletProxy proxy = new BatchletProxy(loadedArtifact);
-        proxy.setStepContext(stepContext);
-        return proxy;
+        return createProxy(loadedArtifact, injectionRefs);
     }
     
     /*
@@ -109,19 +107,19 @@ public class ProxyFactory {
     public static ItemReader createItemReaderProxy(final BatchArtifactFactory factory, final String id, final InjectionReferences injectionRefs,
                                                         final StepContextImpl stepContext, final RuntimeJobExecution execution) {
         final ItemReader loadedArtifact = (ItemReader) loadArtifact(factory, id, injectionRefs, execution);
-        return createProxy(loadedArtifact, stepContext, "readItem");
+        return createProxy(loadedArtifact, injectionRefs, "readItem");
     }
 
     public static ItemProcessor createItemProcessorProxy(final BatchArtifactFactory factory, final String id, final InjectionReferences injectionRefs,
                                                               final StepContextImpl stepContext, final RuntimeJobExecution execution) {
         final ItemProcessor loadedArtifact = (ItemProcessor) loadArtifact(factory, id, injectionRefs, execution);
-        return createProxy(loadedArtifact, stepContext, "processItem");
+        return createProxy(loadedArtifact, injectionRefs, "processItem");
     }
 
     public static ItemWriter createItemWriterProxy(final BatchArtifactFactory factory, final String id, final InjectionReferences injectionRefs,
                                                         final StepContextImpl stepContext, final RuntimeJobExecution execution) {
         final ItemWriter loadedArtifact = (ItemWriter) loadArtifact(factory, id, injectionRefs, execution);
-        return createProxy(loadedArtifact, stepContext, "writeItems");
+        return createProxy(loadedArtifact, injectionRefs, "writeItems");
     }
 
     /*
