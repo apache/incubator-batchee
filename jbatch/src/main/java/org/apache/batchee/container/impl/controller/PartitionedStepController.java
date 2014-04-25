@@ -425,7 +425,7 @@ public class PartitionedStepController extends BaseStepController {
     @Override
     protected void setupStepArtifacts() {
         InjectionReferences injectionRef = new InjectionReferences(jobExecutionImpl.getJobContext(), stepContext, null);
-        this.stepListeners = jobExecutionImpl.getListenerFactory().getStepListeners(step, injectionRef, stepContext, jobExecutionImpl);
+        this.stepListeners = jobExecutionImpl.getListenerFactory().getListeners(StepListener.class, step, injectionRef, jobExecutionImpl);
 
         final Analyzer analyzer = step.getPartition().getAnalyzer();
         if (analyzer != null) {

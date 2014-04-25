@@ -64,7 +64,7 @@ public abstract class SingleThreadedStepController extends BaseStepController im
         // set up listeners
 
         InjectionReferences injectionRef = new InjectionReferences(jobExecutionImpl.getJobContext(), stepContext, null);
-        this.stepListeners = jobExecutionImpl.getListenerFactory().getStepListeners(step, injectionRef, stepContext, jobExecutionImpl);
+        this.stepListeners = jobExecutionImpl.getListenerFactory().getListeners(StepListener.class, step, injectionRef, jobExecutionImpl);
 
         // set up collectors if we are running a partitioned step
         if (step.getPartition() != null) {
