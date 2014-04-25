@@ -18,9 +18,14 @@ package org.apache.batchee.test.mock;
 
 import javax.batch.api.AbstractBatchlet;
 import javax.batch.api.BatchProperty;
+import javax.batch.runtime.context.JobContext;
+import javax.enterprise.inject.spi.Bean;
+import javax.enterprise.inject.spi.BeanManager;
 import javax.inject.Inject;
 import javax.inject.Named;
 import java.net.URL;
+
+import org.testng.Assert;
 
 @Named("injected")
 public class InjectionsMock extends AbstractBatchlet {
@@ -28,8 +33,26 @@ public class InjectionsMock extends AbstractBatchlet {
     @BatchProperty
     private URL url;
 
+    @Inject
+    private JobContext jobContext;
+
+    @Inject
+    private BeanManager beanManager;
+
     @Override
     public String process() throws Exception {
-        return url.toExternalForm().equals("http://batchee.incubator.org") + "";
+        Assert.assertTrue(url.toExternalForm().equals("http://batchee.incubator.org"));
+        Assert.assertNotNull(jobContext);
+        Assert.assertEquals(jobContext.getJobName(), "injections");
+
+        // now check whether injection also works during the runtime of the batch
+        // this is needed if you e.g have a NormalScoped bean which only now gets initialized.
+        Assert.assertNotNull(beanManager);
+        Bean<?> bean = beanManager.resolve(beanManager.getBeans(JobContext.class));
+        JobContext jc = (JobContext) beanManager.getReference(bean, JobContext.class, beanManager.createCreationalContext(bean));
+        Assert.assertNotNull(jc);
+        Assert.assertEquals(jc.getJobName(), "injections");
+
+        return "true";
     }
 }

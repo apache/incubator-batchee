@@ -38,7 +38,7 @@ import javax.batch.api.partition.PartitionReducer;
  * Introduce a level of indirection so proxies are not instantiated directly by newing them up.
  */
 public class ProxyFactory {
-    static final ThreadLocal<InjectionReferences> INJECTION_CONTEXT = new ThreadLocal<InjectionReferences>();
+    private static final ThreadLocal<InjectionReferences> INJECTION_CONTEXT = new ThreadLocal<InjectionReferences>();
 
     private ProxyFactory() {
         // private utility class ct

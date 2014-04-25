@@ -50,6 +50,7 @@ public class BatchProxyInvocationHandler implements InvocationHandler {
 
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+        InjectionReferences oldInjectionRefs = ProxyFactory.setInjectionReferences(this.injectionRefs);
         try {
             return method.invoke(delegate, args);
         } catch (Throwable e) {
@@ -67,6 +68,9 @@ public class BatchProxyInvocationHandler implements InvocationHandler {
             }
 
             throw e;
+        } finally {
+            ProxyFactory.setInjectionReferences(oldInjectionRefs);
         }
+
     }
 }
