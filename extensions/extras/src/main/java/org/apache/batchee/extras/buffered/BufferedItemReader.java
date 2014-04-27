@@ -16,10 +16,9 @@
  */
 package org.apache.batchee.extras.buffered;
 
-import java.io.Serializable;
 import java.util.Iterator;
 
-import org.apache.batchee.extras.typed.TypedItemReader;
+import org.apache.batchee.extras.typed.NoStateTypedItemReader;
 
 
 /**
@@ -35,7 +34,7 @@ import org.apache.batchee.extras.typed.TypedItemReader;
  *
  * @param <R> the return type of the reader
  */
-public abstract class BufferedItemReader<R> extends TypedItemReader<R, Serializable> {
+public abstract class BufferedItemReader<R> extends NoStateTypedItemReader<R> {
 
     private Iterator<R> valuesIt = null;
 
@@ -58,13 +57,4 @@ public abstract class BufferedItemReader<R> extends TypedItemReader<R, Serializa
         return null;
     }
 
-    @Override
-    public void close() throws Exception {
-        // no-op
-    }
-
-    @Override
-    protected void doOpen(Serializable checkpoint) {
-        // no-op
-    }
 }
