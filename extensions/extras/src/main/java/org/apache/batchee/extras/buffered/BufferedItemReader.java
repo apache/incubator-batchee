@@ -19,7 +19,7 @@ package org.apache.batchee.extras.buffered;
 import java.io.Serializable;
 import java.util.Iterator;
 
-import org.apache.batchee.extras.typed.TypedReader;
+import org.apache.batchee.extras.typed.TypedItemReader;
 
 
 /**
@@ -35,7 +35,7 @@ import org.apache.batchee.extras.typed.TypedReader;
  *
  * @param <R> the return type of the reader
  */
-public abstract class BufferedItemReader<R> extends TypedReader<R, Serializable> {
+public abstract class BufferedItemReader<R> extends TypedItemReader<R, Serializable> {
 
     private Iterator<R> valuesIt = null;
 

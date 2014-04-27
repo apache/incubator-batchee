@@ -16,7 +16,7 @@
  */
 package org.apache.batchee.extras;
 
-import org.apache.batchee.extras.typed.TypedProcessor;
+import org.apache.batchee.extras.typed.TypedItemProcessor;
 import org.apache.batchee.util.Batches;
 import org.testng.annotations.Test;
 
@@ -92,11 +92,11 @@ public class ChainProcessorTest {
         }
     }
 
-    public static abstract class StoreItems extends TypedProcessor<Object> {
-        public final Collection<Object> items = new ArrayList<Object>();
+    public static abstract class StoreItems extends TypedItemProcessor<String, String> {
+        public final Collection<String> items = new ArrayList<String>();
 
         @Override
-        protected Object doProcessItem(Object item) {
+        protected String doProcessItem(String item) {
             final String value = "" + item + " " + hashCode();
             items.add(value);
             return value;

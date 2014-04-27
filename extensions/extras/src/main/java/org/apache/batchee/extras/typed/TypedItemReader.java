@@ -25,7 +25,7 @@ import java.io.Serializable;
  * @param <R> The type of the item returned in {@link #readItem()}.
  * @param <C> The type of the Checkpoint. See {@link #doCheckpointInfo()} and {@link #doRead()}
  */
-public abstract class TypedReader<R, C extends Serializable> implements ItemReader {
+public abstract class TypedItemReader<R, C extends Serializable> implements ItemReader {
     protected abstract void doOpen(C checkpoint);
     protected abstract R doRead();
 

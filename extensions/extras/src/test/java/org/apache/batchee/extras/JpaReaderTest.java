@@ -16,7 +16,7 @@
  */
 package org.apache.batchee.extras;
 
-import org.apache.batchee.extras.typed.TypedProcessor;
+import org.apache.batchee.extras.typed.TypedItemProcessor;
 import org.apache.batchee.extras.util.MyProvider;
 import org.apache.batchee.extras.util.Person;
 import org.apache.batchee.util.Batches;
@@ -65,11 +65,11 @@ public class JpaReaderTest {
         }
     }
 
-    public static class StoreItems extends TypedProcessor<Person> {
-        public static final Collection<Object> ITEMS = new ArrayList<Object>();
+    public static class StoreItems extends TypedItemProcessor<Person, Person> {
+        public static final Collection<String> ITEMS = new ArrayList<String>();
 
         @Override
-        protected Object doProcessItem(Person item) {
+        protected Person doProcessItem(Person item) {
             ITEMS.add(item.getName());
             return item;
         }

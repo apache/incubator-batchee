@@ -16,13 +16,27 @@
  */
 package org.apache.batchee.extras.typed;
 
-import javax.batch.api.chunk.ItemProcessor;
+import javax.batch.api.chunk.ItemWriter;
+import java.io.Serializable;
+import java.util.List;
 
-public abstract class TypedProcessor<R> implements ItemProcessor {
-    protected abstract Object doProcessItem(R item);
+public abstract class TypedItemWriter<R, C extends Serializable> implements ItemWriter {
+    protected abstract void doOpen(C checkpoint);
+    protected abstract C doCheckpointInfo();
+    protected abstract void doWriteItems(List<R> items);
 
     @Override
-    public Object processItem(Object item) throws Exception {
-        return doProcessItem((R) item);
+    public void open(final Serializable checkpoint) throws Exception {
+        doOpen((C) checkpoint);
+    }
+
+    @Override
+    public void writeItems(final List<Object> items) throws Exception {
+        doWriteItems((List<R>) items);
+    }
+
+    @Override
+    public Serializable checkpointInfo() throws Exception {
+        return doCheckpointInfo();
     }
 }
