@@ -38,7 +38,13 @@ public abstract class BufferedItemReader<R> extends NoStateTypedItemReader<R> {
 
     private Iterator<R> valuesIt = null;
 
-    public abstract Iterator<R> readAllItems();
+    /**
+     * This methods need to return all the items to be read.
+     * We will 'cache' them and iterate through them until all the
+     * items got consumed.
+     * @return all the items to be read
+     */
+    protected abstract Iterator<R> readAllItems();
 
 
     @Override

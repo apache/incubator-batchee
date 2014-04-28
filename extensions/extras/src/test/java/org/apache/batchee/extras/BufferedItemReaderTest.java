@@ -46,11 +46,29 @@ public class BufferedItemReaderTest {
         Assert.assertEquals(DummyWriter.getItems().get(2), "C");
     }
 
+    @Test
+    public void testBufferedRead_iterableNull() throws Exception {
+        DummyWriter.getItems().clear();
+
+        JobOperator jobOperator = BatchRuntime.getJobOperator();
+        Batches.waitForEnd(jobOperator, jobOperator.start("buffered-read-null", new Properties()));
+
+        Assert.assertTrue(DummyWriter.getItems().isEmpty(), "items must be empty");
+    }
+
 
     public static class MyBufferedItemReader extends BufferedItemReader<String> {
         @Override
         public Iterator<String> readAllItems() {
             return Arrays.asList("A", "B", "C").iterator();
+        }
+    }
+
+    public static class MyNullBufferedItemReader extends BufferedItemReader<Number> {
+
+        @Override
+        public Iterator<Number> readAllItems() {
+            return null;
         }
     }
 
