@@ -80,9 +80,13 @@ public class ProxyFactory {
     }
 
     public static <T> T createProxy(T delegate, InjectionReferences injectionRefs, String... nonExceptionHandlingMethods) {
+        if (delegate == null) {
+            // this is allowed per the spec! But don't ask why...
+            return null;
+        }
+
         return (T) Proxy.newProxyInstance(delegate.getClass().getClassLoader(), getInterfaces(delegate.getClass()),
                 new BatchProxyInvocationHandler(delegate, injectionRefs, nonExceptionHandlingMethods));
-
     }
 
 
