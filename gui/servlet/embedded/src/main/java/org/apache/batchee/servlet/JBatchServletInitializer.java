@@ -29,7 +29,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.net.HttpURLConnection;
-import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Set;
 
@@ -63,7 +62,7 @@ public class JBatchServletInitializer implements ServletContainerInitializer {
         }
 
         ctx.addServlet("JBatch Servlet", new JBatchController()
-                                            .readOnly(isReadOnly(ctx.getClassLoader()))
+                                            .readOnly(false)
                                             .mapping(mapping)
                                             .executionByPage(Integer.parseInt(byPage)))
                                             .addMapping(mapping);
@@ -75,13 +74,6 @@ public class JBatchServletInitializer implements ServletContainerInitializer {
         }
     }
 
-    private static boolean isReadOnly(final ClassLoader classLoader) {
-        try {
-            return Collections.list(classLoader.getResources("META-INF/batch-jobs")).isEmpty();
-        } catch (final IOException e) {
-            return false;
-        }
-    }
 
     public static class PrivateFilter implements Filter {
         @Override
