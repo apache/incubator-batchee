@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.batchee.container.services.executor.ee;
+package org.apache.batchee.tools.services.thread;
 
 import java.util.Properties;
 
@@ -38,7 +38,7 @@ public class UserTransactionTransactionService implements TransactionManagementS
     public TransactionManagerAdapter getTransactionManager(StepContext stepContext) {
         UserTransaction ut = ThreadExecutorEjb.getUserTransaction();
 
-        return null;
+        return new UserTransactionTxAdapter(ut);
     }
 
     private static class UserTransactionTxAdapter implements TransactionManagerAdapter {

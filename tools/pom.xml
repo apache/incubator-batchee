@@ -31,5 +31,6 @@
     <modules>
         <module>maven-plugin</module>
         <module>cli</module>
+        <module>ee6</module>
     </modules>
 </project>

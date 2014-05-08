@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.batchee.container.services.executor.ee;
+package org.apache.batchee.tools.services.thread;
 
 import javax.annotation.Resource;
 import javax.ejb.Asynchronous;
