@@ -25,6 +25,12 @@ import javax.ejb.TransactionManagement;
 import javax.ejb.TransactionManagementType;
 import javax.transaction.UserTransaction;
 
+/**
+ * Small helper class to allow new threads being created via the
+ * {@link org.apache.batchee.tools.services.thread.AsyncEjbBatchThreadPoolService}.
+ *
+ * @see org.apache.batchee.tools.services.thread.AsyncEjbBatchThreadPoolService
+ */
 @Singleton
 @Lock(LockType.READ)
 @TransactionManagement(TransactionManagementType.BEAN)

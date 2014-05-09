@@ -27,10 +27,20 @@ import org.apache.batchee.container.cdi.BatchCDIInjectionExtension;
 import org.apache.batchee.spi.BatchThreadPoolService;
 
 /**
- * Activate this class in your META-INF/batchee.properties as
+ * This is an implementation of a {@link org.apache.batchee.spi.BatchThreadPoolService}
+ * which uses an &&064;Asynchronous EJB method to spawn new Threads.
+ * The main reason for doing this is to have properly setup JavaEE Threads even
+ * in JavaEE 6 environments where BatchEE is not deeply integrated in other ways.
+ *
+ * Activate this class in a batchee.properties files as
  * <pre>
- * BatchThreadPoolService=org.apache.batchee.container.services.executor.ee.AsyncEjbBatchThreadPoolService
+ * BatchThreadPoolService=org.apache.batchee.tools.services.thread.AsyncEjbBatchThreadPoolService
  * </pre>
+ *
+ * For some containers you might additionally need to enable the
+ * {@link org.apache.batchee.tools.services.thread.UserTransactionTransactionService} for
+ * proper JTA transaction handling.
+ *
  */
 public class AsyncEjbBatchThreadPoolService implements BatchThreadPoolService {
     
@@ -55,6 +65,8 @@ public class AsyncEjbBatchThreadPoolService implements BatchThreadPoolService {
     
     @Override
     public void shutdown() {
-        // X TODO
+        // We cannot force an async EJB to shutdown.
+        // This usually works out of the box if the container EJB
+        // undeploys or stops the application.
     }
 }

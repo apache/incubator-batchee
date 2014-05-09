@@ -6,7 +6,7 @@
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
- *   http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -26,7 +26,19 @@ import org.apache.batchee.spi.TransactionManagementService;
 import org.apache.batchee.spi.TransactionManagerAdapter;
 
 /**
- * @author <a href="mailto:struberg@yahoo.de">Mark Struberg</a>
+ * Implementation of the {@link org.apache.batchee.spi.TransactionManagementService} which controls
+ * the transaction via {@link javax.transaction.UserTransaction}.
+ * This SPI implementation is useful on containers which do not properly expose a
+ * fully working global TransactionManager via the specced JNDI location
+ * (e.g. WebSphere 8.x).
+ *
+ * To activate this implementation just add the following lines to your batchee.properties file:
+ * <pre>
+ * TransactionManagementService=org.apache.batchee.tools.services.thread.UserTransactionTransactionService
+ * </pre>
+ *
+ * This SPI can only be used in conjunction with the
+ * {@link org.apache.batchee.tools.services.thread.AsyncEjbBatchThreadPoolService}
  */
 public class UserTransactionTransactionService implements TransactionManagementService {
     @Override
