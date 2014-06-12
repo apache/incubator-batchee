@@ -32,5 +32,6 @@
         <module>jaxrs-server</module>
         <module>jaxrs-common</module>
         <module>jaxrs-client</module>
+        <module>webapp</module>
     </modules>
 </project>

@@ -25,7 +25,7 @@
 
     <artifactId>batchee-jaxrs-server</artifactId>
     <name>BatchEE :: GUI :: JAXRS :: Server</name>
-    <packaging>war</packaging>
+    <packaging>jar</packaging>
 
     <dependencies>
         <dependency>
@@ -57,10 +57,6 @@
         </dependency>
 
         <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-        </dependency>
-        <dependency>
             <groupId>com.fasterxml.jackson.jaxrs</groupId>
             <artifactId>jackson-jaxrs-json-provider</artifactId>
             <scope>compile</scope>
@@ -68,6 +64,12 @@
         <dependency>
             <groupId>org.apache.cxf</groupId>
             <artifactId>cxf-rt-frontend-jaxrs</artifactId>
+        </dependency>
+
+        <!-- test dependencies -->
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
         </dependency>
         <dependency>
             <groupId>org.jboss.shrinkwrap.descriptors</groupId>
@@ -108,34 +110,7 @@
     </dependencies>
 
     <build>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-war-plugin</artifactId>
-                <version>2.4</version>
-                <configuration>
-                    <failOnMissingWebXml>false</failOnMissingWebXml>
-                    <archiveClasses>true</archiveClasses>
-                    <attachClasses>true</attachClasses>
-                    <webResources>
-                        <resource>
-                            <directory>${project.build.directory}/classes/META-INF</directory>
-                            <includes>
-                                <include>LICENSE</include>
-                                <include>NOTICE</include>
-                                <include>DEPENDENCIES</include>
-                            </includes>
-                            <targetPath>META-INF</targetPath>
-                            <filtering>false</filtering>
-                        </resource>
-                    </webResources>
-                    <packagingExcludes>
-                        WEB-INF/classes/META-INF/LICENSE,
-                        WEB-INF/classes/META-INF/NOTICE,
-                        WEB-INF/classes/META-INF/DEPENDENCIES
-                    </packagingExcludes>
-                </configuration>
-            </plugin>
+         <plugins>
             <plugin>
                 <groupId>org.apache.openejb.maven</groupId>
                 <artifactId>tomee-maven-plugin</artifactId>
