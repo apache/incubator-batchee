@@ -83,6 +83,7 @@
         <include>org.metatype.sxc:sxc-runtime</include>
         <include>org.metatype.sxc:sxc-jaxb-core</include>
         <include>org.apache.geronimo.components:geronimo-transaction</include>
+        <include>org.apache.geronimo.javamail:geronimo-javamail_1.4_mail</include>
         <include>org.apache.xbean:xbean-asm4-shaded</include>
         <include>org.apache.xbean:xbean-finder-shaded</include>
         <!--<include>org.apache.xbean:xbean-reflect</include>--> <!-- already used by batchee -->
