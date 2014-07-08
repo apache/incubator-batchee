@@ -35,6 +35,7 @@ import org.apache.batchee.container.services.persistence.jdbc.database.DerbyData
 import org.apache.batchee.container.services.persistence.jpa.domain.CheckpointEntity;
 import org.apache.batchee.container.services.persistence.jpa.domain.JobExecutionEntity;
 import org.apache.batchee.container.services.persistence.jpa.domain.JobInstanceEntity;
+import org.apache.batchee.container.services.persistence.jpa.domain.PropertyHelper;
 import org.apache.batchee.container.services.persistence.jpa.domain.StepExecutionEntity;
 import org.apache.batchee.container.status.JobStatus;
 import org.apache.batchee.container.status.StepStatus;
@@ -73,7 +74,6 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
-import static org.apache.batchee.container.util.Serializations.deserialize;
 import static org.apache.batchee.container.util.Serializations.serialize;
 
 public class JDBCPersistenceManagerService implements PersistenceManagerService {
@@ -667,14 +667,10 @@ public class JDBCPersistenceManagerService implements PersistenceManagerService 
 
             if (rs.next()) {
                 final byte[] buf = rs.getBytes(dictionary.jobExecutionColumns(5));
-                return Properties.class.cast(deserialize(buf));
+                return PropertyHelper.stringToProperties(buf != null ? new String(buf) : null);
             }
             throw new NoSuchJobExecutionException("Did not find table entry for executionID =" + executionId);
         } catch (final SQLException e) {
-            throw new PersistenceException(e);
-        } catch (final IOException e) {
-            throw new PersistenceException(e);
-        } catch (final ClassNotFoundException e) {
             throw new PersistenceException(e);
         } finally {
             cleanupConnection(conn, rs, statement);
@@ -934,7 +930,7 @@ public class JDBCPersistenceManagerService implements PersistenceManagerService 
 
                 // get the object based data
                 final byte[] buf = rs.getBytes(dictionary.jobExecutionColumns(5));
-                final Properties params = Properties.class.cast(deserialize(buf));
+                final Properties params = Properties.class.cast(PropertyHelper.stringToProperties(buf != null ? new String(buf) : null));
 
                 final String jobName = rs.getString(dictionary.jobInstanceColumns(3));
 
@@ -951,10 +947,6 @@ public class JDBCPersistenceManagerService implements PersistenceManagerService 
             }
             return null;
         } catch (final SQLException e) {
-            throw new PersistenceException(e);
-        } catch (final IOException e) {
-            throw new PersistenceException(e);
-        } catch (final ClassNotFoundException e) {
             throw new PersistenceException(e);
         } finally {
             cleanupConnection(conn, rs, statement);
@@ -1177,7 +1169,8 @@ public class JDBCPersistenceManagerService implements PersistenceManagerService 
             statement.setTimestamp(2, timestamp);
             statement.setTimestamp(3, timestamp);
             statement.setString(4, batchStatus.name());
-            statement.setObject(5, serialize(jobParameters));
+            String propVal = PropertyHelper.propertiesToString(jobParameters);
+            statement.setObject(5, propVal != null ? propVal.getBytes() : null);
             statement.executeUpdate();
             if (!conn.getAutoCommit()) {
                 conn.commit();
@@ -1188,8 +1181,6 @@ public class JDBCPersistenceManagerService implements PersistenceManagerService 
             }
             return -1;
         } catch (final SQLException e) {
-            throw new PersistenceException(e);
-        } catch (final IOException e) {
             throw new PersistenceException(e);
         } finally {
             cleanupConnection(conn, rs, statement);

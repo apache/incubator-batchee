@@ -77,7 +77,7 @@ public class JobExecutionEntity {
     private String exitStatus;
 
     @Lob
-    private Properties jobProperties;
+    private String jobProperties;
 
     @ManyToOne
     private JobInstanceEntity instance;
@@ -135,11 +135,11 @@ public class JobExecutionEntity {
     }
 
     public Properties getJobProperties() {
-        return jobProperties;
+        return PropertyHelper.stringToProperties(jobProperties);
     }
 
     public void setJobProperties(final Properties jobProperties) {
-        this.jobProperties = jobProperties;
+        this.jobProperties = PropertyHelper.propertiesToString(jobProperties);
     }
 
     public JobInstanceEntity getInstance() {
