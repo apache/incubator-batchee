@@ -61,6 +61,7 @@ public abstract class StartableCommand extends SocketConfigurableCommand {
                 IOUtils.closeQuietly(adminThread.getServerSocket());
             }
             e.printStackTrace();
+            //X TODO how about a system return code? otherwise shell scripts cannot see if we did fine or not...
             return;
         }
 
