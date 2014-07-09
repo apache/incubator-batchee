@@ -55,8 +55,10 @@ public class JBatchController extends HttpServlet {
     private static final String START_MAPPING = "/start/";
     private static final String DO_START_MAPPING = "/doStart/";
     private static final String VIEW_MAPPING = "/view/";
+    private static final String SIMPLEREST_MAPPING = "/rest/";
 
     private JobOperator operator;
+    private SimpleRestController simpleRestController;
 
     private String context;
     private String mapping = DEFAULT_MAPPING_SERVLET25;
@@ -88,6 +90,7 @@ public class JBatchController extends HttpServlet {
         }
 
         mapping = context + mapping;
+        this.simpleRestController = new SimpleRestController(operator);
     }
 
     @Override
@@ -126,6 +129,9 @@ public class JBatchController extends HttpServlet {
 
                 doStart(req, name, readProperties(req));
             }
+        } else if (path != null && path.startsWith(SIMPLEREST_MAPPING)) {
+            simpleRestController.dispatch(req, resp, path.substring(SIMPLEREST_MAPPING.length()));
+            return; // simple REST handles all the response itself
         } else {
             listJobs(req);
         }
