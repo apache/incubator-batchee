@@ -23,7 +23,7 @@ import javax.batch.operations.JobOperator;
 import javax.batch.runtime.JobInstance;
 import java.util.List;
 
-@Command(name = "instances", description = "list executions")
+@Command(name = "instances", description = "list instances")
 public class Instances extends JobOperatorCommand {
     @Option(name = "-name", description = "name of the batch to start", required = true)
     private String name;
