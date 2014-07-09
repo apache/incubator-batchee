@@ -59,11 +59,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import static org.apache.batchee.container.util.Serializations.deserialize;
 import static org.apache.batchee.container.util.Serializations.serialize;
 
 public class JPAPersistenceManagerService implements PersistenceManagerService {
+    private final static Logger LOGGER = Logger.getLogger(JPAPersistenceManagerService.class.getName());
+
     private static final String[] DELETE_QUERIES = {
         StepExecutionEntity.Queries.DELETE_BY_INSTANCE_ID, CheckpointEntity.Queries.DELETE_BY_INSTANCE_ID,
         JobExecutionEntity.Queries.DELETE_BY_INSTANCE_ID, JobInstanceEntity.Queries.DELETE_BY_INSTANCE_ID
@@ -83,8 +87,7 @@ public class JPAPersistenceManagerService implements PersistenceManagerService {
                 }
                 txProvider.commit(tx);
             } catch (final Exception e) {
-                txProvider.rollback(tx, e);
-                throw new BatchContainerRuntimeException(e);
+                throw new BatchContainerRuntimeException(performRollback(tx, e));
             }
         } finally {
             emProvider.release(em);
@@ -229,8 +232,7 @@ public class JPAPersistenceManagerService implements PersistenceManagerService {
                     entity);
                 txProvider.commit(tx);
             } catch (final Exception e) {
-                txProvider.rollback(tx, e);
-                throw new BatchContainerRuntimeException(e);
+                throw new BatchContainerRuntimeException(performRollback(tx, e));
             }
         } finally {
             emProvider.release(em);
@@ -262,8 +264,7 @@ public class JPAPersistenceManagerService implements PersistenceManagerService {
                 stepExecution.setStepName(stepContext.getStepName());
                 return stepExecution;
             } catch (final Exception e) {
-                txProvider.rollback(tx, e);
-                throw new BatchContainerRuntimeException(e);
+                throw new BatchContainerRuntimeException(performRollback(tx, e));
             }
         } finally {
             emProvider.release(em);
@@ -378,8 +379,7 @@ public class JPAPersistenceManagerService implements PersistenceManagerService {
                 em.merge(instance);
                 txProvider.commit(tx);
             } catch (final Exception e) {
-                txProvider.rollback(tx, e);
-                throw new BatchContainerRuntimeException(e);
+                throw new BatchContainerRuntimeException(performRollback(tx, e));
             }
         } finally {
             emProvider.release(em);
@@ -423,8 +423,7 @@ public class JPAPersistenceManagerService implements PersistenceManagerService {
                 em.merge(instance);
                 txProvider.commit(tx);
             } catch (final Exception e) {
-                txProvider.rollback(tx, e);
-                throw new BatchContainerRuntimeException(e);
+                throw new BatchContainerRuntimeException(performRollback(tx, e));
             }
         } finally {
             emProvider.release(em);
@@ -504,8 +503,7 @@ public class JPAPersistenceManagerService implements PersistenceManagerService {
                 jobExecution.setLastUpdateTime(instance.getCreateTime());
                 return jobExecution;
             } catch (final Exception e) {
-                txProvider.rollback(tx, e);
-                throw new BatchContainerRuntimeException(e);
+                throw new BatchContainerRuntimeException(performRollback(tx, e));
             }
         } finally {
             emProvider.release(em);
@@ -538,8 +536,7 @@ public class JPAPersistenceManagerService implements PersistenceManagerService {
                 em.merge(instance);
                 txProvider.commit(tx);
             } catch (final Exception e) {
-                txProvider.rollback(tx, e);
-                throw new BatchContainerRuntimeException(e);
+                throw new BatchContainerRuntimeException(performRollback(tx, e));
             }
         } finally {
             emProvider.release(em);
@@ -569,8 +566,7 @@ public class JPAPersistenceManagerService implements PersistenceManagerService {
                 jobExecution.setLastUpdateTime(execution.getCreateTime());
                 return jobExecution;
             } catch (final Exception e) {
-                txProvider.rollback(tx, e);
-                throw new BatchContainerRuntimeException(e);
+                throw new BatchContainerRuntimeException(performRollback(tx, e));
             }
         } finally {
             emProvider.release(em);
@@ -636,8 +632,7 @@ public class JPAPersistenceManagerService implements PersistenceManagerService {
                 jobInstance.setJobName(name);
                 return jobInstance;
             } catch (final Exception e) {
-                txProvider.rollback(tx, e);
-                throw new BatchContainerRuntimeException(e);
+                throw new BatchContainerRuntimeException(performRollback(tx, e));
             }
         } finally {
             emProvider.release(em);
@@ -686,8 +681,7 @@ public class JPAPersistenceManagerService implements PersistenceManagerService {
                 em.merge(entity);
                 txProvider.commit(tx);
             } catch (final Exception e) {
-                txProvider.rollback(tx, e);
-                throw new BatchContainerRuntimeException(e);
+                throw new BatchContainerRuntimeException(performRollback(tx, e));
             }
         } finally {
             emProvider.release(em);
@@ -727,8 +721,7 @@ public class JPAPersistenceManagerService implements PersistenceManagerService {
                 }
                 txProvider.commit(tx);
             } catch (final Exception e) {
-                txProvider.rollback(tx, e);
-                throw new BatchContainerRuntimeException(e);
+                throw new BatchContainerRuntimeException(performRollback(tx, e));
             }
         } finally {
             emProvider.release(em);
@@ -745,8 +738,7 @@ public class JPAPersistenceManagerService implements PersistenceManagerService {
                 setJobStatusData(status, em.find(JobInstanceEntity.class, instanceId));
                 txProvider.commit(tx);
             } catch (final Exception e) {
-                txProvider.rollback(tx, e);
-                throw new BatchContainerRuntimeException(e);
+                throw new BatchContainerRuntimeException(performRollback(tx, e));
             }
         } finally {
             emProvider.release(em);
@@ -800,8 +792,7 @@ public class JPAPersistenceManagerService implements PersistenceManagerService {
                 }
                 txProvider.commit(tx);
             } catch (final Exception e) {
-                txProvider.rollback(tx, e);
-                throw new BatchContainerRuntimeException(e);
+                throw new BatchContainerRuntimeException(performRollback(tx, e));
             }
         } finally {
             emProvider.release(em);
@@ -845,5 +836,22 @@ public class JPAPersistenceManagerService implements PersistenceManagerService {
             throw new BatchContainerRuntimeException(e);
         }
         emProvider.init(batchConfig);
+    }
+
+    /**
+     * Rollback the transaction and eventually log any exception during rollback.
+     * This method ensures that an Exception during rollback will *not* hide
+     * the original Exception!
+     *
+     * @return the original Exception
+     */
+    private Exception performRollback(Object tx, Exception originalException) {
+        try {
+            txProvider.rollback(tx, originalException);
+        } catch (Exception exceptionDuringRollback) {
+            LOGGER.log(Level.SEVERE, "Got an Exception while rolling back due to another Exception. Printing Rollback Exception and re-throwing original one"
+                    , exceptionDuringRollback);
+        }
+        return originalException;
     }
 }

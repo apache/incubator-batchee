@@ -37,6 +37,7 @@ public class DefaultTransactionProvider implements TransactionProvider {
 
     @Override
     public void rollback(final Object tx, final Exception e) {
+
         EntityTransaction.class.cast(tx).rollback();
     }
 

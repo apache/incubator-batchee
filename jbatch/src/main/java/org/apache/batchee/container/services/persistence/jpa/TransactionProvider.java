@@ -19,9 +19,16 @@ package org.apache.batchee.container.services.persistence.jpa;
 import javax.persistence.EntityManager;
 import java.util.Properties;
 
+/**
+ * Abstracts away transaction handling for BatchEE tables itself.
+ * Mainly used in {@link org.apache.batchee.container.services.persistence.JPAPersistenceManagerService}
+ */
 public interface TransactionProvider {
     Object start(EntityManager em);
     void commit(Object o);
+
+
     void rollback(Object tx, Exception e);
+
     void init(Properties batchConfig);
 }
