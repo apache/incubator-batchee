@@ -57,11 +57,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import static org.apache.batchee.container.util.ClassLoaderAwareHandler.makeLoaderAware;
 
 
 public class JobOperatorImpl implements JobOperator {
+    private static final Logger LOGGER = Logger.getLogger(JobOperatorImpl.class.getName());
+
     static {
         Init.doInit();
 
@@ -111,12 +115,17 @@ public class JobOperatorImpl implements JobOperator {
 
     public JobOperatorImpl() {
         final ServicesManager servicesManager = ServicesManager.find();
-        kernelService = servicesManager.service(BatchKernelService.class);
-        persistenceManagerService = servicesManager.service(PersistenceManagerService.class);
-        xmlLoaderService = servicesManager.service(JobXMLLoaderService.class);
-        statusManagerService = servicesManager.service(JobStatusManagerService.class);
-        securityService = servicesManager.service(SecurityService.class);
-        callbackService = servicesManager.service(JobExecutionCallbackService.class);
+        try {
+            kernelService = servicesManager.service(BatchKernelService.class);
+            persistenceManagerService = servicesManager.service(PersistenceManagerService.class);
+            xmlLoaderService = servicesManager.service(JobXMLLoaderService.class);
+            statusManagerService = servicesManager.service(JobStatusManagerService.class);
+            securityService = servicesManager.service(SecurityService.class);
+            callbackService = servicesManager.service(JobExecutionCallbackService.class);
+        } catch (RuntimeException e) {
+            LOGGER.log(Level.SEVERE, "Error while booting BatchEE", e);
+            throw e;
+        }
     }
 
     @Override

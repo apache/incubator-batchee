@@ -43,6 +43,7 @@ import org.apache.batchee.spi.TransactionManagementService;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
@@ -186,6 +187,7 @@ public class ServicesManager implements BatchContainerConstants {
                 }
             }
         } catch (final Throwable e1) {
+            handleBatchContainerRuntimeException(e1);
             throw new IllegalArgumentException("Could not instantiate service " + className + " due to exception: " + e1);
         }
 
@@ -201,20 +203,48 @@ public class ServicesManager implements BatchContainerConstants {
     }
 
     private <T> T load(final Class<T> expected, final String className) throws Exception {
-        final Class<?> cls = getLoader().loadClass(className);
-        if (cls != null) {
-            try {
-                final Constructor<?> constructor = cls.getConstructor(ServicesManager.class);
-                return expected.cast(constructor.newInstance(this));
-            } catch (final Throwable th) {
-                // try no arg constructor
-            }
+        Class<?> cls = null;
+
+        try {
+            cls = getLoader().loadClass(className);
+        } catch (Exception e) {
+            handleBatchContainerRuntimeException(e);
+            throw new BatchContainerRuntimeException("Could not load Service class " + className + ". Make sure it exists", e);
+        }
+        Throwable problem = null;
+        try {
+            final Constructor<?> constructor = cls.getConstructor(ServicesManager.class);
+            return expected.cast(constructor.newInstance(this));
+        } catch (final Throwable th) {
+            handleBatchContainerRuntimeException(th);
+            // remember the first problem and try no arg constructor
+            problem = th;
+        }
+        try {
             if (cls.getConstructor() != null) {
                 return expected.cast(cls.newInstance());
             }
-            throw new BatchContainerRuntimeException("Service class " + className + " should  have a default constructor defined");
+        } catch (Throwable th) {
+            handleBatchContainerRuntimeException(th);
+            // default ct works neither, lets report the original problem
         }
-        throw new Exception("Exception loading Service class " + className + " make sure it exists");
+        throw new BatchContainerRuntimeException("Service class " + className + " cannnot be loaded", problem);
+    }
+
+    /**
+     * prevent BatchContainerRuntimeExceptions to get swallowed
+     */
+    private void handleBatchContainerRuntimeException(Throwable e) throws BatchContainerRuntimeException {
+        if (e instanceof BatchContainerRuntimeException) {
+            throw (BatchContainerRuntimeException) e;
+        }
+        if (e instanceof InvocationTargetException) {
+            InvocationTargetException ite = (InvocationTargetException) e;
+            if (ite.getCause() instanceof BatchContainerRuntimeException) {
+                throw (BatchContainerRuntimeException) ite.getCause();
+            }
+        }
+        // else all is fine
     }
 
     private ClassLoader getLoader() {

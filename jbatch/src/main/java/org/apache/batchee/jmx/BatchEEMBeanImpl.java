@@ -150,7 +150,7 @@ public class BatchEEMBeanImpl implements BatchEEMBean {
         return -1;
     }
 
-    private BatchEEMBeanImpl() {
+    public BatchEEMBeanImpl() {
         // no-op
     }
 
