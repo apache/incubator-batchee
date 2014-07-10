@@ -122,9 +122,21 @@ public class SimpleRestController {
 
     private void unknownCommand(String path, HttpServletResponse resp) {
         StringBuilder msg = new StringBuilder("Unknown command:");
-        msg.append(path);
+        msg.append(path).append('\n');
 
-        //X TODO add list of supported commands and their usage
+        msg.append("\nKnown commands are:\n\n");
+        msg.append("* ").append(OP_START).append(" - start a new batch job\n");
+        msg.append("  Sample: http://localhost:8080/myapp/jbatch/rest/start/myjobname?param1=x&param2=y\n");
+        msg.append("  BatchEE will start the job and immediately return\n\n");
+
+        msg.append("* ").append(OP_STATUS).append(" - query the current status \n");
+        msg.append("  Sample: http://localhost:8080/myapp/jbatch/rest/status/23\n");
+        msg.append("  will return the state of executionId 23\n\n");
+
+        msg.append("The returned response if of MIME type text/plain and contains the following information\n");
+        msg.append("  {jobId}\\n\n");
+        msg.append("  OK (or FAILURE)\\n\n");
+        msg.append("  followed by command specific information\n");
 
         reportFailure(NO_JOB_ID, resp, msg.toString());
     }
