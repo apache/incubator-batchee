@@ -88,14 +88,11 @@ public class SimpleRestController {
         } catch (JobStartException jobStartException) {
             StringBuilder msg = new StringBuilder("Error while starting job ");
             msg.append(batchName).append('\n');
-            msg.append(jobStartException.getMessage()).append('\n');
-            StringWriter sw = new StringWriter();
-            jobStartException.printStackTrace(new PrintWriter(sw));
-            msg.append(sw.toString());
-
+            appendExceptionMsg(msg, jobStartException);
             reportFailure(NO_JOB_ID, resp, msg.toString());
         }
     }
+
     private void batchStatus(String batchId, HttpServletRequest req, HttpServletResponse resp)
     {
         if (batchId == null || batchId.isEmpty()) {
@@ -117,6 +114,10 @@ public class SimpleRestController {
             reportSuccess(executionId, resp, batchStatus.name());
         } catch (NoSuchJobExecutionException noSuchJob) {
             reportFailure(executionId, resp, "NoSuchJob");
+        } catch (Exception generalException) {
+            StringBuilder msg = new StringBuilder("NoSuchJob");
+            appendExceptionMsg(msg, generalException);
+            reportFailure(executionId, resp, msg.toString());
         }
     }
 
@@ -134,7 +135,7 @@ public class SimpleRestController {
         msg.append("  will return the state of executionId 23\n\n");
 
         msg.append("The returned response if of MIME type text/plain and contains the following information\n");
-        msg.append("  {jobId}\\n\n");
+        msg.append("  {jobExecutionId} (or -1 if no executionId was detected)\\n\n");
         msg.append("  OK (or FAILURE)\\n\n");
         msg.append("  followed by command specific information\n");
 
@@ -164,4 +165,12 @@ public class SimpleRestController {
             throw new RuntimeException(ioe);
         }
     }
+
+    private void appendExceptionMsg(StringBuilder msg, Exception exception) {
+        msg.append(exception.getMessage()).append('\n');
+        StringWriter sw = new StringWriter();
+        exception.printStackTrace(new PrintWriter(sw));
+        msg.append(sw.toString());
+    }
+
 }
