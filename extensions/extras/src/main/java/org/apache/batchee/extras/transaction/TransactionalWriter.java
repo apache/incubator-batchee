@@ -106,7 +106,7 @@ public class TransactionalWriter extends Writer {
 
     private StringBuilder buffer() {
         StringBuilder buffer = StringBuilder.class.cast(Synchronizations.get(bufferKey));
-        if (buffer != null) {
+        if (buffer == null) {
             buffer = new StringBuilder();
             Synchronizations.put(bufferKey, buffer);
             Synchronizations.registerSynchronization(new SynchronizationService.OnCommit() {
