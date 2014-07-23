@@ -16,7 +16,12 @@
  */
 package org.apache.batchee.extras.transaction.integration;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 public final class Synchronizations {
+    private static final Logger LOGGER = Logger.getLogger(Synchronizations.class.getName());
+
     public static final SynchronizationService DELEGATE;
     public static final boolean ACTIVE;
     static {
@@ -26,6 +31,7 @@ public final class Synchronizations {
             Synchronizations.class.getClassLoader().loadClass("javax.transaction.UserTransaction");
             service = new JTASynchronizationService("java:comp/TransactionSynchronizationRegistry");
         } catch (final Throwable e) { // NoClassDefFoundError or ClassNotFoundException
+            LOGGER.log(Level.SEVERE, "UserTransaction or TransactionSynchronizationRegistry not found, Transactional* components will not work", e);
             active = false;
             service = new NoopSynchronizationService();
         }

@@ -398,15 +398,15 @@
                                 </goals>
                                 <configuration>
                                     <tasks>
-                                        <unzip src="${tck.dir}/jsr352-tck-impl-src.jar" dest="${build.directory}/tck-test-src"/>
-                                        <unzip src="${tck.dir}/jsr352-tck-SPI.jar" dest="${build.testOutputDirectory}"/>
-                                        <unzip src="${tck.dir}/jsr352-tck-impl.jar" dest="${build.testOutputDirectory}">
+                                        <unzip src="${tck.dir}/jsr352-tck-impl-src.jar" dest="${project.build.directory}/tck-test-src"/>
+                                        <unzip src="${tck.dir}/jsr352-tck-SPI.jar" dest="${project.build.testOutputDirectory}"/>
+                                        <unzip src="${tck.dir}/jsr352-tck-impl.jar" dest="${project.build.testOutputDirectory}">
                                             <patternset>
                                                 <include name="META-INF/**"/>
                                             </patternset>
                                         </unzip>
                                     </tasks>
-                                    <outputDirectory>${build.directory}/tck-test-src</outputDirectory>
+                                    <outputDirectory>${project.build.directory}/tck-test-src</outputDirectory>
                                 </configuration>
                             </execution>
                         </executions>
@@ -425,7 +425,7 @@
                                 </goals>
                                 <configuration>
                                     <sources>
-                                        <source>${build.directory}/tck-test-src</source>
+                                        <source>${project.build.directory}/tck-test-src</source>
                                     </sources>
                                 </configuration>
                             </execution>
