@@ -105,24 +105,22 @@ public class TransactionalWriter extends Writer {
     }
 
     private StringBuilder buffer() {
-        StringBuilder buffer = StringBuilder.class.cast(Synchronizations.get(bufferKey));
-        if (buffer == null) {
-            buffer = new StringBuilder();
+        StringBuilder buf = StringBuilder.class.cast(Synchronizations.get(bufferKey));
+        if (buf == null) {
+            final StringBuilder buffer = new StringBuilder();
+            buf = buffer;
             Synchronizations.put(bufferKey, buffer);
             Synchronizations.registerSynchronization(new SynchronizationService.OnCommit() {
                 @Override
                 public void afterCommit() {
-                    final StringBuilder buffer = StringBuilder.class.cast(Synchronizations.get(bufferKey));
-                    if (buffer != null) {
-                        try {
-                            final byte[] bytes = buffer.toString().getBytes(encoding);
-                            if(delegate.write(ByteBuffer.wrap(bytes)) != bytes.length) {
-                                throw new BatchRuntimeException("Some part of the chunk was not written");
-                            }
-                            delegate.force(false);
-                        } catch (final IOException ioe) {
-                            throw new BatchRuntimeException(ioe);
+                    try {
+                        final byte[] bytes = buffer.toString().getBytes(encoding);
+                        if(delegate.write(ByteBuffer.wrap(bytes)) != bytes.length) {
+                            throw new BatchRuntimeException("Some part of the chunk was not written");
                         }
+                        delegate.force(false);
+                    } catch (final IOException ioe) {
+                        throw new BatchRuntimeException(ioe);
                     }
                     close();
                 }
@@ -143,6 +141,6 @@ public class TransactionalWriter extends Writer {
                 }
             });
         }
-        return buffer;
+        return buf;
     }
 }

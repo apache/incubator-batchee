@@ -22,7 +22,7 @@ public interface SynchronizationService {
     void put(Object key, Object value);
     Object get(Object key);
 
-    static interface Synchronization {
+    interface Synchronization {
         void beforeCompletion();
         void afterRollback();
         void afterCommit();
