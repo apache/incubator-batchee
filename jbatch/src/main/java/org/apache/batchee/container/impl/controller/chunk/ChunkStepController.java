@@ -343,7 +343,7 @@ public class ChunkStepController extends SingleThreadedStepController {
         } catch (final Exception e) {
             for (final ItemProcessListener processListenerProxy : itemProcessListeners) {
                 try {
-                    processListenerProxy.onProcessError(processedItem, e);
+                    processListenerProxy.onProcessError(itemRead, e);
                 } catch (Exception e1) {
                     ExceptionConfig.wrapBatchException(e1);
                 }
