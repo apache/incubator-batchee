@@ -27,7 +27,7 @@ $(function () {
             '  <div class="controls" id="c_' + key + '">' +
             '    <input type="text" name="k_' + key + '" value="' + key + '">' +
             '    <input type="text" name="v_' + key + '" value="' + value + '">' +
-            '    <button class="btn btn-small" type="button">Remove</button>' +
+            '    <button id="cg_' + key + 'Remove" class="btn btn-small" type="button">Remove</button>' +
             '  </div>' +
             '</div>');
 
@@ -35,7 +35,7 @@ $(function () {
         valueEntry.val('');
 
         var blockId = '#cg_' + key;
-        $(blockId).on('click', function(event) {
+        $(blockId + 'Remove').on('click', function(event) {
             event.preventDefault();
             $(blockId).remove();
         });
