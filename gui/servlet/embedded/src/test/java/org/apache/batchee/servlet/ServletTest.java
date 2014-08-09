@@ -43,6 +43,7 @@ import java.util.List;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 @RunWith(Arquillian.class)
 public class ServletTest {
@@ -122,6 +123,23 @@ public class ServletTest {
         String[] parms = textContent.split("\n");
         assertTrue(parms.length == 3);
         assertEquals(BatchStatus.STARTED.toString(), parms[2]);
+
+        boolean stopped = false;
+        for (int i = 0; i < 11; i++) {
+            textContent = executeSimpleRest("status/" + executionId);
+            parms = textContent.split("\n");
+            assertTrue(parms.length == 3);
+            if (BatchStatus.COMPLETED.toString().equals(parms[2])) {
+                stopped = true;
+                break;
+            }
+
+            Thread.sleep(200L);
+        }
+
+        if (!stopped) {
+            fail("failed to properly stop the batch. Last status = " + parms[2]);
+        }
     }
 
     private String executeSimpleRest(String command) throws IOException {
@@ -152,7 +170,7 @@ public class ServletTest {
 
         final HtmlPage page = webClient.getPage(url);
         final List<?> byXPath = page.getByXPath("//div[@id=\"content\"]" + xpath);
-        assertEquals(1, byXPath.size());
+        assertTrue(byXPath.size() >= 1);
 
         final Object next = byXPath.iterator().next();
         if (!DomNode.class.isInstance(next)) {
