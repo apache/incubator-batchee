@@ -21,7 +21,7 @@
     <parent>
         <artifactId>batchee</artifactId>
         <groupId>org.apache.batchee</groupId>
-        <version>0.2-incubating</version>
+        <version>0.3-incubating-SNAPSHOT</version>
     </parent>
 
     <artifactId>batchee-tools</artifactId>
