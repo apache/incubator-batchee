@@ -17,6 +17,7 @@
 package org.apache.batchee.servlet;
 
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
+import com.gargoylesoftware.htmlunit.TextPage;
 import com.gargoylesoftware.htmlunit.WebClient;
 import com.gargoylesoftware.htmlunit.html.DomNode;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
@@ -40,11 +41,54 @@ import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 @RunWith(Arquillian.class)
 public class ServletTest {
     @ArquillianResource
     private URL base;
+
+    @Deployment(testable = false)
+    public static Archive<?> war() {
+        final WebArchive webArchive = ShrinkWrap.create(WebArchive.class, "batchee-gui.war")
+                .addAsWebInfResource(new StringAsset(
+                        Descriptors.create(WebAppDescriptor.class)
+                                .metadataComplete(true)
+                                .createListener()
+                                .listenerClass(CreateSomeJobs.class.getName())
+                                .up()
+                                .createFilter()
+                                .filterName("JBatch Private Filter")
+                                .filterClass(JBatchServletInitializer.PrivateFilter.class.getName())
+                                .up()
+                                .createServlet()
+                                .servletName("JBatch")
+                                .servletClass(JBatchController.class.getName())
+                                .loadOnStartup(1)
+                                .up()
+                                .createFilterMapping()
+                                .filterName("JBatch Private Filter")
+                                .urlPattern("/*")
+                                .up()
+                                .createServletMapping()
+                                .servletName("JBatch")
+                                .urlPattern("/jbatch/*")
+                                .up()
+                                .exportAsString()), "web.xml")
+                        // GUI
+                .addPackages(true, JBatchController.class.getPackage())
+                        // test data to create some job things to do this test
+                .addPackage(CreateSomeJobs.class.getPackage())
+                .addAsWebInfResource("META-INF/batch-jobs/init.xml", "classes/META-INF/batch-jobs/init.xml");
+
+        for (final String resource : Arrays.asList("layout.jsp", "jobs.jsp", "job-instances.jsp", "step-executions.jsp",
+                "css/bootstrap.min.3.0.0.css", "js/bootstrap.min.3.0.0.js")) {
+            webArchive.addAsWebResource("META-INF/resources/internal/batchee/" + resource, "internal/batchee/" + resource);
+        }
+
+        return webArchive;
+    }
 
     @Test
     public void home() throws IOException {
@@ -66,6 +110,41 @@ public class ServletTest {
         final WebClient client = newWebClient();
         client.getPage(base.toExternalForm() + "jbatch/internal/batchee/jobs.jsp");
     }
+
+    @Test
+    public void testSimpleRest() throws IOException, InterruptedException {
+        String textContent = executeSimpleRest("start/init?value=OK&sleep=2");
+        Long executionId = extractExecutionId(textContent);
+
+        Thread.sleep(100L);
+
+        textContent = executeSimpleRest("status/" + executionId);
+        String[] parms = textContent.split("\n");
+        assertTrue(parms.length == 3);
+        assertEquals(BatchStatus.STARTED.toString(), parms[2]);
+    }
+
+    private String executeSimpleRest(String command) throws IOException {
+        final String startUrl = base.toExternalForm() + "jbatch/rest/" + command;
+        final WebClient webClient = newWebClient();
+        final TextPage page = webClient.getPage(startUrl);
+        String textContent = page.getContent();
+        assertNotNull(textContent);
+        assertTrue(textContent.contains("\nOK\n"));
+        extractExecutionId(textContent);
+
+        return textContent;
+    }
+
+    private Long extractExecutionId(String textContent) {
+        String[] parms = textContent.split("\n");
+        assertTrue(parms.length >= 2);
+        Long executionId = Long.valueOf(parms[0]);
+        assertTrue(-1L != executionId);
+
+        return executionId;
+    }
+
 
     private String extractContent(final String endUrl, final String xpath) throws IOException {
         final String url = base.toExternalForm() + "jbatch/" + endUrl;
@@ -90,44 +169,5 @@ public class ServletTest {
         return webClient;
     }
 
-    @Deployment(testable = false)
-    public static Archive<?> war() {
-        final WebArchive webArchive = ShrinkWrap.create(WebArchive.class, "batchee-gui.war")
-            .addAsWebInfResource(new StringAsset(
-                Descriptors.create(WebAppDescriptor.class)
-                    .metadataComplete(true)
-                    .createListener()
-                        .listenerClass(CreateSomeJobs.class.getName())
-                    .up()
-                    .createFilter()
-                        .filterName("JBatch Private Filter")
-                        .filterClass(JBatchServletInitializer.PrivateFilter.class.getName())
-                    .up()
-                    .createServlet()
-                        .servletName("JBatch")
-                        .servletClass(JBatchController.class.getName())
-                        .loadOnStartup(1)
-                    .up()
-                    .createFilterMapping()
-                        .filterName("JBatch Private Filter")
-                        .urlPattern("/*")
-                    .up()
-                    .createServletMapping()
-                        .servletName("JBatch")
-                        .urlPattern("/jbatch/*")
-                    .up()
-                    .exportAsString()), "web.xml")
-            // GUI
-            .addPackages(true, JBatchController.class.getPackage())
-            // test data to create some job things to do this test
-            .addPackage(CreateSomeJobs.class.getPackage())
-            .addAsWebInfResource("META-INF/batch-jobs/init.xml", "classes/META-INF/batch-jobs/init.xml");
 
-        for (final String resource : Arrays.asList("layout.jsp", "jobs.jsp", "job-instances.jsp", "step-executions.jsp",
-                                                    "css/bootstrap.min.3.0.0.css", "js/bootstrap.min.3.0.0.js")) {
-            webArchive.addAsWebResource("META-INF/resources/internal/batchee/" + resource, "internal/batchee/" + resource);
-        }
-
-        return webArchive;
-    }
 }

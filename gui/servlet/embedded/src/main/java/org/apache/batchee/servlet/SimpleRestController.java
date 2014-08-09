@@ -22,6 +22,8 @@ import java.io.StringWriter;
 import java.util.Map;
 import java.util.Properties;
 
+import javax.batch.operations.JobExecutionAlreadyCompleteException;
+import javax.batch.operations.JobExecutionNotRunningException;
 import javax.batch.operations.JobOperator;
 import javax.batch.operations.JobStartException;
 import javax.batch.operations.NoSuchJobExecutionException;
@@ -38,6 +40,8 @@ public class SimpleRestController {
 
     public static final String OP_START = "start/";
     public static final String OP_STATUS = "status/";
+    public static final String OP_STOP = "stop/";
+    public static final String OP_RESTART = "restart/";
 
     public static final long NO_JOB_ID = -1L;
 
@@ -58,29 +62,18 @@ public class SimpleRestController {
             startBatch(path.substring(OP_START.length()), req, resp);
         } else if (path != null && path.startsWith(OP_STATUS)) {
             batchStatus(path.substring(OP_STATUS.length()), req, resp);
+        } else if (path != null && path.startsWith(OP_STOP)) {
+            batchStop(path.substring(OP_STOP.length()), req, resp);
+        } else if (path != null && path.startsWith(OP_RESTART)) {
+            batchRestart(path.substring(OP_RESTART.length()), req, resp);
         } else {
             unknownCommand(path, resp);
         }
     }
 
     private void startBatch(String batchName, HttpServletRequest req, HttpServletResponse resp) {
-        Properties jobProperties = new Properties();
-        Map<String, String[]> parameterMap = req.getParameterMap();
-        for (Map.Entry<String, String[]> paramEntry : parameterMap.entrySet()) {
-            String key = paramEntry.getKey();
-            if (key == null || key.length() == 0) {
-                reportFailure(NO_JOB_ID, resp, "Parameter key must be set");
-                return;
-            }
-
-            String[] vals = paramEntry.getValue();
-            if (vals == null || vals.length != 1) {
-                reportFailure(NO_JOB_ID, resp, "Exactly one value must be set for each parameter (parameter name=" + key + ")");
-                return;
-            }
-            String val = vals[0];
-            jobProperties.put(key, val);
-        }
+        Properties jobProperties = extractJobProperties(req, resp);
+        if (jobProperties == null) { return; }
 
         try {
             long jobId = jobOperator.start(batchName, jobProperties);
@@ -95,17 +88,9 @@ public class SimpleRestController {
 
     private void batchStatus(String batchId, HttpServletRequest req, HttpServletResponse resp)
     {
-        if (batchId == null || batchId.isEmpty()) {
-            reportFailure(NO_JOB_ID, resp, "no executionId given");
+        Long executionId = extractExecutionId(batchId, resp);
+        if (executionId == null) {
             return;
-        }
-
-        long executionId = NO_JOB_ID;
-
-        try {
-            executionId = Long.valueOf(batchId);
-        } catch(NumberFormatException nfe) {
-            reportFailure(NO_JOB_ID, resp, "executionId must be numeric, but is " + batchId);
         }
 
         try {
@@ -115,15 +100,62 @@ public class SimpleRestController {
         } catch (NoSuchJobExecutionException noSuchJob) {
             reportFailure(executionId, resp, "NoSuchJob");
         } catch (Exception generalException) {
-            StringBuilder msg = new StringBuilder("NoSuchJob");
+            StringBuilder msg = new StringBuilder("Failure in BatchExecution");
             appendExceptionMsg(msg, generalException);
             reportFailure(executionId, resp, msg.toString());
         }
     }
 
+    private void batchStop(String batchId, HttpServletRequest req, HttpServletResponse resp) {
+        Long executionId = extractExecutionId(batchId, resp);
+        if (executionId == null) {
+            return;
+        }
+
+        try {
+            jobOperator.stop(executionId);
+            reportSuccess(executionId, resp, BatchStatus.STOPPING.toString());
+        } catch (NoSuchJobExecutionException noSuchJob) {
+            reportFailure(executionId, resp, "NoSuchJob");
+        } catch (JobExecutionNotRunningException notRunningException) {
+            reportFailure(executionId, resp, "JobExecutionNotRunning");
+        } catch (Exception generalException) {
+            StringBuilder msg = new StringBuilder("Failure in BatchExecution");
+            appendExceptionMsg(msg, generalException);
+            reportFailure(executionId, resp, msg.toString());
+        }
+    }
+
+    private void batchRestart(String batchId, HttpServletRequest req, HttpServletResponse resp) {
+        Long executionId = extractExecutionId(batchId, resp);
+        if (executionId == null) {
+            return;
+        }
+
+        Properties jobProperties = extractJobProperties(req, resp);
+
+        try {
+            jobOperator.restart(executionId, jobProperties);
+        } catch (NoSuchJobExecutionException noSuchJob) {
+            reportFailure(executionId, resp, "NoSuchJob");
+        } catch (JobExecutionAlreadyCompleteException alreadyCompleted) {
+            reportFailure(executionId, resp, "NoSuchJob");
+        } catch (Exception generalException) {
+            StringBuilder msg = new StringBuilder("Failure in BatchExecution");
+            appendExceptionMsg(msg, generalException);
+            reportFailure(executionId, resp, msg.toString());
+        }
+    }
+
+
     private void unknownCommand(String path, HttpServletResponse resp) {
         StringBuilder msg = new StringBuilder("Unknown command:");
         msg.append(path).append('\n');
+
+        msg.append("The returned response if of MIME type text/plain and contains the following information\n");
+        msg.append("  {jobExecutionId} (or -1 if no executionId was detected)\\n\n");
+        msg.append("  OK (or FAILURE)\\n\n");
+        msg.append("  followed by command specific information\n");
 
         msg.append("\nKnown commands are:\n\n");
         msg.append("* ").append(OP_START).append(" - start a new batch job\n");
@@ -134,12 +166,50 @@ public class SimpleRestController {
         msg.append("  Sample: http://localhost:8080/myapp/jbatch/rest/status/23\n");
         msg.append("  will return the state of executionId 23\n\n");
 
-        msg.append("The returned response if of MIME type text/plain and contains the following information\n");
-        msg.append("  {jobExecutionId} (or -1 if no executionId was detected)\\n\n");
-        msg.append("  OK (or FAILURE)\\n\n");
-        msg.append("  followed by command specific information\n");
+        msg.append("* ").append(OP_STOP).append(" - stop the job with the given executionId \n");
+        msg.append("  Sample: http://localhost:8080/myapp/jbatch/rest/stop/23\n");
+        msg.append("  will stop the job with executionId 23\n\n");
+
+        msg.append("* ").append(OP_RESTART).append(" - restart the job with the given executionId \n");
+        msg.append("  Sample: http://localhost:8080/myapp/jbatch/rest/restart/23\n");
+        msg.append("  will restart the job with executionId 23\n\n");
 
         reportFailure(NO_JOB_ID, resp, msg.toString());
+    }
+
+    private Properties extractJobProperties(HttpServletRequest req, HttpServletResponse resp) {
+        Properties jobProperties = new Properties();
+        Map<String, String[]> parameterMap = req.getParameterMap();
+        for (Map.Entry<String, String[]> paramEntry : parameterMap.entrySet()) {
+            String key = paramEntry.getKey();
+            if (key == null || key.length() == 0) {
+                reportFailure(NO_JOB_ID, resp, "Parameter key must be set");
+                return null;
+            }
+
+            String[] vals = paramEntry.getValue();
+            if (vals == null || vals.length != 1) {
+                reportFailure(NO_JOB_ID, resp, "Exactly one value must be set for each parameter (parameter name=" + key + ")");
+                return null;
+            }
+            String val = vals[0];
+            jobProperties.put(key, val);
+        }
+        return jobProperties;
+    }
+
+    private Long extractExecutionId(String batchId, HttpServletResponse resp) {
+        if (batchId == null || batchId.isEmpty()) {
+            reportFailure(NO_JOB_ID, resp, "no executionId given");
+            return null;
+        }
+
+        try {
+            return Long.valueOf(batchId);
+        } catch(NumberFormatException nfe) {
+            reportFailure(NO_JOB_ID, resp, "executionId must be numeric, but is " + batchId);
+            return null;
+        }
     }
 
     private void reportSuccess(long jobId, HttpServletResponse resp, String msg) {
