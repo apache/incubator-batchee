@@ -21,7 +21,7 @@
     <parent>
         <artifactId>batchee</artifactId>
         <groupId>org.apache.batchee</groupId>
-        <version>0.2-incubating-SNAPSHOT</version>
+        <version>0.2-incubating</version>
     </parent>
 
     <artifactId>batchee-jbatch</artifactId>
@@ -398,11 +398,11 @@
                                 </goals>
                                 <configuration>
                                     <tasks>
-                                        <unzip src="${tck.dir}/jsr352-tck-impl-src.jar" dest="${project.build.directory}/tck-test-src"/>
-                                        <unzip src="${tck.dir}/jsr352-tck-SPI.jar" dest="${project.build.testOutputDirectory}"/>
+                                        <unzip src="${tck.dir}/jsr352-tck-impl-src.jar" dest="${project.build.directory}/tck-test-src" />
+                                        <unzip src="${tck.dir}/jsr352-tck-SPI.jar" dest="${project.build.testOutputDirectory}" />
                                         <unzip src="${tck.dir}/jsr352-tck-impl.jar" dest="${project.build.testOutputDirectory}">
                                             <patternset>
-                                                <include name="META-INF/**"/>
+                                                <include name="META-INF/**" />
                                             </patternset>
                                         </unzip>
                                     </tasks>
