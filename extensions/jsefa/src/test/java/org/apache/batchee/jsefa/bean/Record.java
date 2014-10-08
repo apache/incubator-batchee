@@ -16,12 +16,12 @@
  */
 package org.apache.batchee.jsefa.bean;
 
-import org.jsefa.csv.annotation.CsvDataType;
-import org.jsefa.csv.annotation.CsvField;
-import org.jsefa.flr.annotation.FlrDataType;
-import org.jsefa.flr.annotation.FlrField;
-import org.jsefa.xml.annotation.XmlDataType;
-import org.jsefa.xml.annotation.XmlElement;
+import net.sf.jsefa.csv.annotation.CsvDataType;
+import net.sf.jsefa.csv.annotation.CsvField;
+import net.sf.jsefa.flr.annotation.FlrDataType;
+import net.sf.jsefa.flr.annotation.FlrField;
+import net.sf.jsefa.xml.annotation.XmlDataType;
+import net.sf.jsefa.xml.annotation.XmlElement;
 
 @CsvDataType
 @FlrDataType

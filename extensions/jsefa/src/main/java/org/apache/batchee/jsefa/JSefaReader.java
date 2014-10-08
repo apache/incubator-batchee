@@ -17,7 +17,7 @@
 package org.apache.batchee.jsefa;
 
 import org.apache.batchee.extras.transaction.CountedReader;
-import org.jsefa.Deserializer;
+import net.sf.jsefa.Deserializer;
 
 import javax.batch.api.BatchProperty;
 import javax.inject.Inject;

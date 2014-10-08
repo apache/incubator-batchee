@@ -17,25 +17,25 @@
 package org.apache.batchee.jsefa;
 
 import org.apache.batchee.extras.lang.Langs;
-import org.jsefa.common.accessor.ObjectAccessorProvider;
-import org.jsefa.common.config.Configuration;
-import org.jsefa.common.config.ValidationMode;
-import org.jsefa.common.converter.provider.SimpleTypeConverterProvider;
-import org.jsefa.common.lowlevel.filter.LineFilter;
-import org.jsefa.common.mapping.EntryPoint;
-import org.jsefa.common.mapping.TypeMappingRegistry;
-import org.jsefa.common.validator.provider.ValidatorProvider;
-import org.jsefa.csv.config.CsvConfiguration;
-import org.jsefa.csv.lowlevel.config.EscapeMode;
-import org.jsefa.csv.lowlevel.config.QuoteMode;
-import org.jsefa.flr.config.FlrConfiguration;
-import org.jsefa.rbf.config.RbfConfiguration;
-import org.jsefa.rbf.lowlevel.config.RbfLowLevelConfiguration;
-import org.jsefa.xml.config.XmlConfiguration;
-import org.jsefa.xml.lowlevel.config.XmlLowLevelConfiguration;
-import org.jsefa.xml.mapping.support.XmlDataTypeDefaultNameRegistry;
-import org.jsefa.xml.namespace.NamespaceManager;
-import org.jsefa.xml.namespace.QName;
+import net.sf.jsefa.common.accessor.ObjectAccessorProvider;
+import net.sf.jsefa.common.config.Configuration;
+import net.sf.jsefa.common.config.ValidationMode;
+import net.sf.jsefa.common.converter.provider.SimpleTypeConverterProvider;
+import net.sf.jsefa.common.lowlevel.filter.LineFilter;
+import net.sf.jsefa.common.mapping.EntryPoint;
+import net.sf.jsefa.common.mapping.TypeMappingRegistry;
+import net.sf.jsefa.common.validator.provider.ValidatorProvider;
+import net.sf.jsefa.csv.config.CsvConfiguration;
+import net.sf.jsefa.csv.lowlevel.config.EscapeMode;
+import net.sf.jsefa.csv.lowlevel.config.QuoteMode;
+import net.sf.jsefa.flr.config.FlrConfiguration;
+import net.sf.jsefa.rbf.config.RbfConfiguration;
+import net.sf.jsefa.rbf.lowlevel.config.RbfLowLevelConfiguration;
+import net.sf.jsefa.xml.config.XmlConfiguration;
+import net.sf.jsefa.xml.lowlevel.config.XmlLowLevelConfiguration;
+import net.sf.jsefa.xml.mapping.support.XmlDataTypeDefaultNameRegistry;
+import net.sf.jsefa.xml.namespace.NamespaceManager;
+import net.sf.jsefa.xml.namespace.QName;
 
 public class JsefaConfigurations {
     public static Class<?>[] createObjectTypes(final String objectTypes) throws ClassNotFoundException {

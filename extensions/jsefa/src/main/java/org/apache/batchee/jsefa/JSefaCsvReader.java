@@ -16,8 +16,8 @@
  */
 package org.apache.batchee.jsefa;
 
-import org.jsefa.Deserializer;
-import org.jsefa.csv.CsvIOFactory;
+import net.sf.jsefa.Deserializer;
+import net.sf.jsefa.csv.CsvIOFactory;
 
 import javax.batch.api.BatchProperty;
 import javax.inject.Inject;

@@ -16,8 +16,8 @@
  */
 package org.apache.batchee.jsefa;
 
-import org.jsefa.Deserializer;
-import org.jsefa.flr.FlrIOFactory;
+import net.sf.jsefa.Deserializer;
+import net.sf.jsefa.flr.FlrIOFactory;
 
 import javax.batch.api.BatchProperty;
 import javax.inject.Inject;

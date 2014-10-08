@@ -17,7 +17,7 @@
 package org.apache.batchee.jsefa;
 
 import org.apache.batchee.extras.transaction.TransactionalWriter;
-import org.jsefa.Serializer;
+import net.sf.jsefa.Serializer;
 
 import javax.batch.api.BatchProperty;
 import javax.batch.api.chunk.ItemWriter;
