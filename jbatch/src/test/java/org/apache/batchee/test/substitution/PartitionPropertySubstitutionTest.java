@@ -16,6 +16,7 @@
  */
 package org.apache.batchee.test.substitution;
 
+import org.apache.batchee.container.impl.JobInstanceImpl;
 import org.apache.batchee.container.services.persistence.jpa.domain.PropertyHelper;
 import org.apache.batchee.util.Batches;
 import org.testng.annotations.Test;
@@ -32,6 +33,7 @@ import javax.batch.api.partition.PartitionPlanImpl;
 import javax.batch.operations.JobOperator;
 import javax.batch.runtime.BatchRuntime;
 import javax.batch.runtime.BatchStatus;
+import javax.batch.runtime.JobExecution;
 import javax.batch.runtime.Metric;
 import javax.batch.runtime.StepExecution;
 import javax.batch.runtime.context.JobContext;
@@ -47,6 +49,8 @@ import java.util.Properties;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertNotNull;
+import static org.testng.Assert.assertTrue;
 
 public class PartitionPropertySubstitutionTest {
 
@@ -66,6 +70,12 @@ public class PartitionPropertySubstitutionTest {
         StepExecution stepExecution = op.getStepExecutions(id).iterator().next();
 
 		assertEquals(op.getJobExecution(id).getBatchStatus(), BatchStatus.COMPLETED);
+        assertNotNull(op.getJobExecution(id).getJobParameters());
+        assertEquals(jobParams, op.getJobExecution(id).getJobParameters());
+        for (final JobExecution exec: op.getJobExecutions(new JobInstanceImpl(id))) {
+            assertNotNull(exec.getJobParameters());
+            assertEquals(jobParams, exec.getJobParameters());
+        }
 
 		ArrayList<String> data = (ArrayList<String>)stepExecution.getPersistentUserData();
 
