@@ -974,6 +974,8 @@ public class JDBCPersistenceManagerService implements PersistenceManagerService 
                 final String batchStatus = rs.getString(dictionary.jobExecutionColumns(1));
                 final String exitStatus = rs.getString(dictionary.jobExecutionColumns(4));
                 final String jobName = rs.getString(dictionary.jobInstanceColumns(3));
+                final byte[] buf = rs.getBytes(dictionary.jobExecutionColumns(5));
+                final Properties params = buf != null ? PropertyHelper.stringToProperties(new String(buf)) : null;
 
                 final JobExecutionImpl jobEx = new JobExecutionImpl(jobExecutionId, jobInstanceId, this);
                 jobEx.setCreateTime(createtime);
@@ -983,6 +985,7 @@ public class JDBCPersistenceManagerService implements PersistenceManagerService 
                 jobEx.setBatchStatus(batchStatus);
                 jobEx.setExitStatus(exitStatus);
                 jobEx.setJobName(jobName);
+                jobEx.setJobParameters(params);
 
                 data.add(jobEx);
             }

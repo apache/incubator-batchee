@@ -355,6 +355,7 @@ public class JPAPersistenceManagerService implements PersistenceManagerService {
                 jobEx.setBatchStatus(entity.getBatchStatus().name());
                 jobEx.setExitStatus(entity.getExitStatus());
                 jobEx.setJobName(entity.getInstance().getName());
+                jobEx.setJobParameters(entity.getJobProperties());
 
                 result.add(jobEx);
             }
