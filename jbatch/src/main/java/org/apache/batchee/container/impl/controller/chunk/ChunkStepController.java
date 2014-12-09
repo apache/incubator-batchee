@@ -552,8 +552,7 @@ public class ChunkStepController extends SingleThreadedStepController {
                     itemCount = 1;
                     rollback = true;
 
-                    readerProxy.close();
-                    writerProxy.close();
+                    doClose();
 
                     transactionManager.rollback();
 
@@ -566,8 +565,7 @@ public class ChunkStepController extends SingleThreadedStepController {
                     itemCount = 1;
                     rollback = true;
 
-                    readerProxy.close();
-                    writerProxy.close();
+                    doClose();
 
                     transactionManager.rollback();
 
@@ -603,12 +601,13 @@ public class ChunkStepController extends SingleThreadedStepController {
                     if (status.isFinished()) {
                         transactionManager.begin();
 
-                        readerProxy.close();
-                        writerProxy.close();
-
-                        transactionManager.commit();
-                        // increment commitCount
-                        stepContext.getMetric(MetricImpl.MetricType.COMMIT_COUNT).incValue();
+                        if (doClose()) {
+                            transactionManager.commit();
+                            stepContext.getMetric(MetricImpl.MetricType.COMMIT_COUNT).incValue();
+                        } else {
+                            stepContext.getMetric(MetricImpl.MetricType.ROLLBACK_COUNT).incValue();
+                            transactionManager.rollback();
+                        }
                         break;
                     } else {
                         // increment commitCount
@@ -634,11 +633,21 @@ public class ChunkStepController extends SingleThreadedStepController {
         }
     }
 
-    private void rollback(final Throwable t) {
-        transactionManager.setRollbackOnly();
+    private boolean doClose() throws Exception {
         try {
             readerProxy.close();
             writerProxy.close();
+            return true;
+        } catch (final Exception e) {
+            logger.log(Level.SEVERE, e.getMessage(), e);
+            return false;
+        }
+    }
+
+    private void rollback(final Throwable t) {
+        transactionManager.setRollbackOnly();
+        try {
+            doClose();
         } catch (Exception e) {
             // ignore, we blow up anyway
         }
