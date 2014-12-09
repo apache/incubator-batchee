@@ -514,7 +514,11 @@ public class ChunkStepController extends SingleThreadedStepController {
             transactionManager.begin();
             this.openReaderAndWriter();
             transactionManager.commit();
-
+        } catch (final Exception e) {
+            rollback(e);
+            return;
+        }
+        try {
             while (true) {
 
                 if (checkPointed || rollback) {
