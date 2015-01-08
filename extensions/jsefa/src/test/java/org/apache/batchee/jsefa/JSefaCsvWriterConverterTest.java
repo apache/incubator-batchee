@@ -65,7 +65,7 @@ public class JSefaCsvWriterConverterTest {
             builder.append(record.getStringValue()).append(';')
                    .append(record.getLongValue()).append(';')
                    .append(record.getEnumValue().getCode()).append(';')
-                   .append(new SimpleDateFormat("yyyyMMddHHmm").format(record.getDateValue())).append('\n');
+                   .append(new SimpleDateFormat("yyyyMMddHHmm").format(record.getDateValue())).append(System.getProperty("line.separator"));
         }
 
         return builder.toString();

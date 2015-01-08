@@ -60,7 +60,7 @@ public class JSefaFlrWriterConverterTest {
             builder.append(rightPad(record.getStringValue(), 10))
                    .append(rightPad(record.getLongValue().toString(), 9))
                    .append(rightPad(record.getEnumValue().getCode(), 3))
-                   .append(new SimpleDateFormat("yyyyMMddHHmm").format(record.getDateValue())).append('\n');
+                   .append(new SimpleDateFormat("yyyyMMddHHmm").format(record.getDateValue())).append(System.getProperty("line.separator"));
         }
 
         return builder.toString();
