@@ -24,16 +24,15 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
+import java.io.IOException;
+import java.util.List;
+import java.util.Properties;
+import java.util.Set;
 import javax.batch.operations.JobOperator;
 import javax.batch.runtime.JobExecution;
 import javax.batch.runtime.JobInstance;
 import javax.batch.runtime.StepExecution;
 import javax.ws.rs.ext.RuntimeDelegate;
-import java.io.IOException;
-import java.net.ServerSocket;
-import java.util.List;
-import java.util.Properties;
-import java.util.Set;
 
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNotNull;
@@ -46,12 +45,8 @@ public abstract class ClientTestBase {
 
     @BeforeClass
     public static void startServer() throws IOException {
-        final ServerSocket server = new ServerSocket(0);
-        port = server.getLocalPort();
-        server.close();
-
-        mockServer = new FeaturedHttpServerBuilder().port(port).build().start();
-
+        mockServer = new FeaturedHttpServerBuilder().port(-1).build().start();
+        port = mockServer.getPort();
         RuntimeDelegate.setInstance(null); // reset
     }
 
@@ -65,6 +60,11 @@ public abstract class ClientTestBase {
     @AfterClass
     public static void shutdown() {
         mockServer.stop();
+    }
+
+    @Test
+    public void start() {
+        assertEquals(1L, client.start("simple", new Properties()));
     }
 
     @Test

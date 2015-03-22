@@ -16,8 +16,11 @@
  */
 package org.apache.batchee.jaxrs.client;
 
+import static java.util.Arrays.asList;
+
 public class ClientConfiguration {
     private static final String JACKSON_PROVIDER = "com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider";
+    private static final String JOHNZON_PROVIDER = "org.apache.johnzon.jaxrs.JohnzonProvider";
 
     private String baseUrl = null;
     private String jsonProvider = null;
@@ -34,7 +37,17 @@ public class ClientConfiguration {
 
     public Class<?> getJsonProvider() {
         if (jsonProvider == null) { // try to force jackson
-            setJsonProvider(JACKSON_PROVIDER);
+            for (final String p : asList(JOHNZON_PROVIDER, JACKSON_PROVIDER)) {
+                try {
+                    Thread.currentThread().getContextClassLoader().loadClass(p);
+                    setJsonProvider(p);
+                } catch (final ClassNotFoundException cnfe) {
+                    // no-op
+                }
+            }
+            if (jsonProvider == null) {
+                throw new IllegalStateException("No JSon provider found, please set it on the client configuration");
+            }
         }
         try {
             return Class.class.cast(Thread.currentThread().getContextClassLoader().loadClass(jsonProvider));

@@ -127,7 +127,7 @@ class BatchEEJAXRS2Client extends BatchEEJAXRSClientBase<Response> {
                     }
 
                     if (!found) {
-                        body = convertParam(body, type);
+                        body = convertParam(args[i], type);
                     }
                 }
             }

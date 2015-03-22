@@ -18,20 +18,24 @@ package org.apache.batchee.jaxrs.client;
 
 import org.apache.batchee.jaxrs.client.http.Base64s;
 import org.apache.batchee.jaxrs.common.JBatchResource;
+import org.apache.batchee.jaxrs.common.RestProperties;
 import org.apache.cxf.configuration.jsse.TLSClientParameters;
 import org.apache.cxf.configuration.security.AuthorizationPolicy;
 import org.apache.cxf.jaxrs.client.Client;
 import org.apache.cxf.jaxrs.client.JAXRSClientFactory;
 import org.apache.cxf.jaxrs.client.WebClient;
 import org.apache.cxf.transport.http.HTTPConduit;
+import org.apache.cxf.transports.http.configuration.ConnectionType;
+import org.apache.cxf.transports.http.configuration.HTTPClientPolicy;
 
-import javax.batch.runtime.JobInstance;
-import javax.net.ssl.KeyManagerFactory;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Properties;
+import javax.batch.runtime.JobInstance;
+import javax.net.ssl.KeyManagerFactory;
 
 class BatchEEJAXRS1CxfClient extends BatchEEJAXRSClientBase<Object> implements Base64s {
     private final JBatchResource client;
@@ -45,6 +49,14 @@ class BatchEEJAXRS1CxfClient extends BatchEEJAXRSClientBase<Object> implements B
             client = JAXRSClientFactory.create(configuration.getBaseUrl(), JBatchResource.class, providers);
 
             final HTTPConduit conduit = WebClient.getConfig(client).getHttpConduit();
+            if (CxfClientConfiguration.class.isInstance(conduit)) {
+                final HTTPClientPolicy policy = CxfClientConfiguration.class.cast(configuration).getPolicy();
+                if (policy != null) {
+                    conduit.setClient(policy);
+                }
+            } else {
+                conduit.setClient(defaultClientPolicy());
+            }
 
             final ClientSslConfiguration ssl = configuration.getSsl();
             if (ssl != null) {
@@ -86,6 +98,15 @@ class BatchEEJAXRS1CxfClient extends BatchEEJAXRSClientBase<Object> implements B
         }
     }
 
+    private static HTTPClientPolicy defaultClientPolicy() {
+        final HTTPClientPolicy client = new HTTPClientPolicy();
+        client.setConnection(ConnectionType.CLOSE);
+        client.setAllowChunking(false);
+        client.setConnectionTimeout(0);
+        client.setReceiveTimeout(0);
+        return client;
+    }
+
     @Override
     protected Object extractEntity(final Object o, final Type genericReturnType) {
         return o;
@@ -103,6 +124,9 @@ class BatchEEJAXRS1CxfClient extends BatchEEJAXRSClientBase<Object> implements B
                 final JobInstance ji = JobInstance.class.cast(args[0]);
                 usedArgs = new Object[] { ji.getInstanceId(), ji.getJobName() };
             }
+        }
+        if (args != null && args.length == 2 && Properties.class.isInstance(args[1])) {
+            usedArgs[1] = RestProperties.wrap(Properties.class.cast(args[1]));
         }
 
         try {
