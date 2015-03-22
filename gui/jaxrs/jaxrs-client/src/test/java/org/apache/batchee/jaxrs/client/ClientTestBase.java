@@ -18,6 +18,8 @@ package org.apache.batchee.jaxrs.client;
 
 import com.github.rmannibucau.featuredmock.http.FeaturedHttpServer;
 import com.github.rmannibucau.featuredmock.http.FeaturedHttpServerBuilder;
+import com.github.rmannibucau.featuredmock.http.RequestObserver;
+import io.netty.handler.codec.http.FullHttpRequest;
 import org.apache.batchee.jaxrs.client.impl.JobInstanceImpl;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
@@ -45,7 +47,15 @@ public abstract class ClientTestBase {
 
     @BeforeClass
     public static void startServer() throws IOException {
-        mockServer = new FeaturedHttpServerBuilder().port(-1).build().start();
+        mockServer = new FeaturedHttpServerBuilder().port(-1).observer(new RequestObserver() {
+            @Override
+            public void onRequest(final FullHttpRequest request) {
+                if (request.getUri().endsWith("start/simple")) {
+                    final String actual = new String(request.content().array());
+                    assertEquals(actual, "{\"entries\":[{\"key\":\"a\",\"value\":\"b\"}]}");
+                }
+            }
+        }).build().start();
         port = mockServer.getPort();
         RuntimeDelegate.setInstance(null); // reset
     }
@@ -64,7 +74,9 @@ public abstract class ClientTestBase {
 
     @Test
     public void start() {
-        assertEquals(1L, client.start("simple", new Properties()));
+        assertEquals(1L, client.start("simple", new Properties() {{
+            setProperty("a", "b");
+        }}));
     }
 
     @Test

@@ -61,7 +61,7 @@
         <dependency>
             <groupId>com.github.rmannibucau</groupId>
             <artifactId>featured-mock</artifactId>
-            <version>0.3</version>
+            <version>0.4</version>
             <scope>test</scope>
         </dependency>
         <dependency> <!-- cxf is not yet compatible with JAXRS 2.0 API (final) -->
