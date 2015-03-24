@@ -23,6 +23,7 @@ import org.beanio.BeanReaderErrorHandler;
 import javax.batch.api.BatchProperty;
 import javax.batch.api.chunk.ItemReader;
 import javax.inject.Inject;
+import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.Serializable;
 import java.util.Locale;
@@ -31,6 +32,10 @@ public class BeanIOReader extends CountedReader implements ItemReader {
     @Inject
     @BatchProperty(name = "file")
     protected String filePath;
+
+    @Inject
+    @BatchProperty(name = "skippedHeaderLines")
+    protected int skippedHeaderLines;
 
     @Inject
     @BatchProperty
@@ -52,10 +57,15 @@ public class BeanIOReader extends CountedReader implements ItemReader {
 
     @Override
     public void open(final Serializable checkpoint) throws Exception {
-        reader = BeanIOs.open(filePath, streamName, configuration).createReader(streamName, new FileReader(filePath), initLocale());
+        final BufferedReader reader = new BufferedReader(new FileReader(filePath));
+        for (int i = 0; i < skippedHeaderLines; i++) {
+            reader.readLine();
+        }
+
+        this.reader = BeanIOs.open(filePath, streamName, configuration).createReader(streamName, reader, initLocale());
         if (errorHandlerStr != null) {
             final BeanReaderErrorHandler handler = BeanReaderErrorHandler.class.cast(Thread.currentThread().getContextClassLoader().loadClass(errorHandlerStr).newInstance());
-            reader.setErrorHandler(handler);
+            this.reader.setErrorHandler(handler);
         }
 
         super.open(checkpoint);
