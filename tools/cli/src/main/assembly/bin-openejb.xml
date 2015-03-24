@@ -78,13 +78,12 @@
         <include>org.apache.openejb:openejb-loader</include>
         <include>org.apache.openejb:openejb-jpa-integration</include>
         <include>org.apache.openejb:mbean-annotation-api</include>
-        <include>org.quartz-scheduler:quartz</include>
-        <include>org.apache.openejb:openejb-shade-quartz</include> <!-- openejb >= 4.6.1 -->
+        <include>org.apache.openejb.shade:quartz-openejb-shade</include>
         <include>org.metatype.sxc:sxc-runtime</include>
         <include>org.metatype.sxc:sxc-jaxb-core</include>
         <include>org.apache.geronimo.components:geronimo-transaction</include>
         <include>org.apache.geronimo.javamail:geronimo-javamail_1.4_mail</include>
-        <include>org.apache.xbean:xbean-asm4-shaded</include>
+        <include>org.apache.xbean:xbean-asm5-shaded</include>
         <include>org.apache.xbean:xbean-finder-shaded</include>
         <!--<include>org.apache.xbean:xbean-reflect</include>--> <!-- already used by batchee -->
         <include>org.apache.xbean:xbean-naming</include>
