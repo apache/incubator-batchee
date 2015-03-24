@@ -17,13 +17,21 @@
 package org.apache.batchee.modelmapper;
 
 import org.modelmapper.ModelMapper;
+import org.modelmapper.config.Configuration;
+import org.modelmapper.convention.MatchingStrategies;
+import org.modelmapper.spi.MatchingStrategy;
 
+import java.util.Locale;
 import javax.batch.api.BatchProperty;
 import javax.batch.api.chunk.ItemProcessor;
 import javax.inject.Inject;
 
 public class ModelMapperItemProcessor implements ItemProcessor {
     private volatile ModelMapper mapper = null;
+
+    @Inject
+    @BatchProperty
+    private String matchingStrategy;
 
     @Inject
     @BatchProperty
@@ -48,11 +56,7 @@ public class ModelMapperItemProcessor implements ItemProcessor {
             synchronized (this) {
                 if (destinationTypeClass == null) {
                     try {
-                        ClassLoader loader = Thread.currentThread().getContextClassLoader();
-                        if (loader == null) {
-                            loader = ModelMapperItemProcessor.class.getClassLoader();
-                        }
-
+                        final ClassLoader loader = currentLoader();
                         destinationTypeClass = loader.loadClass(destinationType);
                     } catch (final ClassNotFoundException e) {
                         throw new IllegalArgumentException("Can't load: '" + destinationType + "'", e);
@@ -69,9 +73,33 @@ public class ModelMapperItemProcessor implements ItemProcessor {
             synchronized (this) {
                 if (mapper == null) {
                     mapper = newMapper();
+                    if (matchingStrategy != null) {
+                        final Configuration configuration = mapper.getConfiguration();
+                        try {
+                            configuration.setMatchingStrategy(MatchingStrategy.class.cast(
+                                    MatchingStrategies.class.getDeclaredField(matchingStrategy.toUpperCase(Locale.ENGLISH)).get(null)));
+                        } catch (final Exception e) {
+                            try {
+                                configuration.setMatchingStrategy(MatchingStrategy.class.cast(currentLoader().loadClass(matchingStrategy)));
+                            } catch (final Exception e1) {
+                                if (RuntimeException.class.isInstance(e)) {
+                                    throw RuntimeException.class.cast(e);
+                                }
+                                throw new IllegalStateException(e);
+                            }
+                        }
+                    }
                 }
             }
         }
         return mapper;
+    }
+
+    private static ClassLoader currentLoader() {
+        ClassLoader loader = Thread.currentThread().getContextClassLoader();
+        if (loader == null) {
+            loader = ModelMapperItemProcessor.class.getClassLoader();
+        }
+        return loader;
     }
 }
