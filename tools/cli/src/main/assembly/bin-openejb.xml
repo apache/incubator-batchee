@@ -41,6 +41,14 @@
       <fileMode>0755</fileMode>
     </fileSet>
     <fileSet>
+      <directory>${project.build.outputDirectory}</directory>
+      <outputDirectory>conf/</outputDirectory>
+      <includes>
+        <include>logging.properties</include>
+      </includes>
+      <lineEnding>unix</lineEnding>
+    </fileSet>
+    <fileSet>
       <directory>${project.build.directory}/</directory>
       <outputDirectory>bin/</outputDirectory>
       <includes>

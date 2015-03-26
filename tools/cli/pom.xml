@@ -127,6 +127,7 @@
             </goals>
             <configuration>
               <includes>
+                <include>**/jul/*</include>
                 <include>**/bootstrap/*</include>
                 <include>**/classloader/*</include>
               </includes>
