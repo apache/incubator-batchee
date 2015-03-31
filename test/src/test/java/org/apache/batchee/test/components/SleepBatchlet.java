@@ -18,6 +18,7 @@ package org.apache.batchee.test.components;
 
 import javax.batch.api.BatchProperty;
 import javax.batch.api.Batchlet;
+import javax.batch.runtime.context.StepContext;
 import javax.inject.Inject;
 
 public class SleepBatchlet implements Batchlet {
@@ -27,10 +28,22 @@ public class SleepBatchlet implements Batchlet {
     @BatchProperty
     private String duration = "50";
 
+    @Inject
+    @BatchProperty
+    private String exitStatus;
+
+    @Inject
+    private StepContext stepContext;
+
     private volatile boolean stopped = false;
 
     @Override
     public String process() throws Exception {
+        if (exitStatus != null) {
+            stepContext.setExitStatus(exitStatus);
+            return exitStatus;
+        }
+
         final long pauses = Long.parseLong(duration) / SLEEP_DURATION;
         for (long i = 0; i < pauses; i++) {
             if (stopped) {

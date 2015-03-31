@@ -18,34 +18,28 @@ package org.apache.batchee.test;
 
 import org.apache.batchee.container.impl.JobContextImpl;
 import org.apache.batchee.container.impl.StepContextImpl;
-import org.apache.batchee.container.impl.controller.batchlet.BatchletStepController;
-import org.apache.batchee.container.impl.controller.chunk.ChunkStepController;
+import org.apache.batchee.container.impl.controller.JobController;
 import org.apache.batchee.container.impl.jobinstance.RuntimeJobExecution;
 import org.apache.batchee.container.modelresolver.PropertyResolverFactory;
 import org.apache.batchee.container.navigator.JobNavigator;
-import org.apache.batchee.container.proxy.InjectionReferences;
-import org.apache.batchee.container.proxy.ListenerFactory;
 import org.apache.batchee.container.services.JobStatusManagerService;
 import org.apache.batchee.container.services.ServicesManager;
 import org.apache.batchee.container.services.persistence.MemoryPersistenceManagerService;
-import org.apache.batchee.container.util.PartitionDataWrapper;
 import org.apache.batchee.jaxb.JSLJob;
 import org.apache.batchee.jaxb.JSLProperties;
 import org.apache.batchee.jaxb.Step;
-import org.apache.batchee.spi.BatchArtifactFactory;
 import org.apache.batchee.spi.PersistenceManagerService;
 import org.apache.batchee.spi.SecurityService;
 
+import java.util.Properties;
 import javax.batch.runtime.BatchStatus;
+import javax.batch.runtime.JobExecution;
 import javax.batch.runtime.JobInstance;
 import javax.batch.runtime.StepExecution;
-import java.util.Properties;
-import java.util.concurrent.ArrayBlockingQueue;
 
 public class StepLauncher {
     private static final Properties EMPTY_PROPERTIES = new Properties();
     private static final JSLProperties EMPTY_JSL_PROPERTIES = new JSLProperties();
-    private static final JSLJob EMPTY_JOB = new JSLJob();
 
     private static final Properties TEST_PROPERTIES = new Properties();
 
@@ -60,45 +54,62 @@ public class StepLauncher {
     /**
      * @param step the step to execute, Note: it can be modified by this method
      * @param jobParams the job parameters properties
-     * @return the step execution
+     * @return the job execution
      */
-    public static StepExecution execute(final Step step, final Properties jobParams) {
+    public static Result exec(final Step step, final Properties jobParams) {
         // services
         final ServicesManager manager = new ServicesManager();
         manager.init(TEST_PROPERTIES);
 
         final PersistenceManagerService persistenceManagerService = manager.service(PersistenceManagerService.class);
-        final BatchArtifactFactory factory = manager.service(BatchArtifactFactory.class);
+
+        final JSLJob job = new JSLJob();
+        PropertyResolverFactory.createStepPropertyResolver(false).substituteProperties(step, jobParams);
+        job.getExecutionElements().add(step);
 
         // contextual data
         final JobInstance jobInstance = persistenceManagerService.createJobInstance(step.getId(), manager.service(SecurityService.class).getLoggedUser(), null);
         manager.service(JobStatusManagerService.class).createJobStatus(jobInstance.getInstanceId());
 
-        final JobContextImpl jobContext = new JobContextImpl(new JobNavigator(EMPTY_JOB), EMPTY_JSL_PROPERTIES);
+        final JobContextImpl jobContext = new JobContextImpl(new JobNavigator(job), EMPTY_JSL_PROPERTIES);
         final StepContextImpl stepContext = new StepContextImpl(step.getId());
 
-        final RuntimeJobExecution runtimeJobExecution = persistenceManagerService.createJobExecution(jobInstance, EMPTY_PROPERTIES, BatchStatus.STARTED);
-        final InjectionReferences injectionRefs = new InjectionReferences(jobContext, stepContext, EMPTY_JSL_PROPERTIES.getPropertyList());
-        final ListenerFactory listenerFactory = new ListenerFactory(factory, EMPTY_JOB, injectionRefs, runtimeJobExecution);
+        final RuntimeJobExecution runtimeJobExecution = persistenceManagerService.createJobExecution(jobInstance, jobParams, BatchStatus.STARTED);
 
         // execute it!
-        runtimeJobExecution.setListenerFactory(listenerFactory);
         runtimeJobExecution.prepareForExecution(jobContext, null);
+        new JobController(runtimeJobExecution, manager).originateExecutionOnThread();
+        return new Result(stepContext, runtimeJobExecution, persistenceManagerService);
+    }
 
-        if (step.getChunk() != null) {
-            step.setChunk(PropertyResolverFactory.createChunkPropertyResolver(false).substituteProperties(step.getChunk(), jobParams));
-            new ChunkStepController(runtimeJobExecution, step, stepContext, jobInstance.getInstanceId(),
-                new ArrayBlockingQueue<PartitionDataWrapper>(1), manager)
-                .execute();
-        } else { // batchlet
-            step.setBatchlet(PropertyResolverFactory.createBatchletPropertyResolver(false).substituteProperties(step.getBatchlet(), jobParams));
-            new BatchletStepController(
-                runtimeJobExecution, step, stepContext, jobInstance.getInstanceId(),
-                new ArrayBlockingQueue<PartitionDataWrapper>(1), manager)
-                .execute();
+    /**
+     * @param step the step to execute, Note: it can be modified by this method
+     * @param jobParams the job parameters properties
+     * @return the step execution
+     */
+    public static StepExecution execute(final Step step, final Properties jobParams) {
+        final Result execution = exec(step, jobParams);
+        return execution.stepExecution();
+    }
+
+    public static class Result {
+        private final StepContextImpl stepContext;
+        private final RuntimeJobExecution jobExecution;
+        private final PersistenceManagerService persistenceManagerService;
+
+        public Result(final StepContextImpl stepContext, final RuntimeJobExecution jobExecution, final PersistenceManagerService persistenceManagerService) {
+            this.stepContext = stepContext;
+            this.jobExecution = jobExecution;
+            this.persistenceManagerService = persistenceManagerService;
         }
 
-        return persistenceManagerService.getStepExecutionByStepExecutionId(stepContext.getStepInternalExecID());
+        public StepExecution stepExecution() {
+            return persistenceManagerService.getStepExecutionByStepExecutionId(stepContext.getStepInternalExecID());
+        }
+
+        public JobExecution jobExecution() {
+            return jobExecution.getJobOperatorJobExecution();
+        }
     }
 
     private StepLauncher() {

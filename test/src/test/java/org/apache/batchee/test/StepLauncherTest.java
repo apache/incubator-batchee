@@ -18,19 +18,20 @@ package org.apache.batchee.test;
 
 import org.testng.annotations.Test;
 
+import java.io.Serializable;
+import java.util.List;
+import java.util.Properties;
 import javax.batch.api.BatchProperty;
 import javax.batch.api.Batchlet;
 import javax.batch.api.chunk.AbstractItemReader;
 import javax.batch.api.chunk.AbstractItemWriter;
 import javax.batch.api.chunk.ItemProcessor;
 import javax.batch.runtime.BatchStatus;
+import javax.batch.runtime.JobExecution;
 import javax.batch.runtime.StepExecution;
 import javax.batch.runtime.context.JobContext;
 import javax.batch.runtime.context.StepContext;
 import javax.inject.Inject;
-import java.io.Serializable;
-import java.util.List;
-import java.util.Properties;
 
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNotNull;
@@ -39,6 +40,15 @@ import static org.testng.Assert.assertTrue;
 public class StepLauncherTest {
 
     public static final String BATCHLET_REF = SimpleBatchlet.class.getName();
+
+    @Test
+    public void stepFail() {
+        final JobExecution execution = StepLauncher.exec(StepBuilder.extractFromXml("sleep.xml", "doSleep"), new Properties() {{
+            setProperty("exitStatus", "failed");
+        }}).jobExecution();
+        assertEquals(execution.getExitStatus(), "oops");
+        assertEquals(execution.getBatchStatus(), BatchStatus.FAILED);
+    }
 
     @Test
     public void stepFromXml() {

@@ -18,7 +18,9 @@
     <batchlet ref="org.apache.batchee.test.components.SleepBatchlet">
       <properties>
         <property name="duration" value="#{jobParameters['duration']}" />
+        <property name="exitStatus" value="#{jobParameters['exitStatus']}" />
       </properties>
     </batchlet>
+    <fail on="failed" exit-status="oops" />
   </step>
 </job>

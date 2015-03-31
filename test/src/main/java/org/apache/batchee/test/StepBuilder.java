@@ -21,13 +21,17 @@ import org.apache.batchee.container.jsl.JobModelResolver;
 import org.apache.batchee.container.services.loader.DefaultJobXMLLoaderService;
 import org.apache.batchee.jaxb.Batchlet;
 import org.apache.batchee.jaxb.Chunk;
+import org.apache.batchee.jaxb.End;
+import org.apache.batchee.jaxb.Fail;
 import org.apache.batchee.jaxb.ItemProcessor;
 import org.apache.batchee.jaxb.ItemReader;
 import org.apache.batchee.jaxb.ItemWriter;
 import org.apache.batchee.jaxb.JSLJob;
 import org.apache.batchee.jaxb.JSLProperties;
+import org.apache.batchee.jaxb.Next;
 import org.apache.batchee.jaxb.Property;
 import org.apache.batchee.jaxb.Step;
+import org.apache.batchee.jaxb.Stop;
 
 import java.util.List;
 
@@ -87,6 +91,51 @@ public class StepBuilder {
 
     public StepBuilder name(final String name) {
         step.setId(name);
+        return this;
+    }
+
+    public StepBuilder failOn(final String on) {
+        return failOn(on, null);
+    }
+
+    public StepBuilder failOn(final String on, final String exitStatus) {
+        final Fail fail = new Fail();
+        fail.setOn(on);
+        fail.setExitStatus(exitStatus);
+        step.getTransitionElements().add(fail);
+        return this;
+    }
+
+    public StepBuilder endOn(final String on) {
+        return endOn(on, null);
+    }
+
+    public StepBuilder endOn(final String on, final String exitStatus) {
+        final End end = new End();
+        end.setOn(on);
+        end.setExitStatus(exitStatus);
+        step.getTransitionElements().add(end);
+        return this;
+    }
+
+    public StepBuilder stopOn(final String on, final String restart) {
+        return stopOn(on, restart, null);
+    }
+
+    public StepBuilder stopOn(final String on, final String restart, final String exitStatus) {
+        final Stop stop = new Stop();
+        stop.setOn(on);
+        stop.setExitStatus(exitStatus);
+        stop.setRestart(restart);
+        step.getTransitionElements().add(stop);
+        return this;
+    }
+
+    public StepBuilder nextOn(final String on, final String to) {
+        final Next next = new Next();
+        next.setOn(on);
+        next.setTo(to);
+        step.getTransitionElements().add(next);
         return this;
     }
 
