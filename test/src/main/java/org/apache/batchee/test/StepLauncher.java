@@ -57,6 +57,8 @@ public class StepLauncher {
      * @return the job execution
      */
     public static Result exec(final Step step, final Properties jobParams) {
+        step.setNextFromAttribute(null); // don't allow next
+
         // services
         final ServicesManager manager = new ServicesManager();
         manager.init(TEST_PROPERTIES);
