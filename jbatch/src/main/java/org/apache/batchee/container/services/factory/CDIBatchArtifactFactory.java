@@ -31,33 +31,28 @@ import java.util.Set;
 public class CDIBatchArtifactFactory extends DefaultBatchArtifactFactory {
     @Override
     public Instance load(final String batchId) {
-        try {
-            final BeanManager bm = getBeanManager();
-            if (bm == null) {
-                return super.load(batchId);
-            }
-
-            final Set<Bean<?>> beans = bm.getBeans(batchId);
-            final Bean<?> bean = bm.resolve(beans);
-            if (bean == null) { // fallback to try to instantiate it from TCCL as per the spec
-                return super.load(batchId);
-            }
-            final Class<?> clazz = bean.getBeanClass();
-            final CreationalContext creationalContext = bm.createCreationalContext(bean);
-            final Object artifactInstance = bm.getReference(bean, clazz, creationalContext);
-            if (Dependent.class.equals(bean.getScope()) || !bm.isNormalScope(bean.getScope())) { // need to be released
-                return new Instance(artifactInstance, new Closeable() {
-                    @Override
-                    public void close() throws IOException {
-                        creationalContext.release();
-                    }
-                });
-            }
-            return new Instance(artifactInstance, null);
-        } catch (final Exception e) {
-            // no-op
+        final BeanManager bm = getBeanManager();
+        if (bm == null) {
+            return super.load(batchId);
         }
-        return null;
+
+        final Set<Bean<?>> beans = bm.getBeans(batchId);
+        final Bean<?> bean = bm.resolve(beans);
+        if (bean == null) { // fallback to try to instantiate it from TCCL as per the spec
+            return super.load(batchId);
+        }
+        final Class<?> clazz = bean.getBeanClass();
+        final CreationalContext creationalContext = bm.createCreationalContext(bean);
+        final Object artifactInstance = bm.getReference(bean, clazz, creationalContext);
+        if (Dependent.class.equals(bean.getScope()) || !bm.isNormalScope(bean.getScope())) { // need to be released
+            return new Instance(artifactInstance, new Closeable() {
+                @Override
+                public void close() throws IOException {
+                    creationalContext.release();
+                }
+            });
+        }
+        return new Instance(artifactInstance, null);
     }
 
     @Override
