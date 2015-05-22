@@ -16,14 +16,14 @@
  */
 package org.apache.batchee.cdi.testng;
 
-import org.apache.webbeans.cditest.CdiTestContainer;
-import org.apache.webbeans.cditest.CdiTestContainerLoader;
+import org.apache.deltaspike.cdise.api.CdiContainer;
+import org.apache.deltaspike.cdise.api.CdiContainerLoader;
 import org.testng.ITestContext;
 import org.testng.ITestListener;
 import org.testng.ITestResult;
 
 public class CdiContainerLifecycle implements ITestListener {
-    private CdiTestContainer container;
+    private CdiContainer container;
 
     @Override
     public void onTestStart(final ITestResult iTestResult) {
@@ -52,9 +52,9 @@ public class CdiContainerLifecycle implements ITestListener {
 
     @Override
     public void onStart(final ITestContext iTestContext) {
-        container = CdiTestContainerLoader.getCdiContainer();
+        container = CdiContainerLoader.getCdiContainer();
         try {
-            container.bootContainer();
+            container.boot();
         } catch (final Exception e) {
             throw new RuntimeException(e);
         }
@@ -63,7 +63,7 @@ public class CdiContainerLifecycle implements ITestListener {
     @Override
     public void onFinish(final ITestContext iTestContext) {
         try {
-            container.shutdownContainer();
+            container.shutdown();
         } catch (final Exception e) {
             // no-op
         }

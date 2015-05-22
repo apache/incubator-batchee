@@ -17,6 +17,7 @@
 
 package org.apache.batchee.container.cdi;
 
+import javax.batch.operations.BatchRuntimeException;
 import javax.enterprise.event.Observes;
 import javax.enterprise.inject.spi.AfterBeanDiscovery;
 import javax.enterprise.inject.spi.AfterDeploymentValidation;
@@ -26,13 +27,43 @@ import javax.enterprise.inject.spi.BeforeShutdown;
 import javax.enterprise.inject.spi.Extension;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
+import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 // excepted beforeBeanDiscovery() all is forked from DeltaSpike - we don't want to depend from it here
 public class BatchCDIInjectionExtension implements Extension {
+
+    private static final boolean CDI_1_1_AVAILABLE;
+    private static final Method CDI_CURRENT_METHOD;
+    private static final Method CDI_GET_BEAN_MANAGER_METHOD;
+
+
     private static BatchCDIInjectionExtension bmpSingleton = null;
+
     private volatile Map<ClassLoader, BeanManagerInfo> bmInfos = new ConcurrentHashMap<ClassLoader, BeanManagerInfo>();
+
+
+    static {
+        boolean cdi11Available;
+        Method currentMethod;
+        Method getBmMethod;
+
+        try {
+            Class<?> cdi = Class.forName("javax.enterprise.inject.spi.CDI", false, loader());
+            currentMethod = cdi.getDeclaredMethod("current");
+            getBmMethod = cdi.getDeclaredMethod("getBeanManager");
+            cdi11Available = true;
+        } catch (Exception e) {
+            currentMethod = null;
+            getBmMethod = null;
+            cdi11Available = false;
+        }
+
+        CDI_CURRENT_METHOD = currentMethod;
+        CDI_GET_BEAN_MANAGER_METHOD = getBmMethod;
+        CDI_1_1_AVAILABLE = cdi11Available;
+    }
 
     void beforeBeanDiscovery(final @Observes BeforeBeanDiscovery bbd, BeanManager bm) {
         bbd.addAnnotatedType(bm.createAnnotatedType(BatchProducerBean.class));
@@ -43,20 +74,26 @@ public class BatchCDIInjectionExtension implements Extension {
         if (bmpSingleton == null) {
             bmpSingleton = this;
         }
-        final BeanManagerInfo bmi = getBeanManagerInfo(loader());
-        bmi.loadTimeBm = beanManager;
+
+        if (!CDI_1_1_AVAILABLE) {
+            final BeanManagerInfo bmi = getBeanManagerInfo(loader());
+            bmi.loadTimeBm = beanManager;
+        }
     }
 
     public void cleanupFinalBeanManagers(final @Observes AfterDeploymentValidation adv) {
-        for (final BeanManagerInfo bmi : bmpSingleton.bmInfos.values()) {
-            bmi.finalBm = null;
+        if (!CDI_1_1_AVAILABLE) {
+            for (final BeanManagerInfo bmi : bmpSingleton.bmInfos.values()) {
+                bmi.finalBm = null;
+            }
         }
     }
 
     public void cleanupStoredBeanManagerOnShutdown(final @Observes BeforeShutdown beforeShutdown) {
-        if (bmpSingleton == null) {
+        if (CDI_1_1_AVAILABLE || bmpSingleton == null) {
             return;
         }
+
         bmpSingleton.bmInfos.remove(loader());
     }
 
@@ -69,6 +106,15 @@ public class BatchCDIInjectionExtension implements Extension {
     }
 
     public BeanManager getBeanManager() {
+        if (CDI_1_1_AVAILABLE) {
+            try {
+                return (BeanManager) CDI_GET_BEAN_MANAGER_METHOD.invoke(CDI_CURRENT_METHOD.invoke(null));
+            } catch (Exception e) {
+                throw new BatchRuntimeException("unable to resolve BeanManager");
+            }
+        }
+
+        // fallback if CDI isn't available
         final BeanManagerInfo bmi = getBeanManagerInfo(loader());
 
         BeanManager result = bmi.finalBm;
