@@ -71,6 +71,7 @@ public class RuntimeJobExecution {
     public void inheritJobContext(final JobContextImpl jc) {
         jobContext.setExecutionId(jc.getExecutionId());
         jobContext.setInstanceId(jc.getInstanceId());
+        jobContext.setJobName(jc.getJobName());
     }
 
     public void setRestartOn(final String restartOn) {

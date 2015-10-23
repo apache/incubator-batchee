@@ -33,7 +33,7 @@ public class JobContextImpl implements JobContext {
     private Object transientUserData = null;
     private ModelNavigator<JSLJob> navigator = null;
 
-    private String id;  // Name
+    private String jobName;  // 'id' attribute in JSL
     private Properties properties = new Properties();
 
     private long executionId;
@@ -42,7 +42,7 @@ public class JobContextImpl implements JobContext {
 
     public JobContextImpl(final ModelNavigator<JSLJob> navigator, final JSLProperties jslProperties) {
         this.navigator = navigator;
-        this.id = navigator.getRootModelElement().getId();
+        this.jobName = navigator.getRootModelElement().getId();
         this.batchStatus = BatchStatus.STARTING;
         this.properties = convertJSProperties(jslProperties);
     }
@@ -71,7 +71,11 @@ public class JobContextImpl implements JobContext {
     }
 
     public String getJobName() {
-        return id;
+        return jobName;
+    }
+    
+    public void setJobName(String jobName) {
+      this.jobName = jobName;
     }
 
     public BatchStatus getBatchStatus() {
@@ -122,8 +126,8 @@ public class JobContextImpl implements JobContext {
 
     @Override
     public String toString() {
-        return ("batchStatus = " + batchStatus) + " , exitStatus = " + exitStatus + " , id = "
-            + id + " , executionId = " + executionId + " , instanceId = " + instanceId + " , restartOn = " + restartOn;
+        return ("batchStatus = " + batchStatus) + " , exitStatus = " + exitStatus + " , jobName = "
+            + jobName + " , executionId = " + executionId + " , instanceId = " + instanceId + " , restartOn = " + restartOn;
     }
 }
 

@@ -186,7 +186,7 @@ public class DefaultBatchKernel implements BatchKernelService {
     }
 
     @Override
-    public List<BatchPartitionWorkUnit> buildOnRestartParallelPartitions(final PartitionsBuilderConfig config)
+    public List<BatchPartitionWorkUnit> buildOnRestartParallelPartitions(final PartitionsBuilderConfig config, final JobContextImpl jc, final StepContextImpl sc)
             throws JobRestartException, JobExecutionAlreadyCompleteException, JobExecutionNotMostRecentException {
 
         final List<JSLJob> jobModels = config.getJobModels();
@@ -205,13 +205,15 @@ public class DefaultBatchKernel implements BatchKernelService {
                 final RuntimeJobExecution jobExecution;
                 try {
                     jobExecution = JobExecutionHelper.restartPartition(servicesManager, execId, parallelJob, partitionProps);
-                    jobExecution.setPartitionInstance(instance);
+                    jobExecution.inheritJobContext(jc);
+                    jobExecution.setPartitionInstance(instance);                    
                 } catch (final NoSuchJobExecutionException e) {
                     throw new IllegalStateException("Caught NoSuchJobExecutionException but this is an internal JobExecution so this shouldn't have happened: execId ="
                             + execId, e);
                 }
 
                 final BatchPartitionWorkUnit batchWork = new BatchPartitionWorkUnit(jobExecution, config, servicesManager);
+                batchWork.inheritStepContext(sc);
                 registerCurrentInstanceAndExecution(jobExecution, batchWork.getController());
 
                 batchWorkUnits.add(batchWork);
@@ -231,11 +233,12 @@ public class DefaultBatchKernel implements BatchKernelService {
     }
 
     @Override
-    public BatchFlowInSplitWorkUnit buildNewFlowInSplitWorkUnit(final FlowInSplitBuilderConfig config) {
+    public BatchFlowInSplitWorkUnit buildNewFlowInSplitWorkUnit(final FlowInSplitBuilderConfig config, final JobContextImpl jc) {
         final JSLJob parallelJob = config.getJobModel();
 
         final RuntimeFlowInSplitExecution execution = JobExecutionHelper.startFlowInSplit(servicesManager, parallelJob);
         final BatchFlowInSplitWorkUnit batchWork = new BatchFlowInSplitWorkUnit(execution, config, servicesManager);
+        execution.inheritJobContext(jc);
 
         registerCurrentInstanceAndExecution(execution, batchWork.getController());
         return batchWork;
@@ -264,7 +267,7 @@ public class DefaultBatchKernel implements BatchKernelService {
     }
 
     @Override
-    public BatchFlowInSplitWorkUnit buildOnRestartFlowInSplitWorkUnit(final FlowInSplitBuilderConfig config)
+    public BatchFlowInSplitWorkUnit buildOnRestartFlowInSplitWorkUnit(final FlowInSplitBuilderConfig config, final JobContextImpl jc)
         throws JobRestartException, JobExecutionAlreadyCompleteException, JobExecutionNotMostRecentException {
 
         final JSLJob jobModel = config.getJobModel();
@@ -277,7 +280,7 @@ public class DefaultBatchKernel implements BatchKernelService {
         }
 
         final BatchFlowInSplitWorkUnit batchWork = new BatchFlowInSplitWorkUnit(jobExecution, config, servicesManager);
-
+        jobExecution.inheritJobContext(jc);        
         registerCurrentInstanceAndExecution(jobExecution, batchWork.getController());
         return batchWork;
     }
