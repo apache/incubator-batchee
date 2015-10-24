@@ -191,6 +191,18 @@
         </resources>
 
         <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-remote-resources-plugin</artifactId>
+                <version>1.5</version>
+                <dependencies>
+                    <dependency> <!-- workaround for jdk 1.8 -->
+                        <groupId>org.apache.maven.shared</groupId>
+                        <artifactId>maven-filtering</artifactId>
+                        <version>1.3</version>
+                    </dependency>
+                </dependencies>
+            </plugin>
 
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -470,15 +482,6 @@
             </plugin>
         </plugins>
     </build>
-
-    <pluginRepositories>
-
-        <!-- WTF? surely not! -->
-        <pluginRepository>
-            <id>sonatype-public-repository</id>
-            <url>https://oss.sonatype.org/content/groups/public</url>
-        </pluginRepository>
-    </pluginRepositories>
 
     <reporting>
         <plugins>
