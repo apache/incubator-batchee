@@ -155,6 +155,10 @@ public class DefaultDataRepresentationServiceTest {
         assertEquals(1, steps.size());
         final StepExecution exec = steps.iterator().next();
         Assert.assertEquals(BatchStatus.FAILED, exec.getBatchStatus());
+
+        // now try to restart the batch again
+        long restartId = op.restart(id, null);
+        Batches.waitForEnd(op, restartId);
     }
 
 
@@ -191,6 +195,12 @@ public class DefaultDataRepresentationServiceTest {
 
         private int counter = 0;
 
+        @Override
+        public void open(Serializable checkpoint) throws Exception {
+            if (checkpoint != null) {
+                counter = (Integer)checkpoint;
+            }
+        }
 
         @Override
         public Object readItem() throws Exception {
@@ -206,6 +216,14 @@ public class DefaultDataRepresentationServiceTest {
     public static class DummyWriterWithCheckpoint extends AbstractItemWriter {
 
         private Integer lastCount = null;
+
+        @Override
+        public void open(Serializable checkpoint) throws Exception {
+            if (checkpoint != null) {
+                lastCount = (Integer)checkpoint + 10;
+            }
+        }
+
 
         @Override
         public void writeItems(List<Object> items) throws Exception {
