@@ -243,6 +243,9 @@ public class MemoryPersistenceManagerService implements PersistenceManagerServic
     public List<InternalJobExecution> jobOperatorGetJobExecutions(final long jobInstanceId) {
         final List<InternalJobExecution> list = new LinkedList<InternalJobExecution>();
         final Structures.JobInstanceData jobInstanceData = data.jobInstanceData.get(jobInstanceId);
+        if (jobInstanceData == null || jobInstanceData.executions == null) {
+            return list;
+        }
         synchronized (jobInstanceData.executions) {
             for (final Structures.ExecutionInstanceData executionInstanceData : jobInstanceData.executions) {
                 list.add(executionInstanceData.execution);

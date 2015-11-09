@@ -121,9 +121,9 @@ public class SplitController implements ExecutionElementController {
                 int count = batchKernel.getJobInstanceCount(job.getId());
                 FlowInSplitBuilderConfig config = new FlowInSplitBuilderConfig(job, completedWorkQueue, rootJobExecutionId);
                 if (count == 0) {
-                    parallelBatchWorkUnits.add(batchKernel.buildNewFlowInSplitWorkUnit(config));
+                    parallelBatchWorkUnits.add(batchKernel.buildNewFlowInSplitWorkUnit(config, jobExecution.getJobContext()));
                 } else if (count == 1) {
-                    parallelBatchWorkUnits.add(batchKernel.buildOnRestartFlowInSplitWorkUnit(config));
+                    parallelBatchWorkUnits.add(batchKernel.buildOnRestartFlowInSplitWorkUnit(config, jobExecution.getJobContext()));
                 } else {
                     throw new IllegalStateException("There is an inconsistency somewhere in the internal subjob creation");
                 }

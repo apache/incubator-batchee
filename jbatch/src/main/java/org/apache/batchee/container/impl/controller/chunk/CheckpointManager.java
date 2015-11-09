@@ -18,17 +18,17 @@ package org.apache.batchee.container.impl.controller.chunk;
 
 import org.apache.batchee.container.exception.BatchContainerRuntimeException;
 import org.apache.batchee.container.exception.BatchContainerServiceException;
+import org.apache.batchee.spi.DataRepresentationService;
 import org.apache.batchee.spi.PersistenceManagerService;
 
 import javax.batch.api.chunk.CheckpointAlgorithm;
 import javax.batch.api.chunk.ItemReader;
 import javax.batch.api.chunk.ItemWriter;
 
-import java.io.ByteArrayOutputStream;
-import java.io.ObjectOutputStream;
 
 public class CheckpointManager {
     private final PersistenceManagerService persistenceManagerService;
+    private final DataRepresentationService dataRepresentationService;
     private final ItemReader readerProxy;
     private final ItemWriter writerProxy;
     private final CheckpointAlgorithm checkpointAlgorithm;
@@ -39,7 +39,8 @@ public class CheckpointManager {
     public CheckpointManager(final ItemReader reader, final ItemWriter writer,
                              final CheckpointAlgorithm chkptAlg,
                              final long jobInstanceID, final String stepId,
-                             final PersistenceManagerService persistenceManagerService) {
+                             final PersistenceManagerService persistenceManagerService,
+                             final DataRepresentationService dataRepresentationService) {
         this.readerProxy = reader;
         this.writerProxy = writer;
         this.checkpointAlgorithm = chkptAlg;
@@ -47,6 +48,7 @@ public class CheckpointManager {
         this.jobInstanceID = jobInstanceID;
 
         this.persistenceManagerService = persistenceManagerService;
+        this.dataRepresentationService = dataRepresentationService;
     }
 
     public boolean applyCheckPointPolicy() {
@@ -58,27 +60,19 @@ public class CheckpointManager {
     }
 
     public void checkpoint() {
-        final ByteArrayOutputStream readerChkptBA = new ByteArrayOutputStream();
-        final ByteArrayOutputStream writerChkptBA = new ByteArrayOutputStream();
-        final ObjectOutputStream readerOOS;
-        final ObjectOutputStream writerOOS;
         final CheckpointDataKey readerChkptDK;
         final CheckpointDataKey writerChkptDK;
         try {
-            readerOOS = new ObjectOutputStream(readerChkptBA);
-            readerOOS.writeObject(readerProxy.checkpointInfo());
-            readerOOS.close();
+            byte[] checkpointBytes = dataRepresentationService.toInternalRepresentation(readerProxy.checkpointInfo());
             CheckpointData readerChkptData = new CheckpointData(jobInstanceID, stepId, CheckpointType.READER);
-            readerChkptData.setRestartToken(readerChkptBA.toByteArray());
+            readerChkptData.setRestartToken(checkpointBytes);
             readerChkptDK = new CheckpointDataKey(jobInstanceID, stepId, CheckpointType.READER);
 
             persistenceManagerService.setCheckpointData(readerChkptDK, readerChkptData);
 
-            writerOOS = new ObjectOutputStream(writerChkptBA);
-            writerOOS.writeObject(writerProxy.checkpointInfo());
-            writerOOS.close();
+            checkpointBytes = dataRepresentationService.toInternalRepresentation(writerProxy.checkpointInfo());
             CheckpointData writerChkptData = new CheckpointData(jobInstanceID, stepId, CheckpointType.WRITER);
-            writerChkptData.setRestartToken(writerChkptBA.toByteArray());
+            writerChkptData.setRestartToken(checkpointBytes);
             writerChkptDK = new CheckpointDataKey(jobInstanceID, stepId, CheckpointType.WRITER);
 
             persistenceManagerService.setCheckpointData(writerChkptDK, writerChkptData);

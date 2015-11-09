@@ -18,18 +18,22 @@ package org.apache.batchee.cli;
 
 import org.apache.batchee.cli.lifecycle.Lifecycle;
 import org.apache.batchee.util.Batches;
+import org.junit.FixMethodOrder;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.StandardOutputStreamLog;
+import org.junit.runners.MethodSorters;
 
 import javax.batch.operations.JobOperator;
 import javax.batch.runtime.BatchRuntime;
 
+import static java.lang.Thread.sleep;
 import static org.apache.batchee.cli.BatchEECLI.main;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class MainTest {
     @Rule
     public final StandardOutputStreamLog stdout = new StandardOutputStreamLog();
@@ -74,6 +78,11 @@ public class MainTest {
         final JobOperator jobOperator = BatchRuntime.getJobOperator();
         final long id = jobOperator.start("long-sample", null);
 
+        try {
+            sleep(100); // ensure it is started
+        } catch (final InterruptedException e) {
+            Thread.interrupted();
+        }
         main(new String[]{"running"});
         assertThat(stdout.getLog(), containsString("long-sample -> ["));
 
@@ -154,18 +163,17 @@ public class MainTest {
         final JobOperator jobOperator = BatchRuntime.getJobOperator();
         final long id = jobOperator.start("sample", null);
 
-        main(new String[]{"executions", "-id", Long.toString(id)});
-
         // output looks like:
         // Executions of sample for instance 5
         // execution id	|	batch status	|	exit status	|	start time	|	end time
         //          5	|	   COMPLETED	|	  COMPLETED	|	sam. janv. 04 17:20:24 CET 2014	|	sam. janv. 04 17:20:24 CET 2014
 
 
-        assertThat(stdout.getLog(), containsString("Executions of sample for instance 5"));
-        assertThat(stdout.getLog(), containsString("COMPLETED"));
-
         Batches.waitForEnd(jobOperator, id);
+        main(new String[]{"executions", "-id", Long.toString(id)});
+
+        assertThat(stdout.getLog(), containsString("Executions of sample for instance " + id));
+        assertThat(stdout.getLog(), containsString("COMPLETED"));
     }
 
     @Test

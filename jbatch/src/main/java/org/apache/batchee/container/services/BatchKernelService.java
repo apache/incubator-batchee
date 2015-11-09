@@ -54,7 +54,7 @@ public interface BatchKernelService extends BatchService {
 
     List<BatchPartitionWorkUnit> buildNewParallelPartitions(PartitionsBuilderConfig config, JobContextImpl jc, StepContextImpl sc) throws JobRestartException, JobStartException;
 
-    List<BatchPartitionWorkUnit> buildOnRestartParallelPartitions(PartitionsBuilderConfig config) throws JobRestartException,
+    List<BatchPartitionWorkUnit> buildOnRestartParallelPartitions(PartitionsBuilderConfig config, JobContextImpl jc, StepContextImpl sc) throws JobRestartException,
             JobExecutionAlreadyCompleteException, JobExecutionNotMostRecentException;
 
     void startGeneratedJob(BatchWorkUnit batchWork);
@@ -64,10 +64,10 @@ public interface BatchKernelService extends BatchService {
     boolean isExecutionRunning(long executionId);
 
     BatchFlowInSplitWorkUnit buildNewFlowInSplitWorkUnit(
-        FlowInSplitBuilderConfig config);
+        FlowInSplitBuilderConfig config, JobContextImpl jc);
 
     BatchFlowInSplitWorkUnit buildOnRestartFlowInSplitWorkUnit(
-        FlowInSplitBuilderConfig config);
+        FlowInSplitBuilderConfig config, JobContextImpl jc);
 
 
 }

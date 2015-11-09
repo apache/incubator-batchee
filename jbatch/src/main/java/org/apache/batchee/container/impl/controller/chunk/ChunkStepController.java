@@ -32,6 +32,7 @@ import org.apache.batchee.jaxb.Chunk;
 import org.apache.batchee.jaxb.Property;
 import org.apache.batchee.jaxb.Step;
 import org.apache.batchee.spi.BatchArtifactFactory;
+import org.apache.batchee.spi.DataRepresentationService;
 import org.apache.batchee.spi.PersistenceManagerService;
 
 import javax.batch.api.chunk.CheckpointAlgorithm;
@@ -49,7 +50,6 @@ import javax.batch.api.chunk.listener.SkipProcessListener;
 import javax.batch.api.chunk.listener.SkipReadListener;
 import javax.batch.api.chunk.listener.SkipWriteListener;
 import javax.batch.runtime.BatchStatus;
-import java.io.ByteArrayInputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
@@ -63,6 +63,7 @@ public class ChunkStepController extends SingleThreadedStepController {
 
     private final PersistenceManagerService persistenceManagerService;
     private final BatchArtifactFactory artifactFactory;
+    private final DataRepresentationService dataRepresentationService;
 
     private Chunk chunk = null;
     private ItemReader readerProxy = null;
@@ -88,6 +89,7 @@ public class ChunkStepController extends SingleThreadedStepController {
         super(jobExecutionImpl, step, stepContext, rootJobExecutionId, analyzerStatusQueue, servicesManager);
         this.persistenceManagerService = servicesManager.service(PersistenceManagerService.class);
         this.artifactFactory = servicesManager.service(BatchArtifactFactory.class);
+        this.dataRepresentationService = servicesManager.service(DataRepresentationService.class);
     }
 
     /**
@@ -536,7 +538,7 @@ public class ChunkStepController extends SingleThreadedStepController {
                         positionWriterAtCheckpoint();
                         checkpointManager = new CheckpointManager(readerProxy, writerProxy,
                             getCheckpointAlgorithm(itemCount, timeInterval), jobExecutionImpl
-                            .getJobInstance().getInstanceId(), step.getId(), persistenceManagerService);
+                            .getJobInstance().getInstanceId(), step.getId(), persistenceManagerService, dataRepresentationService);
                     }
                 }
 
@@ -745,8 +747,8 @@ public class ChunkStepController extends SingleThreadedStepController {
                 chkptAlg = checkpointProxy;
             }
 
-            checkpointManager
-                    = new CheckpointManager(readerProxy, writerProxy, chkptAlg, jobExecutionImpl.getJobInstance().getInstanceId(), step.getId(), persistenceManagerService);
+            checkpointManager = new CheckpointManager(readerProxy, writerProxy, chkptAlg, jobExecutionImpl.getJobInstance().getInstanceId(), step.getId(),
+                                                      persistenceManagerService, dataRepresentationService);
 
             skipHandler = new SkipHandler(chunk);
             skipHandler.addSkipProcessListener(skipProcessListeners);
@@ -769,12 +771,8 @@ public class ChunkStepController extends SingleThreadedStepController {
             // check for data in backing store
             if (readerChkptData != null) {
                 final byte[] readertoken = readerChkptData.getRestartToken();
-                final ByteArrayInputStream readerChkptBA = new ByteArrayInputStream(readertoken);
-                TCCLObjectInputStream readerOIS;
                 try {
-                    readerOIS = new TCCLObjectInputStream(readerChkptBA);
-                    readerProxy.open((Serializable) readerOIS.readObject());
-                    readerOIS.close();
+                    readerProxy.open((Serializable) dataRepresentationService.toJavaRepresentation(readertoken));
                 } catch (final Exception ex) {
                     // is this what I should be throwing here?
                     throw new BatchContainerServiceException("Cannot read the checkpoint data for [" + step.getId() + "]", ex);
@@ -799,12 +797,8 @@ public class ChunkStepController extends SingleThreadedStepController {
             // check for data in backing store
             if (writerChkptData != null) {
                 final byte[] writertoken = writerChkptData.getRestartToken();
-                final ByteArrayInputStream writerChkptBA = new ByteArrayInputStream(writertoken);
-                TCCLObjectInputStream writerOIS;
                 try {
-                    writerOIS = new TCCLObjectInputStream(writerChkptBA);
-                    writerProxy.open((Serializable) writerOIS.readObject());
-                    writerOIS.close();
+                    writerProxy.open((Serializable) dataRepresentationService.toJavaRepresentation(writertoken));
                 } catch (final Exception ex) {
                     throw new BatchContainerServiceException("Cannot persist the checkpoint data for [" + step.getId() + "]", ex);
                 }
@@ -896,12 +890,8 @@ public class ChunkStepController extends SingleThreadedStepController {
             // check for data in backing store
             if (readerData != null) {
                 byte[] readertoken = readerData.getRestartToken();
-                ByteArrayInputStream readerChkptBA = new ByteArrayInputStream(readertoken);
-                TCCLObjectInputStream readerOIS;
                 try {
-                    readerOIS = new TCCLObjectInputStream(readerChkptBA);
-                    readerProxy.open((Serializable) readerOIS.readObject());
-                    readerOIS.close();
+                    readerProxy.open((Serializable) dataRepresentationService.toJavaRepresentation(readertoken));
                 } catch (Exception ex) {
                     // is this what I should be throwing here?
                     throw new BatchContainerServiceException("Cannot persist the checkpoint data for [" + step.getId() + "]", ex);
@@ -929,12 +919,9 @@ public class ChunkStepController extends SingleThreadedStepController {
             // check for data in backing store
             if (writerData != null) {
                 byte[] writertoken = writerData.getRestartToken();
-                ByteArrayInputStream writerChkptBA = new ByteArrayInputStream(writertoken);
                 TCCLObjectInputStream writerOIS;
                 try {
-                    writerOIS = new TCCLObjectInputStream(writerChkptBA);
-                    writerProxy.open((Serializable) writerOIS.readObject());
-                    writerOIS.close();
+                    writerProxy.open((Serializable) dataRepresentationService.toJavaRepresentation(writertoken));
                 } catch (Exception ex) {
                     // is this what I should be throwing here?
                     throw new BatchContainerServiceException("Cannot read the checkpoint data for [" + step.getId() + "]", ex);
