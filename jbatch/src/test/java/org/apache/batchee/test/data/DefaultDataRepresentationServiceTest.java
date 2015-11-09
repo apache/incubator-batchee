@@ -17,6 +17,7 @@
 package org.apache.batchee.test.data;
 
 import java.io.Serializable;
+import java.lang.reflect.Method;
 import java.sql.Timestamp;
 import java.util.Date;
 import java.util.List;
@@ -32,6 +33,9 @@ import javax.batch.runtime.StepExecution;
 import org.apache.batchee.container.services.data.DefaultDataRepresentationService;
 import org.apache.batchee.spi.DataRepresentationService;
 import org.apache.batchee.util.Batches;
+import org.joda.time.LocalDate;
+import org.joda.time.LocalDateTime;
+import org.joda.time.LocalTime;
 import org.junit.Assert;
 import org.junit.Test;
 import static org.testng.Assert.assertEquals;
@@ -72,7 +76,15 @@ public class DefaultDataRepresentationServiceTest {
 
     @Test
     public void testJavaCustomEnum() {
-        //X TODO
+        assertRoundTripEquals(MySampleEnum.VALUE1, true);
+        assertRoundTripEquals(MySampleEnum.VALUE2, true);
+        assertRoundTripEquals(MySampleEnum.ANOTHER_VALUE, true);
+    }
+
+    public enum MySampleEnum {
+        VALUE1,
+        VALUE2,
+        ANOTHER_VALUE
     }
 
     @Test
@@ -102,12 +114,32 @@ public class DefaultDataRepresentationServiceTest {
 
     @Test
     public void testJava8DateTimeViaReflection() {
-        //X TODO
+        Object java8LocalDate = createJava8datetype("java.time.LocalDate");
+        Object java8LocalTime = createJava8datetype("java.time.LocalTime");
+        Object java8LocalDateTime = createJava8datetype("java.time.LocalDateTime");
+        if (java8LocalDate != null) {
+            assertRoundTripEquals(java8LocalDate, true);
+            assertRoundTripEquals(java8LocalTime, true);
+            assertRoundTripEquals(java8LocalDateTime, true);
+        }
+    }
+
+    private Object createJava8datetype(String className) {
+        try {
+            Class<?> clazz = Class.forName(className);
+            Method now = clazz.getMethod("now");
+            return now.invoke(null);
+        } catch (ReflectiveOperationException e) {
+            // all fine, we are just not running on java8
+        }
+        return null;
     }
 
     @Test
     public void testJodaDateTimeViaReflection() {
-        //X TODO
+        assertRoundTripEquals(LocalDate.now(), true);
+        assertRoundTripEquals(LocalDateTime.now(), true);
+        assertRoundTripEquals(LocalTime.now(), true);
     }
 
     @Test
@@ -190,6 +222,7 @@ public class DefaultDataRepresentationServiceTest {
     }
 
 
+    @SuppressWarnings("unused")
     public static class DummyReaderWithCheckpoint extends AbstractItemReader {
 
 
@@ -213,6 +246,7 @@ public class DefaultDataRepresentationServiceTest {
         }
     }
 
+    @SuppressWarnings("unused")
     public static class DummyWriterWithCheckpoint extends AbstractItemWriter {
 
         private Integer lastCount = null;
