@@ -28,6 +28,9 @@
     <name>BatchEE :: Extensions :: CDI</name>
     <description>This module implements some CDI scopes batch oriented.</description>
 
+    <properties>
+        <deltaspike.version>1.5.1</deltaspike.version>
+    </properties>
     <dependencies>
         <dependency>
             <groupId>org.apache.geronimo.specs</groupId>
@@ -39,7 +42,7 @@
         <dependency>
             <groupId>org.apache.deltaspike.cdictrl</groupId>
             <artifactId>deltaspike-cdictrl-owb</artifactId>
-            <version>1.4.0</version>
+            <version>${deltaspike.version}</version>
             <scope>test</scope>
         </dependency>
 
@@ -61,7 +64,7 @@
             </activation>
 
             <properties>
-                <owb.version>1.2.1</owb.version>
+                <owb.version>1.2.8</owb.version>
             </properties>
 
             <dependencies>
@@ -84,7 +87,7 @@
             <id>cdi-1.1</id>
 
             <properties>
-                <owb.version>1.6.0-SNAPSHOT</owb.version>
+                <owb.version>1.6.2</owb.version>
             </properties>
 
             <dependencies>
@@ -96,6 +99,13 @@
                 <dependency>
                     <groupId>org.apache.geronimo.specs</groupId>
                     <artifactId>geronimo-interceptor_1.2_spec</artifactId>
+                    <version>1.0</version>
+                    <scope>test</scope>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.apache.geronimo.specs</groupId>
+                    <artifactId>geronimo-annotation_1.2_spec</artifactId>
                     <version>1.0</version>
                     <scope>test</scope>
                 </dependency>
