@@ -42,6 +42,7 @@
         <atinject.version>1.0</atinject.version>
         <batch-api.version>1.0</batch-api.version>
         <jackson.version>2.2.2</jackson.version>
+        <jodatime.version>2.8.1</jodatime.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <batchee.scmPubUrl>https://svn.apache.org/repos/asf/incubator/batchee/site</batchee.scmPubUrl>
         <batchee.scmPubCheckoutDirectory>${basedir}/.site-content</batchee.scmPubCheckoutDirectory>
@@ -161,6 +162,14 @@
                 <groupId>com.fasterxml.jackson.jaxrs</groupId>
                 <artifactId>jackson-jaxrs-json-provider</artifactId>
                 <version>${jackson.version}</version>
+                <scope>test</scope>
+            </dependency>
+
+            <dependency>
+                <!-- We have optional support for joda time IF it is available on the classpath -->
+                <groupId>joda-time</groupId>
+                <artifactId>joda-time</artifactId>
+                <version>${jodatime.version}</version>
                 <scope>test</scope>
             </dependency>
 
