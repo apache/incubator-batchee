@@ -185,8 +185,8 @@ public class CommonsCsvWriter implements ItemWriter {
         this.format = predefined.name();
     }
 
-    public void setInput(final String input) {
-        this.input = input;
+    public void setOutput(final String output) {
+        this.output = output;
     }
 
     public void setEncoding(final String encoding) {
