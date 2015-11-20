@@ -16,9 +16,9 @@
  */
 package org.apache.batchee.extras.buffered;
 
-import java.util.Iterator;
-
 import org.apache.batchee.extras.typed.NoStateTypedItemReader;
+
+import java.util.Iterator;
 
 
 /**
@@ -36,7 +36,7 @@ import org.apache.batchee.extras.typed.NoStateTypedItemReader;
  */
 public abstract class BufferedItemReader<R> extends NoStateTypedItemReader<R> {
 
-    private Iterator<R> valuesIt = null;
+    private IteratorReader<R> valuesIt = null;
 
     /**
      * This methods need to return all the items to be read.
@@ -50,17 +50,9 @@ public abstract class BufferedItemReader<R> extends NoStateTypedItemReader<R> {
     @Override
     protected R doRead() {
         if (valuesIt == null) {
-            valuesIt = readAllItems();
-            if (valuesIt == null || !valuesIt.hasNext()) {
-                return null;
-            }
+            valuesIt = new IteratorReader<R>(readAllItems());
         }
-
-        if (valuesIt.hasNext()) {
-            return valuesIt.next();
-        }
-
-        return null;
+        return valuesIt.read();
     }
 
 }

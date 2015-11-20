@@ -31,7 +31,11 @@ public final class Synchronizations {
             Synchronizations.class.getClassLoader().loadClass("javax.transaction.UserTransaction");
             service = new JTASynchronizationService("java:comp/TransactionSynchronizationRegistry");
         } catch (final Throwable e) { // NoClassDefFoundError or ClassNotFoundException
-            LOGGER.log(Level.SEVERE, "UserTransaction or TransactionSynchronizationRegistry not found, Transactional* components will not work", e);
+            // this is an expected case for most of components using this abstraction
+            LOGGER.info("UserTransaction or TransactionSynchronizationRegistry not found, Transactional* components will ignore transactionanility");
+            if (LOGGER.isLoggable(Level.CONFIG)) {
+                LOGGER.log(Level.SEVERE, "UserTransaction or TransactionSynchronizationRegistry not found, Transactional* components will not work", e);
+            }
             active = false;
             service = new NoopSynchronizationService();
         }

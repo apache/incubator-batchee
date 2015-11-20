@@ -39,6 +39,7 @@
         <module>cdi</module>
         <module>hazelcast</module>
         <module>modelmapper</module>
+        <module>commons-csv</module>
     </modules>
 
     <dependencies>

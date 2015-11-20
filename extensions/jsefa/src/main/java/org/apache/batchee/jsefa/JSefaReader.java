@@ -58,8 +58,8 @@ public abstract class JSefaReader extends CountedReader {
     @Override
     public void open(final Serializable checkpoint) throws Exception {
         deserializer = initDeserializer();
-        super.open(checkpoint);
         deserializer.open(new FileReader(file));
+        super.open(checkpoint);
     }
 
     protected abstract Deserializer initDeserializer() throws Exception;

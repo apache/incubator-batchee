@@ -49,8 +49,6 @@ public class JacksonJsonReader extends CountedReader {
 
     @Override
     public void open(final Serializable checkpoint) throws Exception {
-        super.open(checkpoint);
-
         final ObjectMapper mapper = Jacksons.newMapper(configuration);
         parser = mapper.getFactory().createParser(new File(file));
         if (type != null) {
@@ -67,6 +65,7 @@ public class JacksonJsonReader extends CountedReader {
                 end = JsonToken.END_OBJECT;
             }
         }
+        super.open(checkpoint);
     }
 
     @Override
