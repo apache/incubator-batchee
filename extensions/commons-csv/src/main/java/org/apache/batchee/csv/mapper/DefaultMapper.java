@@ -52,12 +52,16 @@ public class DefaultMapper<T> implements CsvReaderMapper<T>, CsvWriterMapper<T> 
 
                     // put each field a single time to avoid to set it twice even if position and name are filled for header output
                     if (pos >= 0) {
-                        fieldByPosition.put(pos, field);
+                        if (fieldByPosition.put(pos, field) != null) {
+                            throw new IllegalArgumentException("multiple field for index " + pos + " in " + type);
+                        }
                         if (!defaultName) {
                             headers.put(pos, name);
                         }
                     } else if (!defaultName) {
-                        fieldByName.put(name, field);
+                        if (fieldByName.put(name, field) != null) {
+                            throw new IllegalArgumentException("multiple field for name '" + name + "' in " + type);
+                        }
                     }
                     if (pos > higherIdx) {
                         higherIdx = pos;

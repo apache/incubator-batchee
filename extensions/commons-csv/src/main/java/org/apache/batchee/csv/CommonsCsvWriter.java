@@ -127,7 +127,11 @@ public class CommonsCsvWriter implements ItemWriter {
         }
         final CSVFormat format = newFormat();
 
-        this.transactionalWriter = new TransactionalWriter(new File(output), encoding, checkpoint);
+        final File file = new File(output);
+        if (!file.exists() && !file.getParentFile().mkdirs()) {
+            throw new IllegalStateException("Cant create " + file);
+        }
+        this.transactionalWriter = new TransactionalWriter(file, encoding, checkpoint);
         this.writer = format.print(transactionalWriter);
     }
 
