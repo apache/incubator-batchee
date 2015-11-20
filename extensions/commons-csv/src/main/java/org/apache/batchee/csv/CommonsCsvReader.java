@@ -171,4 +171,92 @@ public class CommonsCsvReader extends CountedReader {
             ignoreEmptyLines, recordSeparator, nullString, headerComments, header, skipHeaderRecord, allowMissingColumnNames,
             readHeaders);
     }
+
+    public void setFormat(final String format) {
+        this.format = format;
+    }
+
+    public void setFormat(final CSVFormat.Predefined predefined) {
+        this.format = predefined.name();
+    }
+
+    public void setInput(final String input) {
+        this.input = input;
+    }
+
+    public void setEncoding(final String encoding) {
+        this.encoding = encoding;
+    }
+
+    public void setMapper(final String mapper) {
+        this.mapper = mapper;
+    }
+
+    public void setMapping(final String mapping) {
+        this.mapping = mapping;
+    }
+
+    public void setLocator(final String locator) {
+        this.locator = locator;
+    }
+
+    public void setAllowMissingColumnNames(final String allowMissingColumnNames) {
+        this.allowMissingColumnNames = allowMissingColumnNames;
+    }
+
+    public void setDelimiter(final String delimiter) {
+        this.delimiter = delimiter;
+    }
+
+    public void setQuoteCharacter(final String quoteCharacter) {
+        this.quoteCharacter = quoteCharacter;
+    }
+
+    public void setQuoteMode(final String quoteMode) {
+        this.quoteMode = quoteMode;
+    }
+
+    public void setCommentMarker(final String commentMarker) {
+        this.commentMarker = commentMarker;
+    }
+
+    public void setEscapeCharacter(final String escapeCharacter) {
+        this.escapeCharacter = escapeCharacter;
+    }
+
+    public void setIgnoreSurroundingSpaces(final String ignoreSurroundingSpaces) {
+        this.ignoreSurroundingSpaces = ignoreSurroundingSpaces;
+    }
+
+    public void setIgnoreEmptyLines(final String ignoreEmptyLines) {
+        this.ignoreEmptyLines = ignoreEmptyLines;
+    }
+
+    public void setRecordSeparator(final String recordSeparator) {
+        this.recordSeparator = recordSeparator;
+    }
+
+    public void setNullString(final String nullString) {
+        this.nullString = nullString;
+    }
+
+    public void setHeaderComments(final String headerComments) {
+        this.headerComments = headerComments;
+    }
+
+    public void setHeader(final String header) {
+        this.header = header;
+    }
+
+    public void setSkipHeaderRecord(final String skipHeaderRecord) {
+        this.skipHeaderRecord = skipHeaderRecord;
+    }
+
+    public void setReadHeaders(final String readHeaders) {
+        this.readHeaders = readHeaders;
+    }
+
+    public void readHeaders() {
+        this.readHeaders = "true";
+    }
 }
