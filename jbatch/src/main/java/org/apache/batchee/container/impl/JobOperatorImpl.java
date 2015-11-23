@@ -173,7 +173,8 @@ public class JobOperatorImpl implements JobOperator {
         final InternalJobExecution jobEx = persistenceManagerService.jobOperatorGetJobExecution(executionId);
 
         // if it is not in STARTED or STARTING state, mark it as ABANDONED
-        if (jobEx.getBatchStatus().equals(BatchStatus.STARTED) || jobEx.getBatchStatus().equals(BatchStatus.STARTING)) {
+        BatchStatus status = jobEx.getBatchStatus();
+        if (status == BatchStatus.STARTING ||  status == BatchStatus.STARTED) {
             throw new JobExecutionIsRunningException("Job Execution: " + executionId + " is still running");
         }
 
