@@ -70,7 +70,13 @@ class CSVFormatFactory {
             out = out.withIgnoreEmptyLines(Boolean.parseBoolean(ignoreEmptyLines));
         }
         if (recordSeparator != null) {
-            out = out.withRecordSeparator(recordSeparator.charAt(0));
+            if ("\\n".equals(recordSeparator)) {
+                out = out.withRecordSeparator('\n');
+            } else if ("\\r\\n".equals(recordSeparator)) {
+                out = out.withRecordSeparator("\r\n");
+            } else {
+                out = out.withRecordSeparator(recordSeparator);
+            }
         }
         if (nullString != null) {
             out = out.withNullString(nullString);
