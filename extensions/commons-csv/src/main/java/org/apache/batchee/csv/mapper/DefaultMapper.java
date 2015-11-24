@@ -29,6 +29,7 @@ import java.util.TreeMap;
 
 public class DefaultMapper<T> implements CsvReaderMapper<T>, CsvWriterMapper<T> {
     private final Class<T> type;
+    private final CoercingConverter coercingConverter;
 
     private final SortedMap<Integer, Field> fieldByPosition = new TreeMap<Integer, Field>();
     private final SortedMap<String, Field> fieldByName = new TreeMap<String, Field>();
@@ -36,7 +37,12 @@ public class DefaultMapper<T> implements CsvReaderMapper<T>, CsvWriterMapper<T> 
     private final int maxIndex;
 
     public DefaultMapper(final Class<T> type) {
+        this(type, loadConverter());
+    }
+
+    protected DefaultMapper(final Class<T> type, final CoercingConverter coercingConverter) {
         this.type = type;
+        this.coercingConverter = coercingConverter;
 
         int higherIdx = -1;
 
@@ -137,10 +143,23 @@ public class DefaultMapper<T> implements CsvReaderMapper<T>, CsvWriterMapper<T> 
         if (String.class == type) {
             return value;
         }
-        final Object primVal = Primitives.valueFor(type, value);
-        if (primVal != null) {
-            return primVal;
+
+        if (coercingConverter != null) {
+            final Object val = coercingConverter.valueFor(type, value);
+            if (val != null) {
+                return val;
+            }
         }
+
         throw new IllegalArgumentException("Unsupported type " + type);
+    }
+
+    private static CoercingConverter loadConverter() {
+        try {
+            Thread.currentThread().getContextClassLoader().loadClass("org.apache.xbean.propertyeditor.PropertyEditors");
+            return XBeanConverter.INSTANCE;
+        } catch (ClassNotFoundException e) {
+            return Primitives.INSTANCE;
+        }
     }
 }

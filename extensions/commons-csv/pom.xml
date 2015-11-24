@@ -42,5 +42,12 @@
       <artifactId>commons-csv</artifactId>
       <version>1.2</version>
     </dependency>
+
+    <dependency>
+      <groupId>org.apache.xbean</groupId>
+      <artifactId>xbean-reflect</artifactId>
+      <version>4.4</version>
+      <optional>true</optional>
+    </dependency>
   </dependencies>
 </project>
