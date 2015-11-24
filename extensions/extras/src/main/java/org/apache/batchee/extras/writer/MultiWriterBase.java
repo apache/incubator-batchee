@@ -44,6 +44,9 @@ public abstract class MultiWriterBase implements ItemWriter {
             writer2.open(cp.checkpoint2);
         } else if (serializable != null) {
             throw new IllegalArgumentException(serializable + " unsupported");
+        } else {
+            writer1.open(null);
+            writer2.open(null);
         }
     }
 
