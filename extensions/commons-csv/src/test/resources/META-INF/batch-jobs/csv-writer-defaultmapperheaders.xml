@@ -21,7 +21,7 @@
         <properties>
           <property name="output" value="#{jobParameters['output']}"/>
           <property name="mapping" value="org.apache.batchee.csv.CommonsCsvWriterMappingHeadersTest$Record"/>
-          <property name="readHeaders" value="true"/>
+          <property name="writeHeaders" value="true"/>
         </properties>
       </writer>
     </chunk>

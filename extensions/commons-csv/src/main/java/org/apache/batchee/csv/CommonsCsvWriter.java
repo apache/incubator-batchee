@@ -109,7 +109,7 @@ public class CommonsCsvWriter implements ItemWriter {
 
     @Inject
     @BatchProperty
-    private String readHeaders;
+    private String writeHeaders;
 
     private CSVPrinter writer;
     private BeanLocator.LocatorInstance<CsvWriterMapper> mapperInstance;
@@ -122,7 +122,7 @@ public class CommonsCsvWriter implements ItemWriter {
             (defaultMapper != null ? new BeanLocator.LocatorInstance<CsvWriterMapper>(defaultMapper, null) : null) :
             BeanLocator.Finder.get(locator).newInstance(CsvWriterMapper.class, mapper);
 
-        if ((header == null || header.isEmpty()) && Boolean.parseBoolean(readHeaders) && DefaultMapper.class.isInstance(mapperInstance.getValue())) {
+        if ((header == null || header.isEmpty()) && Boolean.parseBoolean(writeHeaders) && DefaultMapper.class.isInstance(mapperInstance.getValue())) {
             header = toListString(DefaultMapper.class.cast(mapperInstance.getValue()).getHeaders());
         }
         final CSVFormat format = newFormat();
@@ -178,7 +178,7 @@ public class CommonsCsvWriter implements ItemWriter {
         return CSVFormatFactory.newFormat(
             format, delimiter, quoteCharacter, quoteMode, commentMarker, escapeCharacter, ignoreSurroundingSpaces,
             ignoreEmptyLines, recordSeparator, nullString, headerComments, header, skipHeaderRecord, allowMissingColumnNames,
-            readHeaders);
+            writeHeaders);
     }
 
     public void setFormat(final String format) {
@@ -261,11 +261,11 @@ public class CommonsCsvWriter implements ItemWriter {
         this.skipHeaderRecord = skipHeaderRecord;
     }
 
-    public void setReadHeaders(final String readHeaders) {
-        this.readHeaders = readHeaders;
+    public void setWriteHeaders(final String readHeaders) {
+        this.writeHeaders = readHeaders;
     }
 
-    public void readHeaders() {
-        this.readHeaders = "true";
+    public void writeHeaders() {
+        this.writeHeaders = "true";
     }
 }
