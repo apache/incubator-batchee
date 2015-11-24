@@ -17,7 +17,14 @@
 package org.apache.batchee.csv;
 
 import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVRecord;
 import org.apache.commons.csv.QuoteMode;
+
+import java.io.IOException;
+import java.io.StringReader;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
 class CSVFormatFactory {
     private CSVFormatFactory() {
@@ -75,7 +82,17 @@ class CSVFormatFactory {
             out = out.withHeader();
         }
         if (header != null && !header.trim().isEmpty()) {
-            out = out.withHeader(header.split(" *, *"));
+            try { // headers can have CSV header names so parse it there
+                final Iterator<CSVRecord> iterator = out.withHeader(new String[0]).parse(new StringReader(header + '\n' + header)).iterator();
+                final CSVRecord record = iterator.next();
+                final List<String> list = new ArrayList<String>(record.size());
+                for (final String h : record) {
+                    list.add(h);
+                }
+                out = out.withHeader(list.toArray(new String[record.size()]));
+            } catch (final IOException e) { // can't occur actually
+                out = out.withHeader(header.split(" *, *"));
+            }
         }
         if (skipHeaderRecord != null) {
             out = out.withSkipHeaderRecord(Boolean.parseBoolean(skipHeaderRecord));

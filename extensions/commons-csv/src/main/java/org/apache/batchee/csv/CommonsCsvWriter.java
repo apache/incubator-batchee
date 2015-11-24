@@ -122,7 +122,7 @@ public class CommonsCsvWriter implements ItemWriter {
             (defaultMapper != null ? new BeanLocator.LocatorInstance<CsvWriterMapper>(defaultMapper, null) : null) :
             BeanLocator.Finder.get(locator).newInstance(CsvWriterMapper.class, mapper);
 
-        if ((header == null || header.isEmpty()) && Boolean.parseBoolean(writeHeaders) && DefaultMapper.class.isInstance(mapperInstance.getValue())) {
+        if ((header == null || header.isEmpty()) && Boolean.parseBoolean(writeHeaders) && DefaultMapper.class.isInstance(mapperInstance.getValue()) && checkpoint == null) {
             header = toListString(DefaultMapper.class.cast(mapperInstance.getValue()).getHeaders());
         }
         final CSVFormat format = newFormat();
@@ -138,7 +138,15 @@ public class CommonsCsvWriter implements ItemWriter {
     private String toListString(final Iterable<String> headers) {
         final StringBuilder b = new StringBuilder();
         for (final String s : headers) {
-            b.append(s).append(",");
+            final boolean quote = s.contains(",");
+            if (quote) {
+                b.append('"');
+            }
+            b.append(s);
+            if (quote) {
+                b.append('"');
+            }
+            b.append(",");
         }
         if (b.length() > 0) {
             b.setLength(b.length() - 1);
