@@ -23,6 +23,10 @@ import java.io.ObjectStreamClass;
 import java.lang.reflect.Proxy;
 
 public class TCCLObjectInputStream extends ObjectInputStream {
+    private static final BlacklistClassResolver BLACKLIST_CLASSES = new BlacklistClassResolver(System.getProperty(
+        "batchee.BlacklistClassResolver",
+        "org.codehaus.groovy.runtime.,org.apache.commons.collections.functors.,org.apache.xalan").split(" *, *"));
+
     private final ClassLoader tccl;
 
     public TCCLObjectInputStream(final InputStream in) throws IOException {
@@ -32,7 +36,7 @@ public class TCCLObjectInputStream extends ObjectInputStream {
 
     @Override
     protected Class<?> resolveClass(final ObjectStreamClass desc) throws ClassNotFoundException {
-        return Class.forName(desc.getName(), false, tccl);
+        return Class.forName(BLACKLIST_CLASSES.check(desc.getName()), false, tccl);
     }
 
     @Override
@@ -46,6 +50,25 @@ public class TCCLObjectInputStream extends ObjectInputStream {
             return Proxy.getProxyClass(tccl, cinterfaces);
         } catch (IllegalArgumentException e) {
             throw new ClassNotFoundException(null, e);
+        }
+    }
+
+    private static final class BlacklistClassResolver {
+        private final String[] blacklist;
+
+        protected BlacklistClassResolver(final String[] blacklist) {
+            this.blacklist = blacklist;
+        }
+
+        public final String check(final String name) {
+            if (blacklist != null) {
+                for (final String white : blacklist) {
+                    if (name.startsWith(white)) {
+                        throw new SecurityException(name + " is not whitelisted as deserialisable, prevented before loading.");
+                    }
+                }
+            }
+            return name;
         }
     }
 }
