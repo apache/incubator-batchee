@@ -97,6 +97,11 @@ public class BatchEECLI {
                 }
                 return classes.iterator();
             }
+
+            @Override
+            public Runnable decorate(final Runnable task) {
+                return task;
+            }
         };
 
         final Cli.CliBuilder<Runnable> builder = Cli.<Runnable>builder(cliConfiguration.name())
@@ -120,7 +125,7 @@ public class BatchEECLI {
         final Cli<Runnable> parser = builder.build();
 
         try {
-            parser.parse(args).run();
+            cliConfiguration.decorate(parser.parse(args)).run();
         } catch (final ParseException e) {
             parser.parse("help").run();
         } catch (final RuntimeException e) {

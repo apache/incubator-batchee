@@ -23,4 +23,5 @@ public interface CliConfiguration {
     String description();
     boolean addDefaultCommands();
     Iterator<Class<? extends UserCommand>> userCommands();
+    Runnable decorate(Runnable task);
 }
