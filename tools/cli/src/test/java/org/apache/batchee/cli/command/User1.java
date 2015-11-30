@@ -17,19 +17,11 @@
 package org.apache.batchee.cli.command;
 
 import io.airlift.airline.Command;
-import io.airlift.airline.Option;
 
-import javax.batch.operations.JobOperator;
-
-@Command(name = "start", description = "start a batch")
-public class Start extends StartableCommand {
-    @Option(name = "-name", description = "name of the batch to start", required = true)
-    private String name;
-
+@Command(name = "user1")
+public class User1 implements UserCommand {
     @Override
-    protected long doStart(final JobOperator operator) {
-        final long id = operator.start(name, toProperties(properties));
-        info("Batch '" + name + "' started with id #" + id);
-        return id;
+    public void run() {
+        System.out.println("User 1 called");
     }
 }

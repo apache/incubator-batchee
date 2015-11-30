@@ -16,7 +16,7 @@
  */
 package org.apache.batchee.cli.command;
 
-import io.airlift.command.Command;
+import io.airlift.airline.Command;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.batch.operations.JobOperator;

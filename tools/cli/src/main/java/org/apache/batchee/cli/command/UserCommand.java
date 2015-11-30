@@ -16,20 +16,7 @@
  */
 package org.apache.batchee.cli.command;
 
-import io.airlift.airline.Command;
-import io.airlift.airline.Option;
-
-import javax.batch.operations.JobOperator;
-
-@Command(name = "start", description = "start a batch")
-public class Start extends StartableCommand {
-    @Option(name = "-name", description = "name of the batch to start", required = true)
-    private String name;
-
-    @Override
-    protected long doStart(final JobOperator operator) {
-        final long id = operator.start(name, toProperties(properties));
-        info("Batch '" + name + "' started with id #" + id);
-        return id;
-    }
+// use io.airlift.airline.Command and more generally io.airlift.airline.*
+// and register your command using META-INF/services/org.apache.batchee.cli.command.UserCommand mecanism
+public interface UserCommand extends Runnable {
 }

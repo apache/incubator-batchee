@@ -16,7 +16,7 @@
  */
 package org.apache.batchee.cli.command;
 
-import io.airlift.command.Option;
+import io.airlift.airline.Option;
 import org.apache.batchee.container.exception.BatchContainerRuntimeException;
 import org.apache.commons.io.IOUtils;
 

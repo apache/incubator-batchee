@@ -106,7 +106,7 @@ public class MainTest {
         do {
             idx = out.indexOf(str);
         } while (idx < 0);
-        final int end = out.indexOf(System.getProperty("line.separator"));
+        final int end = out.lastIndexOf(System.getProperty("line.separator"));
         final long id = Long.parseLong(out.substring(idx + str.length(), end));
 
         main(new String[]{"stop", "-id", Long.toString(id), "-socket", "1236"});
@@ -181,6 +181,14 @@ public class MainTest {
         // whatever child of JobOperatorCommand so using running which is simple
         main(new String[]{ "running", "-lifecycle", MyLifecycle.class.getName() });
         assertEquals("start stop", MyLifecycle.result);
+    }
+
+    @Test
+    public void user() {
+        for (int i = 1; i < 3; i++) {
+            main(new String[]{"user" + i});
+            assertThat(stdout.getLog(), containsString("User " + i + " called"));
+        }
     }
 
     public static class MyLifecycle implements Lifecycle<String> {

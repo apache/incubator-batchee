@@ -16,7 +16,7 @@
  */
 package org.apache.batchee.cli.command;
 
-import io.airlift.command.Command;
+import io.airlift.airline.Command;
 
 import java.io.File;
 import java.io.FilenameFilter;

@@ -16,7 +16,7 @@
  */
 package org.apache.batchee.cli.command;
 
-import io.airlift.command.Option;
+import io.airlift.airline.Option;
 import org.apache.batchee.cli.classloader.ChildFirstURLClassLoader;
 import org.apache.batchee.cli.lifecycle.Lifecycle;
 import org.apache.batchee.cli.zip.Zips;

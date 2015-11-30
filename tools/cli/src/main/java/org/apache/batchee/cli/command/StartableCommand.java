@@ -16,7 +16,8 @@
  */
 package org.apache.batchee.cli.command;
 
-import io.airlift.command.Arguments;
+import io.airlift.airline.Arguments;
+import io.airlift.airline.Option;
 import org.apache.batchee.util.Batches;
 import org.apache.commons.io.IOUtils;
 
@@ -39,6 +40,13 @@ public abstract class StartableCommand extends SocketConfigurableCommand {
     @Arguments(description = "properties to pass to the batch")
     protected List<String> properties;
 
+    // some unix systems dont support negative systems.
+    @Option(name = "-error-exit-code", description = "exit code if any error occurs, should be > 0 or ignored")
+    protected int errorExitCode = -1;
+
+    @Option(name = "-failure-exit-code", description = "exit code if the batch result is not completed, should be > 0 and wait should be true or ignored")
+    protected int failureExitCode = -1;
+
     @Override
     public void doRun() {
         final JobOperator operator = operator();
@@ -60,23 +68,52 @@ public abstract class StartableCommand extends SocketConfigurableCommand {
             if (adminThread != null && adminThread.getServerSocket() != null) {
                 IOUtils.closeQuietly(adminThread.getServerSocket());
             }
-            e.printStackTrace();
-            //X TODO how about a system return code? otherwise shell scripts cannot see if we did fine or not...
+            if (errorExitCode >= 0) {
+                System.exit(errorExitCode);
+            }
+            e.printStackTrace(); // ensure it is traced
             return;
         }
 
-        if (wait) {
-            Batches.waitForEnd(operator, id);
-            report(operator, id);
+        try {
+            if (wait) {
+                finishBatch(operator, id);
+            }
+        } finally {
+            stopAdminThread(adminThread, id);
         }
+    }
+
+    private void finishBatch(final JobOperator operator, final long id) {
+        Batches.waitForEnd(operator, id);
+        if (report(operator, id).getBatchStatus() == BatchStatus.FAILED) {
+            if (failureExitCode >= 0) {
+                System.exit(failureExitCode);
+            }
+        }
+    }
+
+    private void stopAdminThread(final AdminThread adminThread, final long id) {
         if (adminThread != null) {
             adminThread.setId(id);
+            if (wait) {
+                try {
+                    try {
+                        adminThread.serverSocket.close();
+                    } catch (final IOException e) {
+                        // no-op
+                    }
+                    adminThread.join();
+                } catch (final InterruptedException e) {
+                    Thread.interrupted();
+                }
+            } // else let it live
         }
     }
 
     protected abstract long doStart(JobOperator operator);
 
-    private void report(final JobOperator operator, final long id) {
+    private JobExecution report(final JobOperator operator, final long id) {
         final JobExecution execution = operator.getJobExecution(id);
 
         info("");
@@ -102,6 +139,7 @@ public abstract class StartableCommand extends SocketConfigurableCommand {
         }
 
         info(LINE);
+        return execution;
     }
 
     private static String statusToString(final BatchStatus status) {
@@ -172,9 +210,13 @@ public abstract class StartableCommand extends SocketConfigurableCommand {
                     }
                 }
             } catch (final IOException e) {
-                e.printStackTrace();
+                if (!serverSocket.isClosed()) {
+                    e.printStackTrace();
+                }
             } finally {
-                IOUtils.closeQuietly(serverSocket);
+                if (!serverSocket.isClosed()) {
+                    IOUtils.closeQuietly(serverSocket);
+                }
             }
         }
 

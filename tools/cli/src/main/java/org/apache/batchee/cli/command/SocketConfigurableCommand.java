@@ -16,7 +16,7 @@
  */
 package org.apache.batchee.cli.command;
 
-import io.airlift.command.Option;
+import io.airlift.airline.Option;
 
 public abstract class SocketConfigurableCommand extends JobOperatorCommand {
     @Option(name = "-wait", description = "should wait the end of the batch", arity = 1)
