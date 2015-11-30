@@ -38,6 +38,7 @@ import javax.batch.runtime.Metric;
 import javax.batch.runtime.StepExecution;
 import java.io.Serializable;
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -192,6 +193,10 @@ public class MemoryPersistenceManagerService implements PersistenceManagerServic
     @Override
     public List<StepExecution> getStepExecutionsForJobExecution(final long execid) {
         final Structures.ExecutionInstanceData executionInstanceData = data.executionInstanceData.get(execid);
+        if (executionInstanceData == null) {
+            return Collections.emptyList();
+        }
+
         synchronized (executionInstanceData.stepExecutions) {
             return executionInstanceData.stepExecutions;
         }
@@ -296,7 +301,11 @@ public class MemoryPersistenceManagerService implements PersistenceManagerServic
 
     @Override
     public long getJobInstanceIdByExecutionId(final long executionId) throws NoSuchJobExecutionException {
-        return data.executionInstanceData.get(executionId).execution.getInstanceId();
+        final Structures.ExecutionInstanceData executionInstanceData = data.executionInstanceData.get(executionId);
+        if (executionInstanceData == null) {
+            throw new NoSuchJobExecutionException("Execution #" + executionId);
+        }
+        return executionInstanceData.execution.getInstanceId();
     }
 
     @Override
@@ -408,6 +417,9 @@ public class MemoryPersistenceManagerService implements PersistenceManagerServic
         final StepExecutionImpl stepExecution = new StepExecutionImpl(rootJobExecId, data.stepExecutionIdGenerator.getAndIncrement());
         stepExecution.setStepName(stepName);
         final Structures.ExecutionInstanceData executionInstanceData = data.executionInstanceData.get(rootJobExecId);
+        if (executionInstanceData == null) {
+            return null;
+        }
         synchronized (executionInstanceData.stepExecutions) {
             executionInstanceData.stepExecutions.add(stepExecution);
         }
@@ -650,6 +662,27 @@ public class MemoryPersistenceManagerService implements PersistenceManagerServic
             for (final CheckpointDataKey key : jobInstanceData.checkpoints) {
                 data.checkpointData.remove(key);
             }
+        }
+    }
+
+    @Override
+    public void cleanUp(final Date until) {
+        final Collection<Long> instanceIdToRemove = new ArrayList<Long>();
+        for (final Map.Entry<Long, Structures.JobInstanceData> entry : data.jobInstanceData.entrySet()) {
+            boolean match = true;
+            for (final Structures.ExecutionInstanceData exec : entry.getValue().executions) {
+                if (exec.execution.getEndTime() == null || exec.execution.getEndTime().after(until)) {
+                    match = false;
+                    break;
+                }
+            }
+            if (match) {
+                instanceIdToRemove.add(entry.getKey());
+            }
+        }
+
+        for (final Long id : instanceIdToRemove) {
+            cleanUp(id);
         }
     }
 

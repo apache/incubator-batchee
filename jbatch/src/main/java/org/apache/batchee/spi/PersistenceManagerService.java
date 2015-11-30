@@ -18,10 +18,10 @@ package org.apache.batchee.spi;
 
 import org.apache.batchee.container.impl.StepContextImpl;
 import org.apache.batchee.container.impl.StepExecutionImpl;
-import org.apache.batchee.container.impl.jobinstance.RuntimeFlowInSplitExecution;
-import org.apache.batchee.container.impl.jobinstance.RuntimeJobExecution;
 import org.apache.batchee.container.impl.controller.chunk.CheckpointData;
 import org.apache.batchee.container.impl.controller.chunk.CheckpointDataKey;
+import org.apache.batchee.container.impl.jobinstance.RuntimeFlowInSplitExecution;
+import org.apache.batchee.container.impl.jobinstance.RuntimeJobExecution;
 import org.apache.batchee.container.services.InternalJobExecution;
 import org.apache.batchee.container.status.JobStatus;
 import org.apache.batchee.container.status.StepStatus;
@@ -31,6 +31,7 @@ import javax.batch.runtime.BatchStatus;
 import javax.batch.runtime.JobInstance;
 import javax.batch.runtime.StepExecution;
 import java.sql.Timestamp;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -193,4 +194,5 @@ public interface PersistenceManagerService extends BatchService {
     StepExecution getStepExecutionByStepExecutionId(long stepExecId);
 
     void cleanUp(final long instanceId);
+    void cleanUp(final Date until);
 }

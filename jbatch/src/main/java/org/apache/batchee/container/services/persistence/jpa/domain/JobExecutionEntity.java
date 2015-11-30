@@ -40,6 +40,7 @@ import java.util.Properties;
                 query =  "SELECT e FROM JobExecutionEntity e WHERE e.instance.jobInstanceId = :instanceId ORDER BY e.createTime DESC"),
     @NamedQuery(name = JobExecutionEntity.Queries.FIND_BY_INSTANCE, query =  "SELECT e FROM JobExecutionEntity e WHERE e.instance.jobInstanceId = :instanceId"),
     @NamedQuery(name = JobExecutionEntity.Queries.DELETE_BY_INSTANCE_ID, query =  "delete from JobExecutionEntity e where e.instance.jobInstanceId = :instanceId"),
+    @NamedQuery(name = JobExecutionEntity.Queries.DELETE_BY_DATE, query =  "delete from JobExecutionEntity e where e.endTime < :date"),
     @NamedQuery(name = JobExecutionEntity.Queries.FIND_RUNNING, query =  "SELECT e FROM JobExecutionEntity e WHERE e.batchStatus in :statuses and e.instance.name = :name")
 })
 @Table(name=JobExecutionEntity.TABLE_NAME)
@@ -49,6 +50,7 @@ public class JobExecutionEntity {
         String FIND_BY_INSTANCE = "org.apache.batchee.container.services.persistence.jpa.domain.JobExecutionEntity.findByInstance";
         String FIND_RUNNING = "org.apache.batchee.container.services.persistence.jpa.domain.JobExecutionEntity.findRunning";
         String DELETE_BY_INSTANCE_ID = "org.apache.batchee.container.services.persistence.jpa.domain.JobExecutionEntity.deleteByInstanceId";
+        String DELETE_BY_DATE = "org.apache.batchee.container.services.persistence.jpa.domain.JobExecutionEntity.deleteByDate";
 
         List<BatchStatus> RUNNING_STATUSES = Arrays.asList(BatchStatus.STARTED, BatchStatus.STARTING, BatchStatus.STOPPING);
     }

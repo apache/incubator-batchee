@@ -67,6 +67,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -1588,11 +1589,49 @@ public class JDBCPersistenceManagerService implements PersistenceManagerService 
         }
     }
 
+    @Override
+    public void cleanUp(final Date until) {
+        Connection conn = null;
+        try {
+            conn = getConnection();
+            deleteUntil(until, conn, dictionary.getDeleteStepExecutionUntil());
+            deleteUntil(until, conn, dictionary.getDeleteCheckpointUntil());
+            deleteUntil(until, conn, dictionary.getDeleteJobInstanceUntil());
+            deleteUntil(until, conn, dictionary.getDeleteJobExecutionUntil());
+            if (!conn.getAutoCommit()) {
+                conn.commit();
+            }
+        } catch (final SQLException e) {
+            throw new PersistenceException(e);
+        } finally {
+            cleanupConnection(conn, null, null);
+        }
+    }
+
+    private static void deleteUntil(final Date until, final Connection conn, final String delete) throws SQLException {
+        PreparedStatement statement = null;
+        try {
+            statement = conn.prepareStatement(delete);
+            statement.setTimestamp(1, new Timestamp(until.getTime()));
+            statement.executeUpdate();
+        } finally {
+            if (statement != null) {
+                statement.close();
+            }
+        }
+    }
+
     private static void deleteFromInstanceId(final long instanceId, final Connection conn, final String delete) throws SQLException {
-        final PreparedStatement statement = conn.prepareStatement(delete);
-        statement.setLong(1, instanceId);
-        statement.executeUpdate();
-        statement.close();
+        PreparedStatement statement = null;
+        try {
+            statement = conn.prepareStatement(delete);
+            statement.setLong(1, instanceId);
+            statement.executeUpdate();
+        } finally {
+            if (statement != null) {
+                statement.close();
+            }
+        }
     }
 
     @Override

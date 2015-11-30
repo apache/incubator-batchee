@@ -41,7 +41,10 @@ import java.util.List;
     @NamedQuery(name = JobInstanceEntity.Queries.FIND_EXTERNALS, query = "select j from JobInstanceEntity j where j.name not like :pattern"),
     @NamedQuery(name = JobInstanceEntity.Queries.FIND_BY_NAME_AND_TAG, query = "select j from JobInstanceEntity j where j.name = :name and j.tag = tag"),
     @NamedQuery(name = JobInstanceEntity.Queries.FIND_BY_NAME, query = "select j from JobInstanceEntity j where j.name = :name"),
-    @NamedQuery(name = JobInstanceEntity.Queries.DELETE_BY_INSTANCE_ID, query = "delete from JobInstanceEntity e where e.jobInstanceId = :instanceId")
+    @NamedQuery(name = JobInstanceEntity.Queries.DELETE_BY_INSTANCE_ID, query = "delete from JobInstanceEntity e where e.jobInstanceId = :instanceId"),
+    @NamedQuery(
+        name = JobInstanceEntity.Queries.DELETE_BY_DATE,
+        query = "delete from JobInstanceEntity e where (select max(x.endTime) from JobExecutionEntity x where x.instance.jobInstanceId = e.jobInstanceId) < :date")
 })
 @Table(name=JobInstanceEntity.TABLE_NAME)
 public class JobInstanceEntity {
@@ -53,6 +56,7 @@ public class JobInstanceEntity {
         String FIND_EXTERNALS = "org.apache.batchee.container.services.persistence.jpa.domain.JobInstanceEntity.findExternals";
         String FIND_FROM_EXECUTION = "org.apache.batchee.container.services.persistence.jpa.domain.JobInstanceEntity.findByExecution";
         String DELETE_BY_INSTANCE_ID = "org.apache.batchee.container.services.persistence.jpa.domain.JobInstanceEntity.deleteFromInstanceId";
+        String DELETE_BY_DATE = "org.apache.batchee.container.services.persistence.jpa.domain.JobInstanceEntity.deleteByDate";
     }
 
     public static final String TABLE_NAME = "BATCH_JOBINSTANCE";

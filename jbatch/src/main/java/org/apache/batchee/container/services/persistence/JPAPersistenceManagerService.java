@@ -48,11 +48,13 @@ import javax.batch.runtime.Metric;
 import javax.batch.runtime.StepExecution;
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
+import javax.persistence.TemporalType;
 import javax.persistence.TypedQuery;
 import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -68,9 +70,13 @@ import static org.apache.batchee.container.util.Serializations.serialize;
 public class JPAPersistenceManagerService implements PersistenceManagerService {
     private final static Logger LOGGER = Logger.getLogger(JPAPersistenceManagerService.class.getName());
 
-    private static final String[] DELETE_QUERIES = {
+    private static final String[] DELETE_ID_QUERIES = {
         StepExecutionEntity.Queries.DELETE_BY_INSTANCE_ID, CheckpointEntity.Queries.DELETE_BY_INSTANCE_ID,
         JobExecutionEntity.Queries.DELETE_BY_INSTANCE_ID, JobInstanceEntity.Queries.DELETE_BY_INSTANCE_ID
+    };
+    private static final String[] DELETE_DATE_QUERIES = {
+        StepExecutionEntity.Queries.DELETE_BY_DATE, CheckpointEntity.Queries.DELETE_BY_DATE,
+        JobInstanceEntity.Queries.DELETE_BY_DATE, JobExecutionEntity.Queries.DELETE_BY_DATE
     };
 
     private EntityManagerProvider emProvider;
@@ -82,8 +88,26 @@ public class JPAPersistenceManagerService implements PersistenceManagerService {
         try {
             final Object tx = txProvider.start(em);
             try {
-                for (final String query : DELETE_QUERIES) {
-                    em.createQuery(query).setParameter("instanceId", instanceId).executeUpdate();
+                for (final String query : DELETE_ID_QUERIES) {
+                    em.createNamedQuery(query).setParameter("instanceId", instanceId).executeUpdate();
+                }
+                txProvider.commit(tx);
+            } catch (final Exception e) {
+                throw new BatchContainerRuntimeException(performRollback(tx, e));
+            }
+        } finally {
+            emProvider.release(em);
+        }
+    }
+
+    @Override
+    public void cleanUp(final Date until) {
+        final EntityManager em = emProvider.newEntityManager();
+        try {
+            final Object tx = txProvider.start(em);
+            try {
+                for (final String query : DELETE_DATE_QUERIES) {
+                    em.createNamedQuery(query).setParameter("date", until, TemporalType.TIMESTAMP).executeUpdate();
                 }
                 txProvider.commit(tx);
             } catch (final Exception e) {
@@ -305,7 +329,11 @@ public class JPAPersistenceManagerService implements PersistenceManagerService {
     public long getJobInstanceIdByExecutionId(final long executionId) throws NoSuchJobExecutionException {
         final EntityManager em = emProvider.newEntityManager();
         try {
-            return em.find(JobExecutionEntity.class, executionId).getInstance().getJobInstanceId();
+            final JobExecutionEntity jobExecutionEntity = em.find(JobExecutionEntity.class, executionId);
+            if (jobExecutionEntity == null) {
+                throw new NoSuchJobExecutionException("Execution #" + executionId);
+            }
+            return jobExecutionEntity.getInstance().getJobInstanceId();
         } finally {
             emProvider.release(em);
         }

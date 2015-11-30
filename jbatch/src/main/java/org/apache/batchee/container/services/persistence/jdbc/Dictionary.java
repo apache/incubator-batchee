@@ -35,6 +35,7 @@ public class Dictionary {
         String SELECT_CHECKPOINT = SELECT + "%s" + FROM + "%s" + WHERE + "%s = ? and %s = ? and %s = ?";
         String UPDATE_CHECKPOINT = UPDATE + "%s set %s = ?" + WHERE + "%s = ? and %s = ? and %s = ?";
         String DELETE_CHECKPOINT = DELETE + "%s" + WHERE + "%s = ?";
+        String DELETE_CHECKPOINT_UNTIL = DELETE + "%s WHERE %s IN (" + SELECT + " DISTINCT t1.%s FROM %s t1 WHERE (SELECT MAX(t0.%s) FROM %s t0 WHERE t0.%s = t1.%s) < ?)";
 
         String[] JOB_INSTANCE_COLUMNS = { "jobInstanceId", "batchStatus", "exitStatus", "jobName", "jobXml", "latestExecution", "restartOn", "step", "tag" };
         String CREATE_JOB_INSTANCE = CREATE_TABLE + "%s(%s %s %s, %s %s, %s %s, %s %s, %s %s, %s %s, %s %s, %s %s, %s %s, PRIMARY KEY (%s))";
@@ -48,6 +49,8 @@ public class Dictionary {
         String JOB_INSTANCE_CREATE = INSERT_INTO + "%s" + "(%s, %s) VALUES(?, ?)";
         String JOB_INSTANCE_CREATE_WITH_JOB_XML = INSERT_INTO + "%s" + "(%s, %s, %s) VALUES(?, ?, ?)";
         String DELETE_JOB_INSTANCE = DELETE + "%s" + WHERE + "%s = ?";
+        String DELETE_JOB_INSTANCE_UNTIL = DELETE + "%s" + WHERE + "%s IN (" + SELECT + "distinct t1.%s" + FROM + "%s t1" + WHERE + "(" + SELECT + "max(t0.%s)" + FROM + "%s t0" +
+            WHERE + "t0.%s = t1.%s) < ?)";
 
         String[] JOB_EXECUTION_COLUMNS = { "executionId", "batchStatus", "createTime", "endTime", "exitStatus", "jobProperties",
                 "startTime", "updateTime", "INSTANCE_JOBINSTANCEID" };
@@ -71,6 +74,7 @@ public class Dictionary {
         String JOB_EXECUTION_CREATE = INSERT_INTO + "%s(%s, %s, %s, %s, %s) VALUES(?, ?, ?, ?, ?)";
         String JOB_EXECUTION_MOST_RECENT = SELECT + "%s" + FROM + "%s" + WHERE + "%s = ? ORDER BY %s DESC";
         String DELETE_JOB_EXECUTION = DELETE + "%s" + WHERE + "%s = ?";
+        String DELETE_JOB_EXECUTION_UNTIL = DELETE + "%s" + WHERE + "%s IN (" + SELECT + "distinct t0.%s" + FROM + "%s t0" + WHERE + "t0.%s < ?)";
 
         String[] STEP_EXECUTION_COLUMNS = { "id", "batchStatus", "exec_commit", "endTime", "exitStatus", "exec_filter", "lastRunStepExecutionId", "numPartitions",
                 "persistentData", "exec_processskip", "exec_read", "exec_readskip", "exec_rollback", "startCount", "startTime", "stepName",
@@ -90,6 +94,7 @@ public class Dictionary {
                 "B.%s, B.%s, B.%s, B.%s, B.%s, B.%s, B.%s, B.%s" + FROM + "%s A inner join %s B ON A.%s = B.%s " + WHERE + "A.%s = ? and B.%s = ?";
 
         String DELETE_STEP_EXECUTION = DELETE + "%s A inner join %s B ON A.%s = B.%s " + WHERE + "A.%s = ?";
+        String DELETE_STEP_EXECUTION_UNTIL = DELETE + "%s" + WHERE + "%s in (" + SELECT + "distinct t0.%s" + FROM + "%s t0 inner join %s t1 ON t0.%s=t1.%s" + WHERE + "t1.%s < ?)";
     }
 
     private final String checkpointTable;
@@ -98,6 +103,7 @@ public class Dictionary {
     private final String selectCheckpoint;
     private final String updateCheckpoint;
     private final String deleteCheckpoint;
+    private final String deleteCheckpointUntil;
     private final String jobInstanceTable;
     private final String createJobInstanceTable;
     private final String countJobInstanceByName;
@@ -110,6 +116,7 @@ public class Dictionary {
     private final String createJobInstance;
     private final String createJobInstanceWithJobXml;
     private final String deleteJobInstance;
+    private final String deleteJobInstanceUntil;
     private final String jobExecutionTable;
     private final String createJobExecutionTable;
     private final String findJobExecutionTimestamps;
@@ -127,6 +134,7 @@ public class Dictionary {
     private final String createJobExecution;
     private final String findMostRecentJobExecution;
     private final String deleteJobExecution;
+    private final String deleteJobExecutionUntil;
     private final String stepExecutionTable;
     private final String createStepExecutionTable;
     private final String finStepExecutionFromJobExecution;
@@ -136,6 +144,7 @@ public class Dictionary {
     private final String updateStepExecution;
     private final String findStepExecutionByJobInstanceAndStepName;
     private final String deleteStepExecution;
+    private final String deleteStepExecutionUntil;
 
     private final String[] checkpointColumns;
     private final String[] jobInstanceColumns;
@@ -149,9 +158,14 @@ public class Dictionary {
         this.jobExecutionTable = jobExecutionTable;
         this.stepExecutionTable = stepExecutionTable;
 
-        { // checkpoint
+        { // ensure to be able to build jointures prebuilding columns
             checkpointColumns = columns(database, SQL.CHECKPOINT_COLUMNS);
+            jobExecutionColumns = columns(database, SQL.JOB_EXECUTION_COLUMNS);
+            jobInstanceColumns = columns(database, SQL.JOB_INSTANCE_COLUMNS);
+            stepExecutionColumns = columns(database, SQL.STEP_EXECUTION_COLUMNS);
+        }
 
+        { // checkpoint
             this.createCheckpointTable = String.format(SQL.CREATE_CHECKPOINT, checkpointTable,
                                                         checkpointColumns[0], database.bigint(), database.autoIncrementId(),
                                                         checkpointColumns[1], database.blob(),
@@ -162,11 +176,11 @@ public class Dictionary {
             this.selectCheckpoint = String.format(SQL.SELECT_CHECKPOINT, checkpointColumns[1], checkpointTable, checkpointColumns[4], checkpointColumns[3], checkpointColumns[2]);
             this.updateCheckpoint = String.format(SQL.UPDATE_CHECKPOINT, checkpointTable, checkpointColumns[1], checkpointColumns[4], checkpointColumns[3], checkpointColumns[2]);
             this.deleteCheckpoint = String.format(SQL.DELETE_CHECKPOINT, checkpointTable, checkpointColumns[4]);
+            this.deleteCheckpointUntil = String.format(SQL.DELETE_CHECKPOINT_UNTIL, checkpointTable, checkpointColumns[0], checkpointColumns[0], checkpointTable,
+                jobExecutionColumns[3], jobExecutionTable, checkpointColumns[4], jobExecutionColumns[8]);
         }
 
         { // jobInstance
-            jobInstanceColumns = columns(database, SQL.JOB_INSTANCE_COLUMNS);
-
             this.createJobInstanceTable = String.format(SQL.CREATE_JOB_INSTANCE, jobInstanceTable,
                                                         jobInstanceColumns[0], database.bigint(), database.autoIncrementId(),
                                                         jobInstanceColumns[1], database.varchar20(),
@@ -191,11 +205,11 @@ public class Dictionary {
             this.createJobInstanceWithJobXml = String.format(SQL.JOB_INSTANCE_CREATE_WITH_JOB_XML, jobInstanceTable, jobInstanceColumns[3],
                     jobInstanceColumns[8], jobInstanceColumns[4]);
             this.deleteJobInstance = String.format(SQL.DELETE_JOB_INSTANCE, jobInstanceTable, jobInstanceColumns[0]);
+            this.deleteJobInstanceUntil = String.format(SQL.DELETE_JOB_INSTANCE_UNTIL, jobInstanceTable, jobInstanceColumns[0], jobInstanceColumns[0], jobInstanceTable,
+                jobExecutionColumns[3], jobExecutionTable, jobExecutionColumns[8], jobInstanceColumns[0]);
         }
 
         { // jobExecution
-            jobExecutionColumns = columns(database, SQL.JOB_EXECUTION_COLUMNS);
-
             this.createJobExecutionTable = String.format(SQL.CREATE_JOB_EXECUTION, jobExecutionTable,
                                                             jobExecutionColumns[0], database.bigint(), database.autoIncrementId(),
                                                             jobExecutionColumns[1], database.varchar20(),
@@ -232,11 +246,11 @@ public class Dictionary {
             this.findMostRecentJobExecution = String.format(SQL.JOB_EXECUTION_MOST_RECENT, jobExecutionColumns[0], jobExecutionTable,
                     jobExecutionColumns[8], jobExecutionColumns[2]);
             this.deleteJobExecution = String.format(SQL.DELETE_JOB_EXECUTION, jobExecutionTable, jobExecutionColumns[8]);
+            this.deleteJobExecutionUntil = String.format(SQL.DELETE_JOB_EXECUTION_UNTIL, jobExecutionTable, jobExecutionColumns[0], jobExecutionColumns[0],
+                jobExecutionTable, jobExecutionColumns[3]);
         }
 
         { // step execution
-            stepExecutionColumns = columns(database, SQL.STEP_EXECUTION_COLUMNS);
-
             this.createStepExecutionTable = String.format(SQL.CREATE_STEP_EXECUTION, stepExecutionTable,
                                                             stepExecutionColumns[0], database.bigint(), database.autoIncrementId(),
                                                             stepExecutionColumns[1], database.varchar20(),
@@ -278,6 +292,8 @@ public class Dictionary {
                 jobExecutionColumns[0], stepExecutionColumns[18], jobExecutionColumns[8], stepExecutionColumns[15]);
             this.deleteStepExecution = String.format(SQL.DELETE_STEP_EXECUTION, jobExecutionTable, stepExecutionTable, jobExecutionColumns[0],
                     stepExecutionColumns[18], jobExecutionColumns[8]);
+            this.deleteStepExecutionUntil = String.format(SQL.DELETE_STEP_EXECUTION_UNTIL, stepExecutionTable, stepExecutionColumns[0], stepExecutionColumns[0],
+                stepExecutionTable, jobExecutionTable, stepExecutionColumns[18], jobExecutionColumns[0], jobExecutionColumns[3]);
         }
     }
 
@@ -479,5 +495,21 @@ public class Dictionary {
 
     public String stepExecutionColumns(final int idx) {
         return stepExecutionColumns[idx];
+    }
+
+    public String getDeleteCheckpointUntil() {
+        return deleteCheckpointUntil;
+    }
+
+    public String getDeleteJobInstanceUntil() {
+        return deleteJobInstanceUntil;
+    }
+
+    public String getDeleteJobExecutionUntil() {
+        return deleteJobExecutionUntil;
+    }
+
+    public String getDeleteStepExecutionUntil() {
+        return deleteStepExecutionUntil;
     }
 }
