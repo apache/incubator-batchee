@@ -21,6 +21,7 @@ import io.airlift.airline.Help;
 import io.airlift.airline.ParseException;
 import org.apache.batchee.cli.command.Abandon;
 import org.apache.batchee.cli.command.CliConfiguration;
+import org.apache.batchee.cli.command.Eviction;
 import org.apache.batchee.cli.command.Executions;
 import org.apache.batchee.cli.command.Exit;
 import org.apache.batchee.cli.command.Instances;
@@ -113,7 +114,8 @@ public class BatchEECLI {
                 Start.class, Restart.class,
                 Status.class, Running.class,
                 Stop.class, Abandon.class,
-                Instances.class, Executions.class);
+                Instances.class, Executions.class,
+                Eviction.class);
         }
         final Iterator<Class<? extends UserCommand>> userCommands = cliConfiguration.userCommands();
         if (userCommands != null) {
