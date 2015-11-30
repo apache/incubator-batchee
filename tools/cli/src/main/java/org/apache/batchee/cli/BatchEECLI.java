@@ -21,6 +21,7 @@ import io.airlift.airline.Help;
 import io.airlift.airline.ParseException;
 import org.apache.batchee.cli.command.Abandon;
 import org.apache.batchee.cli.command.Executions;
+import org.apache.batchee.cli.command.Exit;
 import org.apache.batchee.cli.command.Instances;
 import org.apache.batchee.cli.command.Names;
 import org.apache.batchee.cli.command.Restart;
@@ -86,6 +87,16 @@ public class BatchEECLI {
             parser.parse(args).run();
         } catch (final ParseException e) {
             parser.parse("help").run();
+        } catch (final RuntimeException e) {
+            Class<?> current = e.getClass();
+            while (current != null) {
+                final Exit annotation = current.getAnnotation(Exit.class);
+                if (annotation != null) {
+                    System.exit(annotation.value());
+                }
+                current = current.getSuperclass();
+            }
+            throw e;
         }
     }
 
