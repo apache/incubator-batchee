@@ -48,6 +48,10 @@ public class Instances extends JobOperatorCommand {
             for (final JobInstance instance : id) {
                 info(Long.toString(instance.getInstanceId()));
             }
+            info("-----------");
+            info("Current/Total: " + (start + id.size()) + "/" + operator.getJobInstanceCount(name));
+        } else {
+            info("No instance found.");
         }
     }
 }
