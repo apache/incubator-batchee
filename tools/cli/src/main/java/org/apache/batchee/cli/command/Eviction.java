@@ -27,13 +27,13 @@ import java.util.Date;
 
 @Command(name = "evict", description = "remove old data, uses embedded configuration (no JAXRS support yet)")
 public class Eviction implements Runnable {
-    @Option(name = "-until", description = "date until when the eviction will occur (excluded), YYYYMMdd format", required = true)
+    @Option(name = "-until", description = "date until when the eviction will occur (excluded), YYYYMMDD format", required = true)
     private String date;
 
     @Override
     public void run() {
         try {
-            final Date date = new SimpleDateFormat("YYYYMMdd").parse(this.date);
+            final Date date = new SimpleDateFormat("yyyyMMdd").parse(this.date);
             ServicesManager.find().service(PersistenceManagerService.class).cleanUp(date);
         } catch (final ParseException e) {
             throw new IllegalArgumentException(e);
