@@ -45,7 +45,7 @@ public class DiagramMojoTest {
         assertTrue(target.exists());
     }
 
-    @Test(expectedExceptions = MojoExecutionException.class)
+    @Test(expectedExceptions = Exception.class)
     public void fail() throws MojoFailureException, MojoExecutionException {
         final DiagramMojo mojo = new DiagramMojo();
         mojo.path = "missing-batch.xml";
