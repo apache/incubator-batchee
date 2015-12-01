@@ -40,6 +40,7 @@
         <module>hazelcast</module>
         <module>modelmapper</module>
         <module>commons-csv</module>
+        <module>extension-doc-helper</module>
     </modules>
 
     <dependencies>

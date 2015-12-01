@@ -17,6 +17,9 @@ specific language governing permissions and limitations
 under the License.
 -->
 # Extensions
+
+Note: a generated documentation is available here: [generated documentation](./batchee-site-generated/index.html) page.
+
 ## Extras
 ### `org.apache.batchee.extras.locator.BeanLocator`
 
