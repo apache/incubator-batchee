@@ -15,23 +15,19 @@
   See the License for the specific language governing permissions and
   limitations under the License.
 -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="
+          http://maven.apache.org/POM/4.0.0
+          http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
 
-    <parent>
-        <artifactId>batchee</artifactId>
-        <groupId>org.apache.batchee</groupId>
-        <version>0.3-incubating-SNAPSHOT</version>
-    </parent>
-
+  <parent>
     <artifactId>batchee-tools</artifactId>
-    <name>BatchEE :: Tools</name>
-    <packaging>pom</packaging>
+    <groupId>org.apache.batchee</groupId>
+    <version>0.3-incubating-SNAPSHOT</version>
+  </parent>
 
-    <modules>
-        <module>maven-plugin</module>
-        <module>cli</module>
-        <module>ee6</module>
-        <module>doc-api</module>
-    </modules>
+  <artifactId>batchee-doc-api</artifactId>
+  <name>BatchEE :: Tools :: Doc API</name>
 </project>
