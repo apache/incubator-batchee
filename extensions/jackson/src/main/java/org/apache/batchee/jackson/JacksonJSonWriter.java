@@ -18,6 +18,7 @@ package org.apache.batchee.jackson;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.batchee.doc.api.Documentation;
 import org.apache.batchee.extras.transaction.TransactionalWriter;
 
 import javax.batch.api.BatchProperty;
@@ -28,25 +29,31 @@ import java.io.File;
 import java.io.Serializable;
 import java.util.List;
 
+@Documentation("Write a JSON file using jackson")
 public class JacksonJSonWriter implements ItemWriter {
     @Inject
     @BatchProperty
+    @Documentation("output file")
     private String file;
 
     @Inject
     @BatchProperty
+    @Documentation("output encoding")
     private String encoding;
 
     @Inject
     @BatchProperty
+    @Documentation("DeserializationFeature and SerializationFeature comma separated key-value configurations")
     private String configuration;
 
     @Inject
     @BatchProperty
+    @Documentation("is the array wrapped in an object or not")
     private String skipRoot;
 
     @Inject
     @BatchProperty
+    @Documentation("how to generate field names for each item, default uses item1, item2, ...")
     private String fieldNameGeneratorClass;
 
     private JsonGenerator generator;

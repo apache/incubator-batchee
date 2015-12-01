@@ -16,6 +16,7 @@
  */
 package org.apache.batchee.beanio;
 
+import org.apache.batchee.doc.api.Documentation;
 import org.apache.batchee.extras.transaction.TransactionalWriter;
 import org.beanio.BeanWriter;
 
@@ -27,21 +28,26 @@ import java.io.File;
 import java.io.Serializable;
 import java.util.List;
 
+@Documentation("Reads a file using BeanIO.")
 public class BeanIOWriter implements ItemWriter {
     @Inject
     @BatchProperty(name = "file")
+    @Documentation("The file to write")
     protected String filePath;
 
     @Inject
     @BatchProperty
+    @Documentation("The BeanIO stream name")
     protected String streamName;
 
     @Inject
     @BatchProperty
+    @Documentation("The configuration path in the classpath")
     protected String configuration;
 
     @Inject
     @BatchProperty
+    @Documentation("The output encoding")
     protected String encoding;
 
     private BeanWriter writer;

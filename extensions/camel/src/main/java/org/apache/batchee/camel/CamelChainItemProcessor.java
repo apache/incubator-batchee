@@ -16,6 +16,7 @@
  */
 package org.apache.batchee.camel;
 
+import org.apache.batchee.doc.api.Documentation;
 import org.apache.batchee.extras.chain.Chain;
 import org.apache.batchee.extras.locator.BeanLocator;
 
@@ -23,9 +24,11 @@ import javax.batch.api.BatchProperty;
 import javax.batch.api.chunk.ItemProcessor;
 import javax.inject.Inject;
 
+@Documentation("A chain of camelItemProcessor")
 public class CamelChainItemProcessor extends Chain<ItemProcessor> implements ItemProcessor {
     @Inject
     @BatchProperty
+    @Documentation("The locator to use to find camel item processors.")
     private String templateLocator;
 
     private BeanLocator locatorInstance;

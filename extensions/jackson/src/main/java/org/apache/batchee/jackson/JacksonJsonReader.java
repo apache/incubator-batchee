@@ -19,6 +19,7 @@ package org.apache.batchee.jackson;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.batchee.doc.api.Documentation;
 import org.apache.batchee.extras.transaction.CountedReader;
 
 import javax.batch.api.BatchProperty;
@@ -26,21 +27,26 @@ import javax.inject.Inject;
 import java.io.File;
 import java.io.Serializable;
 
+@Documentation("Reads a JSON file using jackson.")
 public class JacksonJsonReader extends CountedReader {
     @Inject
     @BatchProperty
+    @Documentation("Incoming file")
     private String file;
 
     @Inject
     @BatchProperty
+    @Documentation("Type to instantiate")
     private String type;
 
     @Inject
     @BatchProperty
+    @Documentation("DeserializationFeature and SerializationFeature comma separated key-value configurations")
     private String configuration;
 
     @Inject
     @BatchProperty
+    @Documentation("Should root be skipped (default: true)")
     private String skipRoot;
 
     private JsonParser parser;

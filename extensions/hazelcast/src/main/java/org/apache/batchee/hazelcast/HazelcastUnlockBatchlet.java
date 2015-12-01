@@ -16,8 +16,11 @@
  */
 package org.apache.batchee.hazelcast;
 
+import org.apache.batchee.doc.api.Documentation;
+
 import javax.batch.api.Batchlet;
 
+@Documentation("Unlock a hazelcast lock")
 public class HazelcastUnlockBatchlet extends HazelcastSynchroInstanceAware implements Batchlet {
     @Override
     public String process() throws Exception {

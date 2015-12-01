@@ -16,6 +16,7 @@
  */
 package org.apache.batchee.extras.stax;
 
+import org.apache.batchee.doc.api.Documentation;
 import org.apache.batchee.extras.stax.util.JAXBContextFactory;
 import org.apache.batchee.extras.stax.util.SAXStAXHandler;
 import org.apache.batchee.extras.transaction.TransactionalWriter;
@@ -33,29 +34,36 @@ import java.io.File;
 import java.io.Serializable;
 import java.util.List;
 
+@Documentation("Write a file using StAX")
 public class StaxItemWriter implements ItemWriter {
     @Inject
     @BatchProperty(name = "marshallingClasses")
+    @Documentation("JAXB type(s) to instantiate for items, supports CSV values")
     private String marshallingClasses;
 
     @Inject
     @BatchProperty(name = "marshallingPackage")
+    @Documentation("JAXB package if needed (optional)")
     private String marshallingPackage;
 
     @Inject
     @BatchProperty(name = "rootTag")
+    @Documentation("output root tag")
     private String rootTag;
 
     @Inject
     @BatchProperty(name = "encoding")
+    @Documentation("output encoding")
     private String encoding;
 
     @Inject
     @BatchProperty(name = "version")
+    @Documentation("XML document version")
     private String version;
 
     @Inject
     @BatchProperty(name = "output")
+    @Documentation("output file path")
     private String output;
 
     private Marshaller marshaller;

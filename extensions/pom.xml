@@ -51,6 +51,12 @@
             <groupId>org.apache.geronimo.specs</groupId>
             <artifactId>geronimo-atinject_1.0_spec</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.apache.batchee</groupId>
+            <artifactId>batchee-doc-api</artifactId>
+            <version>${project.version}</version>
+            <scope>provided</scope>
+        </dependency>
 
         <dependency>
             <groupId>org.testng</groupId>
@@ -66,7 +72,60 @@
             <groupId>org.apache.derby</groupId>
             <artifactId>derby</artifactId>
         </dependency>
+
+        <dependency> <!-- just there for mvn-exec and deps ordering -->
+            <groupId>org.apache.batchee</groupId>
+            <artifactId>batchee-maven-plugin</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.apache.batchee</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
     </dependencies>
+
+    <build>
+        <plugins>
+            <plugin> <!-- would be cool to reuse our plugin but doesnt work in the same build -->
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>1.4.0</version>
+                <executions>
+                    <execution>
+                        <phase>pre-site</phase>
+                        <goals>
+                            <goal>java</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <mainClass>org.apache.batchee.tools.maven.doc.ComponentDocumentationGenerator</mainClass>
+                    <includePluginDependencies>true</includePluginDependencies>
+                    <arguments>
+                        <argument>${project.build.outputDirectory}</argument>
+                        <argument>${project.parent.parent.basedir}/src/site/markdown/batchee-site-generated/${project.artifactId}.md</argument>
+                        <argument>md</argument>
+                    </arguments>
+                </configuration>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.apache.batchee</groupId>
+                        <artifactId>batchee-maven-plugin</artifactId>
+                        <version>${project.version}</version>
+                        <exclusions>
+                            <exclusion>
+                                <groupId>org.apache.batchee</groupId>
+                                <artifactId>*</artifactId>
+                            </exclusion>
+                        </exclusions>
+                    </dependency>
+                </dependencies>
+            </plugin>
+        </plugins>
+    </build>
 
     <profiles>
         <profile>

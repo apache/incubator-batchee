@@ -16,26 +16,33 @@
  */
 package org.apache.batchee.camel;
 
+import org.apache.batchee.doc.api.Documentation;
+
 import javax.batch.api.BatchProperty;
 import javax.batch.api.chunk.ItemReader;
 import javax.inject.Inject;
 import java.io.Serializable;
 
+@Documentation("Uses a camel consumer as reader.")
 public class CamelItemReader implements ItemReader {
     @Inject
     @BatchProperty
+    @Documentation("Endpoint URI")
     private String endpoint;
 
     @Inject
     @BatchProperty(name = "timeout")
+    @Documentation("Timeout after which we consider the consumption is done")
     private String timeoutStr;
 
     @Inject
     @BatchProperty
+    @Documentation("Consumer stream type")
     private String expectedClass;
 
     @Inject
     @BatchProperty
+    @Documentation("Locator for the consumer template")
     private String templateLocator;
 
     @Override

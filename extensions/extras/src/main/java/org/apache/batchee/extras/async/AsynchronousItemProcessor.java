@@ -16,6 +16,7 @@
  */
 package org.apache.batchee.extras.async;
 
+import org.apache.batchee.doc.api.Documentation;
 import org.apache.batchee.extras.locator.BeanLocator;
 
 import javax.batch.api.BatchProperty;
@@ -27,20 +28,24 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class AsynchronousItemProcessor<T> implements ItemProcessor {
+@Documentation("Processes asynchronously the items and send to the write a Future<?>.")
+public class AsynchronousItemProcessor implements ItemProcessor {
     protected ExecutorService es = null;
     protected ItemProcessor delegate = null;
 
     @Inject
     @BatchProperty
+    @Documentation("the pool size, if <= 0 cached threads are used")
     private String poolSize;
 
     @Inject
     @BatchProperty
+    @Documentation("Locator for the delegate processor")
     private String locator;
 
     @Inject
     @BatchProperty
+    @Documentation("The actual processor (delegate)")
     private String delegateRef;
 
     protected ExecutorService getExecutor() {

@@ -16,18 +16,23 @@
  */
 package org.apache.batchee.hazelcast;
 
+import org.apache.batchee.doc.api.Documentation;
+
 import javax.batch.api.BatchProperty;
 import javax.batch.api.Batchlet;
 import javax.inject.Inject;
 import java.util.concurrent.TimeUnit;
 
+@Documentation("Obtain a hazelcast lock")
 public class HazelcastLockBatchlet extends HazelcastSynchroInstanceAware implements Batchlet {
     @Inject
     @BatchProperty
+    @Documentation("The duration this task can wait to get the lock")
     protected String tryDuration;
 
     @Inject
     @BatchProperty
+    @Documentation("The duration unit associated to tryDuration")
     protected String tryDurationUnit;
 
     @Override

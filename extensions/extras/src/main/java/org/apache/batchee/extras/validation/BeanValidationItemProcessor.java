@@ -16,6 +16,8 @@
  */
 package org.apache.batchee.extras.validation;
 
+import org.apache.batchee.doc.api.Documentation;
+
 import javax.batch.api.BatchProperty;
 import javax.batch.api.chunk.ItemProcessor;
 import javax.inject.Inject;
@@ -27,13 +29,16 @@ import javax.validation.Validation;
 import javax.validation.Validator;
 import java.util.Set;
 
+@Documentation("Uses bean validation to validate incoming items.")
 public class BeanValidationItemProcessor implements ItemProcessor {
     @Inject
     @BatchProperty
+    @Documentation("optional bean validation group to validate")
     private String group;
 
     @Inject
     @BatchProperty
+    @Documentation("whether a validation failure throws a ConstraintViolationException or just returns null")
     private String skipNotValidated;
 
     @Override

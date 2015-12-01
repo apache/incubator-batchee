@@ -16,6 +16,8 @@
  */
 package org.apache.batchee.extras.jdbc;
 
+import org.apache.batchee.doc.api.Documentation;
+
 import javax.batch.api.BatchProperty;
 import javax.batch.operations.BatchRuntimeException;
 import javax.inject.Inject;
@@ -27,22 +29,27 @@ import java.sql.DriverManager;
 public abstract class JdbcConnectionConfiguration {
     @Inject
     @BatchProperty
+    @Documentation("The JNDI name of the datasource")
     private String jndi;
 
     @Inject
     @BatchProperty
+    @Documentation("The datasource driver to use if jndi is null")
     protected String driver;
 
     @Inject
     @BatchProperty
+    @Documentation("The datasource url to use if jndi is null")
     protected String url;
 
     @Inject
     @BatchProperty
+    @Documentation("The datasource user to use if jndi is null")
     protected String user;
 
     @Inject
     @BatchProperty
+    @Documentation("The datasource password to use if jndi is null")
     protected String password;
 
     protected Connection connection() throws Exception {

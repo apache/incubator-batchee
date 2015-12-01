@@ -18,33 +18,41 @@ package org.apache.batchee.jsefa;
 
 import net.sf.jsefa.Deserializer;
 import net.sf.jsefa.xml.XmlIOFactory;
+import org.apache.batchee.doc.api.Documentation;
 
 import javax.batch.api.BatchProperty;
 import javax.inject.Inject;
 
+@Documentation("Reads a XML file using JSefa.")
 public class JSefaXmlReader extends JSefaReader {
     @Inject
     @BatchProperty
+    @Documentation("low level configuration implementation")
     private String lowLevelConfiguration;
 
     @Inject
     @BatchProperty
+    @Documentation("EOL")
     private String lineBreak;
 
     @Inject
     @BatchProperty
+    @Documentation("registry name for data type")
     private String dataTypeDefaultNameRegistry;
 
     @Inject
     @BatchProperty
+    @Documentation("indentation")
     private String lineIndentation;
 
     @Inject
     @BatchProperty
+    @Documentation("namespace manager to use")
     private String namespaceManager;
 
     @Inject
     @BatchProperty
+    @Documentation("data type attribute name")
     private String dataTypeAttributeName;
 
     @Override

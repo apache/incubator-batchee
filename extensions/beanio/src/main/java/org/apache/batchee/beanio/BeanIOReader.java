@@ -16,6 +16,7 @@
  */
 package org.apache.batchee.beanio;
 
+import org.apache.batchee.doc.api.Documentation;
 import org.apache.batchee.extras.transaction.CountedReader;
 import org.beanio.BeanReader;
 import org.beanio.BeanReaderErrorHandler;
@@ -28,29 +29,36 @@ import java.io.FileReader;
 import java.io.Serializable;
 import java.util.Locale;
 
+@Documentation("Uses BeanIO to read a file.")
 public class BeanIOReader extends CountedReader implements ItemReader {
     @Inject
     @BatchProperty(name = "file")
+    @Documentation("The file to read")
     protected String filePath;
 
     @Inject
     @BatchProperty(name = "skippedHeaderLines")
+    @Documentation("Number of lines to skip")
     protected int skippedHeaderLines;
 
     @Inject
     @BatchProperty
+    @Documentation("The BeanIO stream name")
     protected String streamName;
 
     @Inject
     @BatchProperty
+    @Documentation("The configuration path in the classpath")
     protected String configuration;
 
     @Inject
     @BatchProperty(name = "locale")
+    @Documentation("The locale to use")
     protected String localeStr;
 
     @Inject
     @BatchProperty(name = "errorHandler")
+    @Documentation("The error handler class (resolved using locator)")
     protected String errorHandlerStr;
 
     private BeanReader reader;

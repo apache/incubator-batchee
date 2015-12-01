@@ -16,6 +16,7 @@
  */
 package org.apache.batchee.extras.stax;
 
+import org.apache.batchee.doc.api.Documentation;
 import org.apache.batchee.extras.transaction.CountedReader;
 import org.apache.batchee.extras.stax.util.JAXBContextFactory;
 
@@ -36,21 +37,26 @@ import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.io.Serializable;
 
+@Documentation("Reads XML items using StAX.")
 public class StaxItemReader extends CountedReader implements ItemReader {
     @Inject
     @BatchProperty
+    @Documentation("JAXB type(s) to instantiate for items, supports CSV values")
     private String marshallingClasses;
 
     @Inject
     @BatchProperty
+    @Documentation("JAXB package if needed (optional)")
     private String marshallingPackage;
 
     @Inject
     @BatchProperty
+    @Documentation("Tag to match - others are ignored")
     private String tag;
 
     @Inject
     @BatchProperty
+    @Documentation("Input file path")
     private String input;
 
     private XMLEventReader reader;

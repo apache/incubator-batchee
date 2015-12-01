@@ -16,6 +16,7 @@
  */
 package org.apache.batchee.extras.jdbc;
 
+import org.apache.batchee.doc.api.Documentation;
 import org.apache.batchee.extras.transaction.integration.Synchronizations;
 
 import javax.batch.api.BatchProperty;
@@ -24,9 +25,11 @@ import javax.inject.Inject;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 
+@Documentation("Executes an update or delete query.")
 public class JdbcBatchlet extends JdbcConnectionConfiguration implements Batchlet {
     @Inject
     @BatchProperty
+    @Documentation("The update query to execute (UPDATE or DELETE)")
     private String sql;
 
     @Override

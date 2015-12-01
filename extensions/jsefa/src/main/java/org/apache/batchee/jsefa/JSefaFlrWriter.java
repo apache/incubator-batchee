@@ -18,33 +18,41 @@ package org.apache.batchee.jsefa;
 
 import net.sf.jsefa.Serializer;
 import net.sf.jsefa.flr.FlrIOFactory;
+import org.apache.batchee.doc.api.Documentation;
 
 import javax.batch.api.BatchProperty;
 import javax.inject.Inject;
 
+@Documentation("Writes a FLR file using JSefa.")
 public class JSefaFlrWriter extends JSefaWriter {
     @Inject
     @BatchProperty
+    @Documentation("Which ref or implementation to use to filter lines")
     private String lineFilter;
 
     @Inject
     @BatchProperty
+    @Documentation("low level configuration implementation")
     private String lowLevelConfiguration;
 
     @Inject
     @BatchProperty
+    @Documentation("if not using a custom line filter how many lines to filter")
     private String lineFilterLimit;
 
     @Inject
     @BatchProperty
+    @Documentation("record delimiter")
     private String specialRecordDelimiter;
 
     @Inject
     @BatchProperty
+    @Documentation("EOL")
     private String lineBreak;
 
     @Inject
     @BatchProperty
+    @Documentation("pad character")
     private String defaultPadCharacter;
 
     @Override

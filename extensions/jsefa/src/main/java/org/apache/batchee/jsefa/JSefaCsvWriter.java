@@ -18,53 +18,66 @@ package org.apache.batchee.jsefa;
 
 import net.sf.jsefa.Serializer;
 import net.sf.jsefa.csv.CsvIOFactory;
+import org.apache.batchee.doc.api.Documentation;
 
 import javax.batch.api.BatchProperty;
 import javax.inject.Inject;
 
+@Documentation("Writes a CSV file using JSefa.")
 public class JSefaCsvWriter extends JSefaWriter {
     @Inject
     @BatchProperty
+    @Documentation("Which ref or implementation to use to filter lines")
     private String lineFilter;
 
     @Inject
     @BatchProperty
+    @Documentation("low level configuration implementation")
     private String lowLevelConfiguration;
 
     @Inject
     @BatchProperty
+    @Documentation("if not using a custom line filter how many lines to filter")
     private String lineFilterLimit;
 
     @Inject
     @BatchProperty
+    @Documentation("record delimiter")
     private String specialRecordDelimiter;
 
     @Inject
     @BatchProperty
+    @Documentation("EOL")
     private String lineBreak;
 
     @Inject
     @BatchProperty
+    @Documentation("which string to use for null values")
     private String defaultNoValueString;
 
     @Inject
     @BatchProperty
+    @Documentation("quote mode (ALWAYS, ON_DEMAND, NEVER, DEFAULT)")
     private String defaultQuoteMode;
 
     @Inject
     @BatchProperty
+    @Documentation("field delimiter")
     private String fieldDelimiter;
 
     @Inject
     @BatchProperty
+    @Documentation("quote charater to use")
     private String quoteCharacter;
 
     @Inject
     @BatchProperty
+    @Documentation("escape mode (ESCAPE_CHARACTER, DOUBLING)")
     private String quoteCharacterEscapeMode;
 
     @Inject
     @BatchProperty
+    @Documentation("should deliimter be used after last field")
     private String useDelimiterAfterLastField;
 
     @Override

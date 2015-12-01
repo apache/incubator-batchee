@@ -16,6 +16,7 @@
  */
 package org.apache.batchee.extras.jpa;
 
+import org.apache.batchee.doc.api.Documentation;
 import org.apache.batchee.extras.locator.BeanLocator;
 
 import javax.batch.api.BatchProperty;
@@ -27,10 +28,12 @@ import javax.persistence.EntityManager;
 public class EntityManagerLocator {
     @Inject
     @BatchProperty
+    @Documentation("The reference of qualified name of the proviedr for the entity manager")
     protected String entityManagerProvider;
 
     @Inject
     @BatchProperty
+    @Documentation("The locator to use to find the entity manager provider")
     protected String locator;
 
     protected BeanLocator.LocatorInstance<EntityManagerProvider> emProvider;

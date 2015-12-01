@@ -16,6 +16,8 @@
  */
 package org.apache.batchee.groovy;
 
+import org.apache.batchee.doc.api.Documentation;
+
 import javax.batch.api.BatchProperty;
 import javax.batch.api.chunk.ItemWriter;
 import javax.batch.runtime.context.JobContext;
@@ -24,9 +26,11 @@ import javax.inject.Inject;
 import java.io.Serializable;
 import java.util.List;
 
+@Documentation("Reads and executes a writer from a groovy script")
 public class GroovyItemWriter implements ItemWriter {
     @Inject
     @BatchProperty
+    @Documentation("The script to execute")
     private String scriptPath;
 
     @Inject

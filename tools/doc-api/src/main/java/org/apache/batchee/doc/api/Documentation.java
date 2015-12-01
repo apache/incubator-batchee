@@ -27,6 +27,6 @@ import static java.lang.annotation.RetentionPolicy.CLASS;
 
 @Retention(CLASS)
 @Target({ FIELD, METHOD, PARAMETER, TYPE })
-public @interface Configuration {
+public @interface Documentation {
     String value();
 }

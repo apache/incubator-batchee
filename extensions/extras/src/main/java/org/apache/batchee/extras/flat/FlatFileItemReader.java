@@ -16,6 +16,7 @@
  */
 package org.apache.batchee.extras.flat;
 
+import org.apache.batchee.doc.api.Documentation;
 import org.apache.batchee.extras.locator.BeanLocator;
 import org.apache.batchee.extras.transaction.CountedReader;
 
@@ -28,21 +29,26 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.Serializable;
 
+@Documentation("Reads a flat file.")
 public class FlatFileItemReader extends CountedReader implements ItemReader {
     @Inject
     @BatchProperty
+    @Documentation("Locator to find line mapper")
     private String locator;
 
     @Inject
     @BatchProperty
+    @Documentation("The line mapper implementation or reference (see locator)")
     private String lineMapper;
 
     @Inject
     @BatchProperty
+    @Documentation("Input file path")
     private String input;
 
     @Inject
     @BatchProperty(name = "comments")
+    @Documentation("Comments prefix marker (default #)")
     private String commentStr;
 
     private BufferedReader reader = null;

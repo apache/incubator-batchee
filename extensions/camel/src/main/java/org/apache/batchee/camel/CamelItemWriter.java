@@ -16,19 +16,24 @@
  */
 package org.apache.batchee.camel;
 
+import org.apache.batchee.doc.api.Documentation;
+
 import javax.batch.api.BatchProperty;
 import javax.batch.api.chunk.ItemWriter;
 import javax.inject.Inject;
 import java.io.Serializable;
 import java.util.List;
 
+@Documentation("Uses camel to write processed items.")
 public class CamelItemWriter implements ItemWriter {
     @Inject
     @BatchProperty
+    @Documentation("Endpoint URI")
     private String endpoint;
 
     @Inject
     @BatchProperty
+    @Documentation("Locator for the producer template")
     private String templateLocator;
 
     @Override

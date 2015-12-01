@@ -16,6 +16,7 @@
  */
 package org.apache.batchee.extras.jdbc;
 
+import org.apache.batchee.doc.api.Documentation;
 import org.apache.batchee.extras.locator.BeanLocator;
 
 import javax.batch.api.BatchProperty;
@@ -27,17 +28,21 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.LinkedList;
 
+@Documentation("Reads data from a SQL query")
 public class JdbcReader extends JdbcConnectionConfiguration implements ItemReader {
     @Inject
     @BatchProperty(name = "mapper")
+    @Documentation("The ResultSet mapper")
     private String mapperStr;
 
     @Inject
     @BatchProperty
+    @Documentation("The locator to lookup the mapper")
     private String locator;
 
     @Inject
     @BatchProperty
+    @Documentation("The query to execute to find data")
     private String query;
 
     private LinkedList<Object> items;

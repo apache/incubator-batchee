@@ -16,6 +16,8 @@
  */
 package org.apache.batchee.groovy;
 
+import org.apache.batchee.doc.api.Documentation;
+
 import javax.batch.api.BatchProperty;
 import javax.batch.api.chunk.ItemReader;
 import javax.batch.runtime.context.JobContext;
@@ -23,9 +25,11 @@ import javax.batch.runtime.context.StepContext;
 import javax.inject.Inject;
 import java.io.Serializable;
 
+@Documentation("Reads and executes a reader from a groovy script")
 public class GroovyItemReader implements ItemReader {
     @Inject
     @BatchProperty
+    @Documentation("The script to execute")
     private String scriptPath;
 
     @Inject

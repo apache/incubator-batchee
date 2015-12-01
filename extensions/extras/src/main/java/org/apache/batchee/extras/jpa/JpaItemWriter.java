@@ -16,6 +16,8 @@
  */
 package org.apache.batchee.extras.jpa;
 
+import org.apache.batchee.doc.api.Documentation;
+
 import javax.batch.api.BatchProperty;
 import javax.batch.api.chunk.ItemWriter;
 import javax.inject.Inject;
@@ -23,13 +25,16 @@ import javax.persistence.EntityManager;
 import java.io.Serializable;
 import java.util.List;
 
+@Documentation("Write all items using JPA")
 public class JpaItemWriter  extends EntityManagerLocator implements ItemWriter {
     @Inject
     @BatchProperty
+    @Documentation("If set to true merge() will be used instead of persist()")
     private String useMerge;
 
     @Inject
     @BatchProperty
+    @Documentation("Should JPA transaction be used (default false)")
     private String jpaTransaction;
 
     private boolean merge;

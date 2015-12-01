@@ -16,6 +16,7 @@
  */
 package org.apache.batchee.extras.flat;
 
+import org.apache.batchee.doc.api.Documentation;
 import org.apache.batchee.extras.transaction.TransactionalWriter;
 
 import javax.batch.api.BatchProperty;
@@ -26,17 +27,21 @@ import java.io.File;
 import java.io.Serializable;
 import java.util.List;
 
+@Documentation("Writes a flat file.")
 public class FlatFileItemWriter implements ItemWriter {
     @Inject
     @BatchProperty
+    @Documentation("output file path")
     private String output;
 
     @Inject
     @BatchProperty
+    @Documentation("output file encoding")
     private String encoding;
 
     @Inject
     @BatchProperty(name = "line.separator")
+    @Documentation("line separator to use, default is OS dependent")
     private String lineSeparator;
 
     private TransactionalWriter writer = null;
@@ -52,6 +57,10 @@ public class FlatFileItemWriter implements ItemWriter {
         }
         if (lineSeparator == null) {
             lineSeparator = System.getProperty("line.separator", "\n");
+        } else if ("\\n".equals(lineSeparator)) {
+            lineSeparator = "\n";
+        } else if ("\\r\\n".equals(lineSeparator)) {
+            lineSeparator = "\r\n";
         }
 
         writer = new TransactionalWriter(file, encoding, checkpoint);

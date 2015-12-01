@@ -16,17 +16,22 @@
  */
 package org.apache.batchee.camel;
 
+import org.apache.batchee.doc.api.Documentation;
+
 import javax.batch.api.BatchProperty;
 import javax.batch.api.chunk.ItemProcessor;
 import javax.inject.Inject;
 
+@Documentation("Uses camel producer template to process the incoming item.")
 public class CamelItemProcessor implements ItemProcessor {
     @Inject
     @BatchProperty
+    @Documentation("Endpoint URI")
     private String endpoint;
 
     @Inject
     @BatchProperty
+    @Documentation("The locator to use to find the producer template")
     private String templateLocator;
 
     @Override

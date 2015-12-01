@@ -16,6 +16,7 @@
  */
 package org.apache.batchee.extras.jdbc;
 
+import org.apache.batchee.doc.api.Documentation;
 import org.apache.batchee.extras.locator.BeanLocator;
 import org.apache.batchee.extras.transaction.integration.Synchronizations;
 
@@ -27,17 +28,21 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.util.List;
 
+@Documentation("Store the items in a database.")
 public class JdbcWriter extends JdbcConnectionConfiguration implements ItemWriter {
     @Inject
     @BatchProperty
+    @Documentation("The locator to lookup the mapper")
     private String locator;
 
     @Inject
     @BatchProperty(name = "mapper")
+    @Documentation("The mapper to convert items to JDBC domain")
     private String mapperStr;
 
     @Inject
     @BatchProperty
+    @Documentation("The update query")
     private String sql;
 
     private BeanLocator.LocatorInstance<ObjectMapper> mapper;

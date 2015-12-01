@@ -16,6 +16,7 @@
  */
 package org.apache.batchee.extras.jpa;
 
+import org.apache.batchee.doc.api.Documentation;
 import org.apache.batchee.extras.locator.BeanLocator;
 
 import javax.batch.api.BatchProperty;
@@ -29,29 +30,36 @@ import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 
+@Documentation("Read JPA entities from a query.")
 public class JpaItemReader extends EntityManagerLocator implements ItemReader {
     @Inject
     @BatchProperty
+    @Documentation("The parameter provider ref or qualified name")
     private String parameterProvider;
 
     @Inject
     @BatchProperty
+    @Documentation("The named query to execute")
     private String namedQuery;
 
     @Inject
     @BatchProperty
+    @Documentation("The query to execute if the named query is empty")
     private String query;
 
     @Inject
     @BatchProperty
+    @Documentation("Pagination size")
     private String pageSize;
 
     @Inject
     @BatchProperty
+    @Documentation("Should entities be detached (default false)")
     private String detachEntities;
 
     @Inject
     @BatchProperty
+    @Documentation("Should JPA transaction be used (default false)")
     private String jpaTransaction;
 
     private int page = 10;

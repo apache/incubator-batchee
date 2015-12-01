@@ -16,25 +16,29 @@
  */
 package org.apache.batchee.modelmapper;
 
+import org.apache.batchee.doc.api.Documentation;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.config.Configuration;
 import org.modelmapper.convention.MatchingStrategies;
 import org.modelmapper.spi.MatchingStrategy;
 
-import java.util.Locale;
 import javax.batch.api.BatchProperty;
 import javax.batch.api.chunk.ItemProcessor;
 import javax.inject.Inject;
+import java.util.Locale;
 
+@Documentation("uses model mapper to process the item")
 public class ModelMapperItemProcessor implements ItemProcessor {
     private volatile ModelMapper mapper = null;
 
     @Inject
     @BatchProperty
+    @Documentation("matching strategy to use (LOOSE, STANDARD, STRICT or custom implementation)")
     private String matchingStrategy;
 
     @Inject
     @BatchProperty
+    @Documentation("target type")
     private String destinationType;
     private volatile Class<?> destinationTypeClass = null;
 

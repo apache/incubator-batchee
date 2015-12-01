@@ -16,8 +16,9 @@
  */
 package org.apache.batchee.jsefa;
 
-import org.apache.batchee.extras.transaction.CountedReader;
 import net.sf.jsefa.Deserializer;
+import org.apache.batchee.doc.api.Documentation;
+import org.apache.batchee.extras.transaction.CountedReader;
 
 import javax.batch.api.BatchProperty;
 import javax.inject.Inject;
@@ -27,30 +28,37 @@ import java.io.Serializable;
 public abstract class JSefaReader extends CountedReader {
     @Inject
     @BatchProperty
+    @Documentation("object types to use")
     protected String objectTypes;
 
     @Inject
     @BatchProperty
+    @Documentation("validation mode (AUTO, CALLBACK, NONE)")
     protected String validationMode;
 
     @Inject
     @BatchProperty
+    @Documentation("object accessor provider implementation")
     protected String objectAccessorProvider;
 
     @Inject
     @BatchProperty
+    @Documentation("validation provider implementation")
     protected String validationProvider;
 
     @Inject
     @BatchProperty
+    @Documentation("simple type provider implementation")
     protected String simpleTypeProvider;
 
     @Inject
     @BatchProperty
+    @Documentation("type mapping registry to use")
     protected String typeMappingRegistry;
 
     @Inject
     @BatchProperty
+    @Documentation("file to read")
     protected String file;
 
     protected Deserializer deserializer;

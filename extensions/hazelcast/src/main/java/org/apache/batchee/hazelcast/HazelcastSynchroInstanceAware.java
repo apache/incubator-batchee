@@ -18,6 +18,7 @@ package org.apache.batchee.hazelcast;
 
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.ILock;
+import org.apache.batchee.doc.api.Documentation;
 
 import javax.batch.api.BatchProperty;
 import javax.inject.Inject;
@@ -26,18 +27,22 @@ import java.io.IOException;
 public class HazelcastSynchroInstanceAware {
     @Inject
     @BatchProperty
+    @Documentation("The hazelcast instance name")
     protected String instanceName;
 
     @Inject
     @BatchProperty
+    @Documentation("The hazelcast xml configuration")
     protected String xmlConfiguration;
 
     @Inject
     @BatchProperty
+    @Documentation("Is the instance local, if false the component will create a client")
     protected String local;
 
     @Inject
     @BatchProperty
+    @Documentation("The lock name to use")
     protected String lockName;
 
     protected HazelcastInstance instance() throws IOException {

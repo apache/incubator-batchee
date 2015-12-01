@@ -16,6 +16,7 @@
  */
 package org.apache.batchee.extras.chain;
 
+import org.apache.batchee.doc.api.Documentation;
 import org.apache.batchee.extras.locator.BeanLocator;
 
 import javax.batch.api.BatchProperty;
@@ -27,18 +28,22 @@ import java.util.Collection;
 public abstract class Chain<T> {
     @Inject
     @BatchProperty
+    @Documentation("The locator to use to create chain components")
     protected String locator;
 
     @Inject
     @BatchProperty
+    @Documentation("The list of components of the chain")
     protected String chain;
 
     @Inject
     @BatchProperty
+    @Documentation("The separator to use in chain string (default to ',')")
     protected String separator;
 
     @Inject
     @BatchProperty
+    @Documentation("Should release phase of the lifecycle be called (default to false), use true for @Dependent beans.")
     protected String forceRelease;
 
     private Collection<BeanLocator.LocatorInstance<T>> runtimeChain = new ArrayList<BeanLocator.LocatorInstance<T>>();

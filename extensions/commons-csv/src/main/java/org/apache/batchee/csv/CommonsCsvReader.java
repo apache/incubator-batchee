@@ -17,6 +17,7 @@
 package org.apache.batchee.csv;
 
 import org.apache.batchee.csv.mapper.DefaultMapper;
+import org.apache.batchee.doc.api.Documentation;
 import org.apache.batchee.extras.buffered.IteratorReader;
 import org.apache.batchee.extras.locator.BeanLocator;
 import org.apache.batchee.extras.transaction.CountedReader;
@@ -34,6 +35,7 @@ import java.io.Reader;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 
+@Documentation("Reads a CSV file using commons-csv.")
 public class CommonsCsvReader extends CountedReader {
     private static final CsvReaderMapper<CSVRecord> NOOP_MAPPER = new CsvReaderMapper<CSVRecord>() {
         @Override
@@ -44,82 +46,102 @@ public class CommonsCsvReader extends CountedReader {
 
     @Inject
     @BatchProperty
+    @Documentation("format to use (Default, RFC4180, Excel, TDF, MySQL)")
     private String format;
 
     @Inject
     @BatchProperty
+    @Documentation("file to read")
     private String input;
 
     @Inject
     @BatchProperty
+    @Documentation("input encoding")
     private String encoding;
 
     @Inject
     @BatchProperty
+    @Documentation("record mapper if mapping is null")
     private String mapper;
 
     @Inject
     @BatchProperty
+    @Documentation("mapping type if mapper is null")
     private String mapping;
 
     @Inject
     @BatchProperty
+    @Documentation("locator to lookup the mapper")
     private String locator;
 
     @Inject
     @BatchProperty
+    @Documentation("is missing column names allowed")
     private String allowMissingColumnNames;
 
     @Inject
     @BatchProperty
+    @Documentation("delimiter of the file")
     private String delimiter;
 
     @Inject
     @BatchProperty
+    @Documentation("quote character")
     private String quoteCharacter;
 
     @Inject
     @BatchProperty
+    @Documentation("quote mode (ALL, MINIMAL, NON_NUMERIC, NONE)")
     private String quoteMode;
 
     @Inject
     @BatchProperty
+    @Documentation("comment marker")
     private String commentMarker;
 
     @Inject
     @BatchProperty
+    @Documentation("escape character")
     private String escapeCharacter;
 
     @Inject
     @BatchProperty
+    @Documentation("should the parser ignore surrounding spaces")
     private String ignoreSurroundingSpaces;
 
     @Inject
     @BatchProperty
+    @Documentation("should empty lines be skipped")
     private String ignoreEmptyLines;
 
     @Inject
     @BatchProperty
+    @Documentation("record separator")
     private String recordSeparator;
 
     @Inject
     @BatchProperty
+    @Documentation("string replacement for null")
     private String nullString;
 
     @Inject
     @BatchProperty
+    @Documentation("header comments")
     private String headerComments;
 
     @Inject
     @BatchProperty
+    @Documentation("headers")
     private String header;
 
     @Inject
     @BatchProperty
+    @Documentation("should headers be skipped")
     private String skipHeaderRecord;
 
     @Inject
     @BatchProperty
+    @Documentation("should headers be used")
     private String readHeaders;
 
     private IteratorReader<CSVRecord> iterator;

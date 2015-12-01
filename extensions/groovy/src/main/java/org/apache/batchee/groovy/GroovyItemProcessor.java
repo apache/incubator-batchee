@@ -16,15 +16,19 @@
  */
 package org.apache.batchee.groovy;
 
+import org.apache.batchee.doc.api.Documentation;
+
 import javax.batch.api.BatchProperty;
 import javax.batch.api.chunk.ItemProcessor;
 import javax.batch.runtime.context.JobContext;
 import javax.batch.runtime.context.StepContext;
 import javax.inject.Inject;
 
+@Documentation("Reads and executes a processor from a groovy script")
 public class GroovyItemProcessor implements ItemProcessor {
     @Inject
     @BatchProperty
+    @Documentation("The script to execute")
     private String scriptPath;
 
     @Inject
