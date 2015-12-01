@@ -420,6 +420,7 @@
                         <exclude>**/bootstrap-*</exclude>
                         <exclude>**/js/jquery-*</exclude>
                         <exclude>**/*.json</exclude>
+                        <exclude>**/batchee-site-generated/*.md</exclude>
                         <!-- json can't get comments -->
                     </excludes>
                 </configuration>
