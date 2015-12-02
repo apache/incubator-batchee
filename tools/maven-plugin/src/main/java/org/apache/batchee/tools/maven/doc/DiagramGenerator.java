@@ -215,13 +215,19 @@ public abstract class DiagramGenerator {
             final String id = element.getId();
             allElements.add(element);
 
-            addNodeIfMissing(diagram, nodes, id, Node.Type.STEP);
+            final Node node = addNodeIfMissing(diagram, nodes, id, Node.Type.STEP);
 
             if (Split.class.isInstance(element)) {
                 final Split split = Split.class.cast(element);
                 final List<Flow> flows = split.getFlows();
                 for (final Flow flow : flows) {
                     initNodes(diagram, nodes, allElements, flow.getExecutionElements());
+                    if (!flow.getExecutionElements().isEmpty()) {
+                        final Node target = nodes.get(flow.getExecutionElements().iterator().next().getId());
+                        if (target != null) {
+                            diagram.addEdge(new Edge("split"), node, target);
+                        }
+                    }
                 }
             } else if (Flow.class.isInstance(element)) {
                 initNodes(diagram, nodes, allElements, Flow.class.cast(element).getExecutionElements());
