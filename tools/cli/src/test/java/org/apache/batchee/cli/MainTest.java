@@ -221,7 +221,6 @@ public class MainTest {
         Batches.waitForEnd(jobOperator, id);
         main(new String[]{"stepExecutions", "-id", Long.toString(id)});
 
-        System.out.println(stdout.getLog());
         assertThat(stdout.getLog(), containsString(
             "step id\t|\t step name\t|\t    start time   \t|\t     end time    \t|\t" +
             "exit status\t|\tbatch status\t|\t" +
