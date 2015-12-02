@@ -21,6 +21,7 @@ import org.apache.batchee.cli.command.api.Option;
 import org.apache.batchee.container.impl.JobInstanceImpl;
 import org.apache.commons.lang3.StringUtils;
 
+import javax.batch.operations.JobOperator;
 import javax.batch.runtime.JobExecution;
 import java.util.List;
 
@@ -29,9 +30,13 @@ public class Executions extends JobOperatorCommand {
     @Option(name = "id", description = "instance id", required = true)
     private long id;
 
+    @Option(name = "showSteps", description = "if steps should be dumped as well")
+    private boolean steps;
+
     @Override
     public void doRun() {
-        final List<JobExecution> executions = operator().getJobExecutions(new JobInstanceImpl(id));
+        final JobOperator operator = operator();
+        final List<JobExecution> executions = operator.getJobExecutions(new JobInstanceImpl(id));
         if (!executions.isEmpty()) {
             info("Executions of " + executions.iterator().next().getJobName() + " for instance " + id);
         }
@@ -42,6 +47,10 @@ public class Executions extends JobOperatorCommand {
                     exec.getExecutionId(),
                     StringUtils.leftPad(exec.getBatchStatus() != null ? exec.getBatchStatus().toString() : "null", 12),
                     StringUtils.leftPad(exec.getExitStatus(), 11), exec.getStartTime(), exec.getEndTime()));
+        }
+
+        if (steps) {
+            new StepExecutions().withOperator(operator).withId(id).run();
         }
     }
 }

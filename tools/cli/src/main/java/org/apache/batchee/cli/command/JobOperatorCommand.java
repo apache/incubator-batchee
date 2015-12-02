@@ -113,9 +113,15 @@ public abstract class JobOperatorCommand implements Runnable {
     @Option(name = "addFolderToLoader", description = "force shared lib and libs folders to be added to the classloader")
     private boolean addFolderToLoader = false;
 
+    protected JobOperator operator;
+
     protected JobOperator operator() {
+        if (operator != null) {
+            return operator;
+        }
+
         if (baseUrl == null) {
-            return BatchRuntime.getJobOperator();
+            return operator = BatchRuntime.getJobOperator();
         }
 
         final ClientConfiguration configuration = new ClientConfiguration();
@@ -140,7 +146,7 @@ public abstract class JobOperatorCommand implements Runnable {
         security.setPassword(password);
         security.setType(type);
 
-        return BatchEEJAXRSClientFactory.newClient(configuration);
+        return operator = BatchEEJAXRSClientFactory.newClient(configuration);
     }
 
     protected void info(final String text) {

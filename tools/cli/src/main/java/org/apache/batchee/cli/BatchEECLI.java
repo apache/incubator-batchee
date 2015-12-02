@@ -17,19 +17,21 @@
 package org.apache.batchee.cli;
 
 import org.apache.batchee.cli.command.Abandon;
-import org.apache.batchee.cli.command.CliConfiguration;
 import org.apache.batchee.cli.command.Eviction;
 import org.apache.batchee.cli.command.Executions;
-import org.apache.batchee.cli.command.api.Exit;
 import org.apache.batchee.cli.command.Instances;
 import org.apache.batchee.cli.command.Names;
 import org.apache.batchee.cli.command.Restart;
 import org.apache.batchee.cli.command.Running;
 import org.apache.batchee.cli.command.Start;
 import org.apache.batchee.cli.command.Status;
+import org.apache.batchee.cli.command.StepExecutions;
 import org.apache.batchee.cli.command.Stop;
+import org.apache.batchee.cli.command.api.CliConfiguration;
 import org.apache.batchee.cli.command.api.Command;
+import org.apache.batchee.cli.command.api.Exit;
 import org.apache.batchee.cli.command.api.UserCommand;
+import org.apache.batchee.cli.command.internal.DefaultCliConfiguration;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
@@ -38,17 +40,12 @@ import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -56,68 +53,12 @@ import java.util.Map;
 import java.util.ServiceLoader;
 import java.util.TreeMap;
 
-import static java.lang.ClassLoader.getSystemClassLoader;
 import static java.util.Arrays.asList;
 
 public class BatchEECLI {
     public static void main(final String[] args) {
         final Iterator<CliConfiguration> configuration = ServiceLoader.load(CliConfiguration.class).iterator();
-        final CliConfiguration cliConfiguration = configuration.hasNext() ? configuration.next() : new CliConfiguration() {
-            @Override
-            public String name() {
-                return "batchee";
-            }
-
-            @Override
-            public String description() {
-                return "BatchEE CLI";
-            }
-
-            @Override
-            public boolean addDefaultCommands() {
-                return true;
-            }
-
-            @Override
-            public Iterator<Class<? extends UserCommand>> userCommands() {
-                final Collection<Class<? extends UserCommand>> classes = new ArrayList<Class<? extends UserCommand>>();
-                try { // read manually cause we dont want to instantiate them there, so no ServiceLoader
-                    final ClassLoader tccl = Thread.currentThread().getContextClassLoader();
-                    final ClassLoader loader = tccl != null ? tccl : getSystemClassLoader();
-                    final Enumeration<URL> uc = loader.getResources("META-INF/services/org.apache.batchee.cli.command.UserCommand");
-                    while (uc.hasMoreElements()) {
-                        final URL url = uc.nextElement();
-                        BufferedReader r = null;
-                        try {
-                            r = new BufferedReader(new InputStreamReader(url.openStream()));
-                            String line;
-                            while ((line = r.readLine()) != null) {
-                                if (line.startsWith("#") || line.trim().isEmpty()) {
-                                    continue;
-                                }
-                                classes.add(Class.class.cast(loader.loadClass(line.trim())));
-                            }
-                        } catch (final IOException ioe) {
-                            throw new IllegalStateException(ioe);
-                        } catch (final ClassNotFoundException cnfe) {
-                            throw new IllegalArgumentException(cnfe);
-                        } finally {
-                            if (r != null) {
-                                r.close();
-                            }
-                        }
-                    }
-                } catch (final IOException e) {
-                    throw new IllegalStateException(e);
-                }
-                return classes.iterator();
-            }
-
-            @Override
-            public Runnable decorate(final Runnable task) {
-                return task;
-            }
-        };
+        final CliConfiguration cliConfiguration = configuration.hasNext() ? configuration.next() : new DefaultCliConfiguration();
 
         final Map<String, Class<? extends Runnable>> commands = new TreeMap<String, Class<? extends Runnable>>();
         if (cliConfiguration.addDefaultCommands()) {
@@ -127,7 +68,7 @@ public class BatchEECLI {
                     Status.class, Running.class,
                     Stop.class, Abandon.class,
                     Instances.class, Executions.class,
-                    Eviction.class)) {
+                    StepExecutions.class, Eviction.class)) {
                 addCommand(commands, type);
             }
         }
@@ -174,58 +115,7 @@ public class BatchEECLI {
         final CommandLineParser parser = new DefaultParser();
         try {
             final CommandLine line = parser.parse(options, newArgs.toArray(new String[newArgs.size()]));
-
-            final Runnable commandInstance = cmd.newInstance();
-            if (!newArgs.isEmpty()) { // we have few commands we can execute without args even if we have a bunch of config
-                for (final Map.Entry<String, Field> option : fields.entrySet()) {
-                    final String key = option.getKey();
-                    if (key.isEmpty()) { // arguments, not an option
-                        final List<String> list = line.getArgList();
-                        if (list != null) {
-                            final Field field = option.getValue();
-                            final Type expectedType = field.getGenericType();
-                            if (ParameterizedType.class.isInstance(expectedType)) {
-                                final ParameterizedType pt = ParameterizedType.class.cast(expectedType);
-                                if ((pt.getRawType() == List.class || pt.getRawType() == Collection.class)
-                                    && pt.getActualTypeArguments().length == 1 && pt.getActualTypeArguments()[0] == String.class) {
-                                    field.set(commandInstance, list);
-                                } else {
-                                    throw new IllegalArgumentException("@Arguments only supports List<String>");
-                                }
-                            } else {
-                                throw new IllegalArgumentException("@Arguments only supports List<String>");
-                            }
-                        }
-                    } else {
-                        final String value = line.getOptionValue(key);
-                        if (value != null) {
-                            final Field field = option.getValue();
-                            final Class<?> expectedType = field.getType();
-                            if (String.class == expectedType) {
-                                field.set(commandInstance, value);
-                            } else if (long.class == expectedType) {
-                                field.set(commandInstance, Long.parseLong(value));
-                            } else if (int.class == expectedType) {
-                                field.set(commandInstance, Integer.parseInt(value));
-                            } else if (boolean.class == expectedType) {
-                                field.set(commandInstance, Boolean.parseBoolean(value));
-                            } else if (short.class == expectedType) {
-                                field.set(commandInstance, Short.parseShort(value));
-                            } else if (byte.class == expectedType) {
-                                field.set(commandInstance, Byte.parseByte(value));
-                            } else {
-                                try {
-                                    field.set(commandInstance, expectedType.getMethod("fromString", String.class)
-                                        .invoke(null, value));
-                                } catch (final Exception e) {
-                                    throw new IllegalArgumentException(expectedType + " not supported as option with value '" + value + "'");
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-            cliConfiguration.decorate(commandInstance).run();
+            cliConfiguration.decorate(instantiate(cmd, cliConfiguration, fields, !newArgs.isEmpty(), line)).run();
         } catch (final ParseException e) {
             printHelp(command, options);
         } catch (final RuntimeException e) {
@@ -245,6 +135,44 @@ public class BatchEECLI {
         }
     }
 
+    private static Runnable instantiate(final Class<? extends Runnable> cmd,
+                                        final CliConfiguration configuration,
+                                        final Map<String, Field> fields,
+                                        final boolean hasArgs,
+                                        final CommandLine line) throws InstantiationException, IllegalAccessException {
+        final Runnable commandInstance = cmd.newInstance();
+        if (hasArgs) { // we have few commands we can execute without args even if we have a bunch of config
+            for (final Map.Entry<String, Field> option : fields.entrySet()) {
+                final String key = option.getKey();
+                if (key.isEmpty()) { // arguments, not an option
+                    final List<String> list = line.getArgList();
+                    if (list != null) {
+                        final Field field = option.getValue();
+                        final Type expectedType = field.getGenericType();
+                        if (ParameterizedType.class.isInstance(expectedType)) {
+                            final ParameterizedType pt = ParameterizedType.class.cast(expectedType);
+                            if ((pt.getRawType() == List.class || pt.getRawType() == Collection.class)
+                                && pt.getActualTypeArguments().length == 1 && pt.getActualTypeArguments()[0] == String.class) {
+                                field.set(commandInstance, list);
+                            } else {
+                                throw new IllegalArgumentException("@Arguments only supports List<String>");
+                            }
+                        } else {
+                            throw new IllegalArgumentException("@Arguments only supports List<String>");
+                        }
+                    }
+                } else {
+                    final String value = line.getOptionValue(key);
+                    if (value != null) {
+                        final Field field = option.getValue();
+                        field.set(commandInstance, configuration.coerce(value, field.getGenericType()));
+                    }
+                }
+            }
+        }
+        return commandInstance;
+    }
+
     private static void printHelp(final Command command, final Options options) {
         new HelpFormatter().printHelp(command.name(), '\n' + command.description() + "\n\n", options, null, true);
     }
@@ -262,7 +190,11 @@ public class BatchEECLI {
 
                 if (option != null) {
                     final String name = option.name();
-                    options.addOption(Option.builder(name).desc(option.description()).hasArg().build());
+                    final Option.Builder builder = Option.builder(name).desc(option.description()).hasArg();
+                    if (option.required()) {
+                        builder.required();
+                    }
+                    options.addOption(builder.build());
                     fields.put(name, f);
                     f.setAccessible(true);
                 } else if (arguments != null) {

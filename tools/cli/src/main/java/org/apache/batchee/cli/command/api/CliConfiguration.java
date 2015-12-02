@@ -14,10 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.batchee.cli.command;
+package org.apache.batchee.cli.command.api;
 
-import org.apache.batchee.cli.command.api.UserCommand;
-
+import java.lang.reflect.Type;
 import java.util.Iterator;
 
 public interface CliConfiguration {
@@ -26,5 +25,5 @@ public interface CliConfiguration {
     boolean addDefaultCommands();
     Iterator<Class<? extends UserCommand>> userCommands();
     Runnable decorate(Runnable task);
-
+    Object coerce(String value, Type expected);
 }

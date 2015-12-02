@@ -38,6 +38,7 @@ import static org.junit.Assert.assertThat;
 public class MainTest {
     @Rule
     public final StandardOutputStreamLog stdout = new StandardOutputStreamLog();
+
     @Rule
     public final StandardErrorStreamLog stderr = new StandardErrorStreamLog();
 
@@ -54,6 +55,7 @@ public class MainTest {
             "running: list running batches\n" +
             "start: start a batch\n" +
             "status: list last batches statuses\n" +
+            "stepExecutions: list step executions for a particular execution\n" +
             "stop: stop a batch from its id\n" +
             "user1\n" +
             "user2\n", stderr.getLog().replace(System.getProperty("line.separator"), "\n"));
@@ -63,8 +65,10 @@ public class MainTest {
     public void helpCommand() {
         main(new String[] { "help", "evict" }); // using a simple command to avoid a big block for nothing
         assertEquals(
-            "usage: evict [-until <arg>]\n\n" +
-            "remove old data, uses embedded configuration (no JAXRS support yet)\n\n" +
+            "usage: evict -until <arg>\n" +
+            "\n" +
+            "remove old data, uses embedded configuration (no JAXRS support yet)\n" +
+            "\n" +
             " -until <arg>   date until when the eviction will occur (excluded),\n" +
             "                YYYYMMDD format\n", stdout.getLog().replace(System.getProperty("line.separator"), "\n"));
     }
@@ -204,6 +208,26 @@ public class MainTest {
         main(new String[]{"executions", "-id", Long.toString(id)});
 
         assertThat(stdout.getLog(), containsString("Executions of sample for instance " + id));
+        assertThat(stdout.getLog(), containsString("COMPLETED"));
+    }
+
+    @Test
+    public void stepExecutions() {
+        // ensure we have at least one thing to print
+        final JobOperator jobOperator = BatchRuntime.getJobOperator();
+        final long id = jobOperator.start("sample", null);
+
+        Batches.waitForEnd(jobOperator, id);
+        main(new String[]{"stepExecutions", "-id", Long.toString(id)});
+
+        System.out.println(stdout.getLog());
+        assertThat(stdout.getLog(), containsString(
+            "step id\t|\t step name\t|\t    start time   \t|\t     end time    \t|\t" +
+            "exit status\t|\tbatch status\t|\t" +
+            "READ_COUNT\t|\tWRITE_COUNT\t|\tCOMMIT_COUNT\t|\tROLLBACK_COUNT\t|\tREAD_SKIP_COUNT\t|\t" +
+            "PROCESS_SKIP_COUNT\t|\tFILTER_COUNT\t|\tWRITE_SKIP_COUNT"));
+        assertThat(stdout.getLog(), containsString("OK"));
+        assertThat(stdout.getLog(), containsString("sample-step"));
         assertThat(stdout.getLog(), containsString("COMPLETED"));
     }
 
