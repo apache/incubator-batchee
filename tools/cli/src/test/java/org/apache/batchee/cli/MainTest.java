@@ -46,6 +46,7 @@ public class MainTest {
     public void argHelp() {
         main(null);
         assertEquals(
+            "Available commands:\n\n" +
             "abandon: abandon a batch from its id\n" +
             "evict: remove old data, uses embedded configuration (no JAXRS support yet)\n" +
             "executions: list executions\n" +

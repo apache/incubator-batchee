@@ -210,7 +210,8 @@ public class BatchEECLI {
     }
 
     private static String help(final Map<String, Class<? extends Runnable>> commands) {
-        final StringBuilder builder = new StringBuilder();
+        final String ln = System.getProperty("line.separator");
+        final StringBuilder builder = new StringBuilder("Available commands:").append(ln).append(ln);
         for (final Map.Entry<String, Class<? extends Runnable>> cmd : commands.entrySet()) {
             final Command c = cmd.getValue().getAnnotation(Command.class);
             if (c == null) {
@@ -220,7 +221,7 @@ public class BatchEECLI {
             if (!c.description().isEmpty()) {
                 builder.append(": ").append(c.description());
             }
-            builder.append(System.getProperty("line.separator"));
+            builder.append(ln);
         }
         return builder.toString();
     }
