@@ -16,8 +16,8 @@
  */
 package org.apache.batchee.cli.command;
 
-import io.airlift.airline.Command;
-import io.airlift.airline.Option;
+import org.apache.batchee.cli.command.api.Command;
+import org.apache.batchee.cli.command.api.Option;
 import org.apache.batchee.container.services.ServicesManager;
 import org.apache.batchee.spi.PersistenceManagerService;
 
@@ -27,7 +27,7 @@ import java.util.Date;
 
 @Command(name = "evict", description = "remove old data, uses embedded configuration (no JAXRS support yet)")
 public class Eviction implements Runnable {
-    @Option(name = "-until", description = "date until when the eviction will occur (excluded), YYYYMMDD format", required = true)
+    @Option(name = "until", description = "date until when the eviction will occur (excluded), YYYYMMDD format", required = true)
     private String date;
 
     @Override

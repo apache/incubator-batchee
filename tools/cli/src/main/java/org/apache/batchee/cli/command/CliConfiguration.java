@@ -16,6 +16,8 @@
  */
 package org.apache.batchee.cli.command;
 
+import org.apache.batchee.cli.command.api.UserCommand;
+
 import java.util.Iterator;
 
 public interface CliConfiguration {
@@ -24,4 +26,5 @@ public interface CliConfiguration {
     boolean addDefaultCommands();
     Iterator<Class<? extends UserCommand>> userCommands();
     Runnable decorate(Runnable task);
+
 }

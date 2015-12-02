@@ -16,14 +16,14 @@
  */
 package org.apache.batchee.cli.command;
 
-import io.airlift.airline.Command;
-import io.airlift.airline.Option;
+import org.apache.batchee.cli.command.api.Command;
+import org.apache.batchee.cli.command.api.Option;
 
 import javax.batch.operations.JobOperator;
 
 @Command(name = "restart", description = "restart a batch")
 public class Restart extends StartableCommand {
-    @Option(name = "-id", description = "id of the failed batch", required = true)
+    @Option(name = "id", description = "id of the failed batch", required = true)
     private long id;
 
     @Override

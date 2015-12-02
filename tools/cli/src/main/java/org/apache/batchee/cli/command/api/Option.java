@@ -14,22 +14,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.batchee.cli.command;
+package org.apache.batchee.cli.command.api;
 
-import org.apache.batchee.cli.command.api.Command;
-import org.apache.batchee.cli.command.api.Option;
+import java.lang.annotation.Retention;
+import java.lang.annotation.Target;
 
-import javax.batch.operations.JobOperator;
+import static java.lang.annotation.ElementType.FIELD;
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
-@Command(name = "start", description = "start a batch")
-public class Start extends StartableCommand {
-    @Option(name = "name", description = "name of the batch to start", required = true)
-    private String name;
-
-    @Override
-    protected long doStart(final JobOperator operator) {
-        final long id = operator.start(name, toProperties(properties));
-        info("Batch '" + name + "' started with id #" + id);
-        return id;
-    }
+@Target(FIELD)
+@Retention(RUNTIME)
+public @interface Option {
+    String name();
+    String description();
+    boolean required() default false;
 }

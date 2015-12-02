@@ -16,7 +16,7 @@
  */
 package org.apache.batchee.cli.command;
 
-import io.airlift.airline.Option;
+import org.apache.batchee.cli.command.api.Option;
 import org.apache.batchee.container.exception.BatchContainerRuntimeException;
 import org.apache.commons.io.IOUtils;
 
@@ -28,7 +28,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
 public abstract class SocketCommand extends SocketConfigurableCommand {
-    @Option(name = "-timeout", description = "timeout for socket case")
+    @Option(name = "timeout", description = "timeout for socket case")
     private int timeout = 60000;
 
     protected boolean shouldUseSocket() {

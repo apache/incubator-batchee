@@ -16,12 +16,12 @@
  */
 package org.apache.batchee.cli.command;
 
-import io.airlift.airline.Command;
-import io.airlift.airline.Option;
+import org.apache.batchee.cli.command.api.Command;
+import org.apache.batchee.cli.command.api.Option;
 
 @Command(name = "abandon", description = "abandon a batch from its id")
 public class Abandon extends SocketCommand {
-    @Option(name = "-id", description = "id of the batch to abandon", required = true)
+    @Option(name = "id", description = "id of the batch to abandon", required = true)
     private long id;
 
     @Override

@@ -16,7 +16,8 @@
  */
 package org.apache.batchee.cli.command;
 
-import io.airlift.airline.Command;
+import org.apache.batchee.cli.command.api.Command;
+import org.apache.batchee.cli.command.api.UserCommand;
 
 @Command(name = "user2")
 public class User2 implements UserCommand {

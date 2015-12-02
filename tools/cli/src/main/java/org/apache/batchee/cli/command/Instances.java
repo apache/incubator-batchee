@@ -16,8 +16,8 @@
  */
 package org.apache.batchee.cli.command;
 
-import io.airlift.airline.Command;
-import io.airlift.airline.Option;
+import org.apache.batchee.cli.command.api.Command;
+import org.apache.batchee.cli.command.api.Option;
 
 import javax.batch.operations.JobOperator;
 import javax.batch.runtime.JobInstance;
@@ -25,13 +25,13 @@ import java.util.List;
 
 @Command(name = "instances", description = "list instances")
 public class Instances extends JobOperatorCommand {
-    @Option(name = "-name", description = "name of the batch to start", required = true)
+    @Option(name = "name", description = "name of the batch to start", required = true)
     private String name;
 
-    @Option(name = "-start", description = "start of the list of job instance to query")
+    @Option(name = "start", description = "start of the list of job instance to query")
     private int start = 0;
 
-    @Option(name = "-count", description = "number of instance to query")
+    @Option(name = "count", description = "number of instance to query")
     private int count = 100;
 
     @Override

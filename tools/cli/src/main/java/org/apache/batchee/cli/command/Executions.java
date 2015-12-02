@@ -16,8 +16,8 @@
  */
 package org.apache.batchee.cli.command;
 
-import io.airlift.airline.Command;
-import io.airlift.airline.Option;
+import org.apache.batchee.cli.command.api.Command;
+import org.apache.batchee.cli.command.api.Option;
 import org.apache.batchee.container.impl.JobInstanceImpl;
 import org.apache.commons.lang3.StringUtils;
 
@@ -26,7 +26,7 @@ import java.util.List;
 
 @Command(name = "executions", description = "list executions")
 public class Executions extends JobOperatorCommand {
-    @Option(name = "-id", description = "instance id", required = true)
+    @Option(name = "id", description = "instance id", required = true)
     private long id;
 
     @Override

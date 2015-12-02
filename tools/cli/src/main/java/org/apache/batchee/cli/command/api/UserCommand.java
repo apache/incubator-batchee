@@ -14,19 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.batchee.cli.command;
+package org.apache.batchee.cli.command.api;
 
-import java.lang.annotation.Retention;
-import java.lang.annotation.Target;
-
-import static java.lang.annotation.ElementType.TYPE;
-import static java.lang.annotation.RetentionPolicy.RUNTIME;
-
-@Retention(RUNTIME)
-@Target(TYPE)
-public @interface Exit {
-    /**
-     * @return the exit code to use.
-     */
-    int value();
+// use org.apache.batchee.cli.command.api.*
+// and register your command using META-INF/services/org.apache.batchee.cli.command.UserCommand mecanism
+// or a custom org.apache.batchee.cli.command.CliConfiguration
+public interface UserCommand extends Runnable {
 }

@@ -16,8 +16,8 @@
  */
 package org.apache.batchee.cli.command;
 
-import io.airlift.airline.Option;
 import org.apache.batchee.cli.classloader.ChildFirstURLClassLoader;
+import org.apache.batchee.cli.command.api.Option;
 import org.apache.batchee.cli.lifecycle.Lifecycle;
 import org.apache.batchee.cli.zip.Zips;
 import org.apache.batchee.container.exception.BatchContainerRuntimeException;
@@ -51,66 +51,66 @@ import static java.lang.Thread.currentThread;
 public abstract class JobOperatorCommand implements Runnable {
     // Remote config
 
-    @Option(name = "-url", description = "when using JAXRS the batchee resource url")
+    @Option(name = "url", description = "when using JAXRS the batchee resource url")
     protected String baseUrl = null;
 
-    @Option(name = "-json", description = "when using JAXRS the json provider")
+    @Option(name = "json", description = "when using JAXRS the json provider")
     private String jsonProvider = null;
 
-    @Option(name = "-user", description = "when using JAXRS the username")
+    @Option(name = "user", description = "when using JAXRS the username")
     private String username = null;
 
-    @Option(name = "-password", description = "when using JAXRS the password")
+    @Option(name = "password", description = "when using JAXRS the password")
     private String password = null;
 
-    @Option(name = "-auth", description = "when using JAXRS the authentication type (Basic)")
+    @Option(name = "auth", description = "when using JAXRS the authentication type (Basic)")
     private String type = "Basic";
 
-    @Option(name = "-hostnameVerifier", description = "when using JAXRS the hostname verifier")
+    @Option(name = "hostnameVerifier", description = "when using JAXRS the hostname verifier")
     private String hostnameVerifier = null;
 
-    @Option(name = "-keystorePassword", description = "when using JAXRS the keystorePassword")
+    @Option(name = "keystorePassword", description = "when using JAXRS the keystorePassword")
     private String keystorePassword = null;
 
-    @Option(name = "-keystoreType", description = "when using JAXRS the keystoreType (JKS)")
+    @Option(name = "keystoreType", description = "when using JAXRS the keystoreType (JKS)")
     private String keystoreType = "JKS";
 
-    @Option(name = "-keystorePath", description = "when using JAXRS the keystorePath")
+    @Option(name = "keystorePath", description = "when using JAXRS the keystorePath")
     private String keystorePath = null;
 
-    @Option(name = "-sslContextType", description = "when using JAXRS the sslContextType (TLS)")
+    @Option(name = "sslContextType", description = "when using JAXRS the sslContextType (TLS)")
     private String sslContextType = "TLS";
 
-    @Option(name = "-keyManagerType", description = "when using JAXRS the keyManagerType (SunX509)")
+    @Option(name = "keyManagerType", description = "when using JAXRS the keyManagerType (SunX509)")
     private String keyManagerType = "SunX509";
 
-    @Option(name = "-keyManagerPath", description = "when using JAXRS the keyManagerPath")
+    @Option(name = "keyManagerPath", description = "when using JAXRS the keyManagerPath")
     private String keyManagerPath = null;
 
-    @Option(name = "-trustManagerAlgorithm", description = "when using JAXRS the trustManagerAlgorithm")
+    @Option(name = "trustManagerAlgorithm", description = "when using JAXRS the trustManagerAlgorithm")
     private String trustManagerAlgorithm = null;
 
-    @Option(name = "-trustManagerProvider", description = "when using JAXRS the trustManagerProvider")
+    @Option(name = "trustManagerProvider", description = "when using JAXRS the trustManagerProvider")
     private String trustManagerProvider = null;
 
     // local config
 
-    @Option(name = "-lifecycle", description = "the lifecycle class to use")
+    @Option(name = "lifecycle", description = "the lifecycle class to use")
     private String lifecycle = null;
 
-    @Option(name = "-libs", description = "folder containing additional libraries, the folder is added too to the loader")
+    @Option(name = "libs", description = "folder containing additional libraries, the folder is added too to the loader")
     private String libs = null;
 
-    @Option(name = "-archive", description = "a bar archive")
+    @Option(name = "archive", description = "a bar archive")
     private String archive = null;
 
-    @Option(name = "-work", description = "work directory (default to java.io.tmp/work)")
+    @Option(name = "work", description = "work directory (default to java.io.tmp/work)")
     private String work = System.getProperty("batchee.home", System.getProperty("java.io.tmpdir")) + "/work";
 
-    @Option(name = "-shared-libs", description = "folder containing shared libraries, the folder is added too to the loader")
+    @Option(name = "sharedLibs", description = "folder containing shared libraries, the folder is added too to the loader")
     private String sharedLibs = null;
 
-    @Option(name = "-add-folder-to-loader", description = "force shared lib and libs folders to be added to the classloader")
+    @Option(name = "addFolderToLoader", description = "force shared lib and libs folders to be added to the classloader")
     private boolean addFolderToLoader = false;
 
     protected JobOperator operator() {

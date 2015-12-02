@@ -16,12 +16,12 @@
  */
 package org.apache.batchee.cli.command;
 
-import io.airlift.airline.Command;
-import io.airlift.airline.Option;
+import org.apache.batchee.cli.command.api.Command;
+import org.apache.batchee.cli.command.api.Option;
 
 @Command(name = "stop", description = "stop a batch from its id")
 public class Stop extends SocketCommand {
-    @Option(name = "-id", description = "id of the batch to stop", required = true)
+    @Option(name = "id", description = "id of the batch to stop", required = true)
     private long id;
 
     @Override

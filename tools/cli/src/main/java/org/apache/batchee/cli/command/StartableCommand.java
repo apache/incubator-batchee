@@ -16,8 +16,8 @@
  */
 package org.apache.batchee.cli.command;
 
-import io.airlift.airline.Arguments;
-import io.airlift.airline.Option;
+import org.apache.batchee.cli.command.api.Arguments;
+import org.apache.batchee.cli.command.api.Option;
 import org.apache.batchee.util.Batches;
 import org.apache.commons.io.IOUtils;
 
@@ -41,10 +41,10 @@ public abstract class StartableCommand extends SocketConfigurableCommand {
     protected List<String> properties;
 
     // some unix systems dont support negative systems.
-    @Option(name = "-error-exit-code", description = "exit code if any error occurs, should be > 0 or ignored")
+    @Option(name = "errorExitCode", description = "exit code if any error occurs, should be > 0 or ignored")
     protected int errorExitCode = -1;
 
-    @Option(name = "-failure-exit-code", description = "exit code if the batch result is not completed, should be > 0 and wait should be true or ignored")
+    @Option(name = "failureExitCode", description = "exit code if the batch result is not completed, should be > 0 and wait should be true or ignored")
     protected int failureExitCode = -1;
 
     @Override

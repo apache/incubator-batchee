@@ -14,9 +14,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.batchee.cli.command;
+package org.apache.batchee.cli.command.api;
 
-// use io.airlift.airline.Command and more generally io.airlift.airline.*
-// and register your command using META-INF/services/org.apache.batchee.cli.command.UserCommand mecanism
-public interface UserCommand extends Runnable {
+import java.lang.annotation.Retention;
+import java.lang.annotation.Target;
+
+import static java.lang.annotation.ElementType.TYPE;
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
+
+@Retention(RUNTIME)
+@Target(TYPE)
+public @interface Exit {
+    /**
+     * @return the exit code to use.
+     */
+    int value();
 }

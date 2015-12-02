@@ -21,6 +21,7 @@ import org.apache.batchee.util.Batches;
 import org.junit.FixMethodOrder;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.contrib.java.lang.system.StandardErrorStreamLog;
 import org.junit.contrib.java.lang.system.StandardOutputStreamLog;
 import org.junit.runners.MethodSorters;
 
@@ -37,6 +38,36 @@ import static org.junit.Assert.assertThat;
 public class MainTest {
     @Rule
     public final StandardOutputStreamLog stdout = new StandardOutputStreamLog();
+    @Rule
+    public final StandardErrorStreamLog stderr = new StandardErrorStreamLog();
+
+    @Test
+    public void argHelp() {
+        main(null);
+        assertEquals(
+            "abandon: abandon a batch from its id\n" +
+            "evict: remove old data, uses embedded configuration (no JAXRS support yet)\n" +
+            "executions: list executions\n" +
+            "instances: list instances\n" +
+            "names: list known batches\n" +
+            "restart: restart a batch\n" +
+            "running: list running batches\n" +
+            "start: start a batch\n" +
+            "status: list last batches statuses\n" +
+            "stop: stop a batch from its id\n" +
+            "user1\n" +
+            "user2\n", stderr.getLog().replace(System.getProperty("line.separator"), "\n"));
+    }
+
+    @Test
+    public void helpCommand() {
+        main(new String[] { "help", "evict" }); // using a simple command to avoid a big block for nothing
+        assertEquals(
+            "usage: evict [-until <arg>]\n" +
+            "remove old data, uses embedded configuration (no JAXRS support yet)\n" +
+            " -until <arg>   date until when the eviction will occur (excluded),\n" +
+            "                YYYYMMDD format\n", stdout.getLog().replace(System.getProperty("line.separator"), "\n"));
+    }
 
     @Test
     public void start() {
