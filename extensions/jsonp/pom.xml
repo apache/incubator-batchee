@@ -25,7 +25,7 @@
   </parent>
 
   <artifactId>batchee-jsonp</artifactId>
-  <name>BatchEE :: Extensions :: Jackson</name>
+  <name>BatchEE :: Extensions :: JSON-P</name>
 
   <dependencies>
     <dependency>
