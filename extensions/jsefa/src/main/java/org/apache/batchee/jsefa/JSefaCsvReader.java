@@ -17,7 +17,9 @@
 package org.apache.batchee.jsefa;
 
 import net.sf.jsefa.Deserializer;
+import net.sf.jsefa.common.lowlevel.filter.HeaderAndFooterFilter;
 import net.sf.jsefa.csv.CsvIOFactory;
+import net.sf.jsefa.csv.config.CsvConfiguration;
 import org.apache.batchee.doc.api.Documentation;
 
 import javax.batch.api.BatchProperty;
@@ -80,14 +82,33 @@ public class JSefaCsvReader extends JSefaReader {
     @Documentation("should deliimter be used after last field")
     private String useDelimiterAfterLastField;
 
+    @Inject
+    @BatchProperty
+    @Documentation("should the header be ignored")
+    private Boolean ignoreHeader;
+
+    @Inject
+    @BatchProperty()
+    @Documentation("number of header lines")
+    private Integer headerSize;
+
+
     @Override
     protected Deserializer initDeserializer() throws Exception {
-        return CsvIOFactory.createFactory(
-            JsefaConfigurations.newCsvConfiguration(
+        CsvConfiguration config = JsefaConfigurations.newCsvConfiguration(
                 defaultNoValueString, defaultQuoteMode, fieldDelimiter, lineBreak, quoteCharacter,
                 quoteCharacterEscapeMode, useDelimiterAfterLastField, validationMode, validationProvider,
                 lineFilter, lowLevelConfiguration, lineFilterLimit, objectAccessorProvider,
-                specialRecordDelimiter, simpleTypeProvider, typeMappingRegistry),
-            JsefaConfigurations.createObjectTypes(objectTypes)).createDeserializer();
+                specialRecordDelimiter, simpleTypeProvider, typeMappingRegistry);
+
+        if (config.getLineFilter() == null &&
+            Boolean.TRUE.equals(ignoreHeader) &&
+            headerSize != null && headerSize > 0) {
+
+            config.setLineFilter(new HeaderAndFooterFilter(headerSize, false, false));
+        }
+
+        return CsvIOFactory.createFactory(config, JsefaConfigurations.createObjectTypes(objectTypes))
+                           .createDeserializer();
     }
 }

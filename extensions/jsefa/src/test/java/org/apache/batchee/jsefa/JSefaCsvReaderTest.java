@@ -16,9 +16,14 @@
  */
 package org.apache.batchee.jsefa;
 
+import org.apache.batchee.extras.typed.TypedItemProcessor;
+import org.apache.batchee.jsefa.bean.Address;
+import org.apache.batchee.jsefa.bean.PersonWithAddress;
 import org.apache.batchee.jsefa.bean.Record;
+import org.apache.batchee.jsefa.util.CsvUtil;
 import org.apache.batchee.jsefa.util.IOs;
 import org.apache.batchee.util.Batches;
+import org.testng.Assert;
 import org.testng.annotations.Test;
 
 import javax.batch.api.chunk.ItemProcessor;
@@ -51,12 +56,50 @@ public class JSefaCsvReaderTest {
         }
     }
 
+
+    @Test
+    public void testReadWithHeader() {
+        String path = "target/work/JsefaCsvReaderWithHeader.csv";
+
+        Properties properties = new Properties();
+        properties.setProperty("input", path);
+
+        StringBuilder csvBuilder = new StringBuilder(200);
+        for (int i = 0; i < 10; i++) {
+            csvBuilder.append(IOs.LINE_SEPARATOR)
+                      .append(CsvUtil.toCsv(new PersonWithAddress("firstName_" + i,
+                                                                  "lastName_" + i,
+                                                                  new Address("street_" + i,
+                                                                              "zip_" + i,
+                                                                              "city_" + i))));
+        }
+
+        IOs.write(path, csvBuilder.toString());
+
+        JobOperator operator = BatchRuntime.getJobOperator();
+        Batches.waitForEnd(operator, operator.start("jsefa-csv-reader-header", properties));
+
+        Assert.assertEquals(Storage.ITEMS.size(), 10);
+
+    }
+
     public static class StoreItems implements ItemProcessor {
         public static final List<Record> ITEMS = new ArrayList<Record>(3);
 
         @Override
         public Object processItem(final Object item) throws Exception {
             ITEMS.add(Record.class.cast(item));
+            return item;
+        }
+    }
+
+    public static class Storage extends TypedItemProcessor<PersonWithAddress, PersonWithAddress> {
+
+        static final List<PersonWithAddress> ITEMS = new ArrayList<PersonWithAddress>(10);
+
+        @Override
+        protected PersonWithAddress doProcessItem(PersonWithAddress item) {
+            ITEMS.add(item);
             return item;
         }
     }

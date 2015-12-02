@@ -21,8 +21,14 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class IOs {
+
+    public static final String LINE_SEPARATOR = System.getProperty("line.separator");
+
+
     public static void write(final String path, final String content) {
         final File file = new File(path);
         if (!file.getParentFile().exists() && !file.getParentFile().mkdirs()) {
@@ -40,20 +46,40 @@ public class IOs {
 
     public static String slurp(final String path) {
         final StringBuilder builder = new StringBuilder();
+
+        for (String line : getLines(path)) {
+            builder.append(line).append(LINE_SEPARATOR);
+        }
+
+        return builder.toString();
+    }
+
+    public static List<String> getLines(final String path) {
+        List<String> lines = new ArrayList<String>();
+
+        BufferedReader reader = null;
         try {
-            final BufferedReader reader = new BufferedReader(new FileReader(path));
+            reader = new BufferedReader(new FileReader(path));
             String line;
-            do {
-                line = reader.readLine();
-                if (line != null) {
-                    builder.append(line).append(System.getProperty("line.separator"));
-                }
-            } while (line != null);
-            reader.close();
-        } catch (final Exception e) {
+            while ((line = reader.readLine()) != null) {
+                lines.add(line);
+            }
+        }
+        catch (Exception e) {
             // no-op
         }
-        return builder.toString();
+        finally {
+            if (reader != null) {
+                try {
+                    reader.close();
+                }
+                catch (IOException e) {
+                    // bad luck
+                }
+            }
+        }
+
+        return lines;
     }
 
     private IOs() {
