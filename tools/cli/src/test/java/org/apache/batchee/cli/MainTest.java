@@ -63,8 +63,8 @@ public class MainTest {
     public void helpCommand() {
         main(new String[] { "help", "evict" }); // using a simple command to avoid a big block for nothing
         assertEquals(
-            "usage: evict [-until <arg>]\n" +
-            "remove old data, uses embedded configuration (no JAXRS support yet)\n" +
+            "usage: evict [-until <arg>]\n\n" +
+            "remove old data, uses embedded configuration (no JAXRS support yet)\n\n" +
             " -until <arg>   date until when the eviction will occur (excluded),\n" +
             "                YYYYMMDD format\n", stdout.getLog().replace(System.getProperty("line.separator"), "\n"));
     }

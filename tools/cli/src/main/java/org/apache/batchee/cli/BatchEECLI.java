@@ -246,7 +246,7 @@ public class BatchEECLI {
     }
 
     private static void printHelp(final Command command, final Options options) {
-        new HelpFormatter().printHelp(command.name(), command.description(), options, null, true);
+        new HelpFormatter().printHelp(command.name(), '\n' + command.description() + "\n\n", options, null, true);
     }
 
     private static Options buildOptions(final Class<? extends Runnable> cmd, Map<String, Field> fields) {
