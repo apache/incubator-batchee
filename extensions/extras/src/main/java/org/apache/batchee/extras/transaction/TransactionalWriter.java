@@ -84,16 +84,21 @@ public class TransactionalWriter extends Writer {
     @Override
     public void flush() throws IOException {
         if (!Synchronizations.hasTransaction()) {
-            delegate.force(false);
-            position = delegate.position();
+            fileFlush();
         } else {
             position = delegate.position() + buffer().length();
         }
     }
 
+    private void fileFlush() throws IOException {
+        delegate.force(false);
+        position = delegate.position();
+    }
+
     @Override
     public void close() throws IOException {
-        if (!Synchronizations.hasTransaction() && delegate.isOpen()) {
+        if ((!Synchronizations.hasTransaction() || Synchronizations.get(bufferKey) == null) && delegate.isOpen()) {
+            fileFlush();
             delegate.close();
         } else {
             closed = true;

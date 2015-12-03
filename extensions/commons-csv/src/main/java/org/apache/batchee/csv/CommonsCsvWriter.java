@@ -189,6 +189,7 @@ public class CommonsCsvWriter implements ItemWriter {
                 throw new IllegalStateException("No way to write " + o + ". Does it implement Iterable<String> or did you set up a mapper?");
             }
         }
+        writer.flush();
     }
 
     @Override
