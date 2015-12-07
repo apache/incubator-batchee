@@ -21,7 +21,7 @@
          xsi:schemaLocation="http://maven.apache.org/DECORATION/1.0.1
                              http://maven.apache.org/xsd/decoration-1.0.1.xsd">
   <bannerLeft>
-    <name>Apache BatchEE</name>
+    <name>Apache BatchEE (incubating)</name>
     <alt>Apache BatchEE logo</alt>
     <href>/index.html</href>
   </bannerLeft>
@@ -84,10 +84,18 @@
     </menu>
 
     <footer>
-      <div class="row span16"><div>Apache Batchee, Apache, the Apache feather logo, and the Apache Batchee project logos are trademarks of The Apache Software Foundation.
-        All other marks mentioned may be trademarks or registered trademarks of their respective owners.</div>
-        <a href="${project.url}/privacy-policy.html">Privacy Policy</a>
-      </div>
+  <div class="container">
+    <footer id="main-footer">
+      <p class="text-muted">
+      Apache Batchee, Apache, the Apache feather logo, and the Apache Batchee project logos are trademarks of The Apache Software Foundation.
+        All other marks mentioned may be trademarks or registered trademarks of their respective owners.
+      </p>
+      <p class="text-muted">
+        <small>Apache BatchEE is an effort undergoing incubation at The Apache Software Foundation (ASF), sponsored by the Apache Incubator. Incubation is required of all newly accepted projects until a further review indicates that the infrastructure, communications, and decision making process have stabilized in a manner consistent with other successful ASF projects. While incubation status is not necessarily a reflection of the completeness or stability of the code, it does indicate that the project has yet to be fully endorsed by the ASF.</small>
+      </p>
+      <a href="/privacy-policy.html">Privacy Policy</a>
+    </footer>
+  </div> <!-- /container -->
     </footer>
 
   </body>
