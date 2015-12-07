@@ -22,8 +22,11 @@ import org.apache.batchee.extras.transaction.CountedReader;
 
 import javax.batch.api.BatchProperty;
 import javax.inject.Inject;
-import java.io.FileReader;
+import java.io.BufferedReader;
+import java.io.FileInputStream;
+import java.io.InputStreamReader;
 import java.io.Serializable;
+import java.nio.charset.Charset;
 
 public abstract class JSefaReader extends CountedReader {
     @Inject
@@ -61,12 +64,25 @@ public abstract class JSefaReader extends CountedReader {
     @Documentation("file to read")
     protected String file;
 
+    @Inject
+    @BatchProperty
+    @Documentation("the encoding to use while reading the file. E.g. \"UTF-8\". If not specified the system default encoding is being used.")
+    protected String fileEncoding;
+
     protected Deserializer deserializer;
 
     @Override
     public void open(final Serializable checkpoint) throws Exception {
         deserializer = initDeserializer();
-        deserializer.open(new FileReader(file));
+
+        Charset charset;
+        if (fileEncoding != null && !fileEncoding.isEmpty()) {
+            charset = Charset.forName(fileEncoding);
+        } else {
+            charset = Charset.defaultCharset();
+        }
+
+        deserializer.open(new BufferedReader(new InputStreamReader(new FileInputStream(file), charset)));
         super.open(checkpoint);
     }
 
