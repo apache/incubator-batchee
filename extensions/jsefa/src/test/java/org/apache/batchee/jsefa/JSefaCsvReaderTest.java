@@ -65,6 +65,7 @@ public class JSefaCsvReaderTest {
         properties.setProperty("input", path);
 
         StringBuilder csvBuilder = new StringBuilder(200);
+        csvBuilder.append("firstName;lastName;street;zip;city");
         for (int i = 0; i < 10; i++) {
             csvBuilder.append(IOs.LINE_SEPARATOR)
                       .append(CsvUtil.toCsv(new PersonWithAddress("firstName_" + i,

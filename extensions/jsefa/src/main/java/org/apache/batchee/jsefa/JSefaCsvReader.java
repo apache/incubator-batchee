@@ -88,7 +88,7 @@ public class JSefaCsvReader extends JSefaReader {
     private Boolean ignoreHeader;
 
     @Inject
-    @BatchProperty()
+    @BatchProperty
     @Documentation("number of header lines")
     private Integer headerSize;
 
@@ -102,8 +102,11 @@ public class JSefaCsvReader extends JSefaReader {
                 specialRecordDelimiter, simpleTypeProvider, typeMappingRegistry);
 
         if (config.getLineFilter() == null &&
-            Boolean.TRUE.equals(ignoreHeader) &&
-            headerSize != null && headerSize > 0) {
+            Boolean.TRUE.equals(ignoreHeader)) {
+
+            if (headerSize == null || headerSize == 0) {
+                headerSize = 1; // the default size if nothing was specified
+            }
 
             config.setLineFilter(new HeaderAndFooterFilter(headerSize, false, false));
         }
