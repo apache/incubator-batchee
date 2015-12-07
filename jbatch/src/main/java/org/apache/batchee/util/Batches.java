@@ -31,24 +31,32 @@ public class Batches {
         // no-op
     }
 
-    public static void waitForEnd(final long id) {
-        waitForEnd(BatchRuntime.getJobOperator(), id);
+    public static BatchStatus waitForEnd(final long id) {
+        return waitForEnd(BatchRuntime.getJobOperator(), id);
     }
 
-    public static void waitForEnd(final JobOperator jobOperator, final long id) {
+    public static BatchStatus waitForEnd(final JobOperator jobOperator, final long id) {
+        BatchStatus batchStatus;
+
         if (JobOperatorImpl.class.isInstance(jobOperator)) {
             JobOperatorImpl.class.cast(jobOperator).waitFor(id);
-            return;
+            batchStatus = getBatchStatus(jobOperator, id);
+        } else {
+
+            // else polling
+            do {
+                batchStatus = getBatchStatus(jobOperator, id);
+
+                try {
+                    Thread.sleep(100);
+                } catch (final InterruptedException e) {
+                    return batchStatus;
+                }
+            }
+            while (!BATCH_END_STATUSES.contains(batchStatus));
         }
 
-        // else polling
-        do {
-            try {
-                Thread.sleep(100);
-            } catch (final InterruptedException e) {
-                return;
-            }
-        } while (!isDone(jobOperator, id));
+        return batchStatus;
     }
 
     public static boolean isDone(final BatchStatus status) {
@@ -56,6 +64,11 @@ public class Batches {
     }
 
     public static boolean isDone(final JobOperator jobOperator, final long id) {
-        return BATCH_END_STATUSES.contains(jobOperator.getJobExecution(id).getBatchStatus());
+        return isDone(getBatchStatus(jobOperator, id));
+    }
+
+
+    private static BatchStatus getBatchStatus(JobOperator jobOperator, long id) {
+        return jobOperator.getJobExecution(id).getBatchStatus();
     }
 }
