@@ -45,12 +45,11 @@ public class Batches {
 
             // else polling
             do {
-                batchStatus = getBatchStatus(jobOperator, id);
-
                 try {
                     Thread.sleep(100);
+                    batchStatus = getBatchStatus(jobOperator, id);
                 } catch (final InterruptedException e) {
-                    return batchStatus;
+                    return getBatchStatus(jobOperator, id);
                 }
             }
             while (!BATCH_END_STATUSES.contains(batchStatus));
