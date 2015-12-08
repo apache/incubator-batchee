@@ -67,7 +67,7 @@ public abstract class JSefaReader extends CountedReader {
     @Inject
     @BatchProperty
     @Documentation("the encoding to use while reading the file. E.g. \"UTF-8\". If not specified the system default encoding is being used.")
-    protected String fileEncoding;
+    protected String encoding;
 
     protected Deserializer deserializer;
 
@@ -76,8 +76,8 @@ public abstract class JSefaReader extends CountedReader {
         deserializer = initDeserializer();
 
         Charset charset;
-        if (fileEncoding != null && !fileEncoding.isEmpty()) {
-            charset = Charset.forName(fileEncoding);
+        if (encoding != null && !encoding.isEmpty()) {
+            charset = Charset.forName(encoding);
         } else {
             charset = Charset.defaultCharset();
         }
