@@ -21,7 +21,7 @@
     <parent>
         <artifactId>batchee-extensions</artifactId>
         <groupId>org.apache.batchee</groupId>
-        <version>0.3-incubating-SNAPSHOT</version>
+        <version>0.3-incubating</version>
     </parent>
 
     <artifactId>batchee-hazelcast</artifactId>
