@@ -31,11 +31,39 @@ public class Batches {
         // no-op
     }
 
-    public static BatchStatus waitForEnd(final long id) {
-        return waitForEnd(BatchRuntime.getJobOperator(), id);
+    public static void waitForEnd(final long id) {
+        waitForEnd(BatchRuntime.getJobOperator(), id);
     }
 
-    public static BatchStatus waitForEnd(final JobOperator jobOperator, final long id) {
+    public static void waitForEnd(final JobOperator jobOperator, final long id) {
+        waitFor(jobOperator, id);
+    }
+
+    /**
+     * Waits until the end of the {@link javax.batch.runtime.JobExecution} with the given {@code id}
+     * and returns the final {@link BatchStatus}.
+     *
+     * @param id of the {@link javax.batch.runtime.JobExecution} to wait for
+     *
+     * @return the final {@link BatchStatus} or in case of an {@link InterruptedException} the current {@link BatchStatus}
+     *         will be returned.
+     */
+    public static BatchStatus waitFor(final long id) {
+        return waitFor(BatchRuntime.getJobOperator(), id);
+    }
+
+    /**
+     * Waits until the end of the {@link javax.batch.runtime.JobExecution} with the given {@code id}
+     * and returns the final {@link BatchStatus}.
+     *
+     * @param jobOperator the {@link JobOperator to use}
+     * @param id of the {@link javax.batch.runtime.JobExecution} to wait for
+     *
+     * @return the final {@link BatchStatus} or in case of an {@link InterruptedException} the current {@link BatchStatus}
+     *         will be returned.
+     */
+    public static BatchStatus waitFor(JobOperator jobOperator, long id) {
+
         BatchStatus batchStatus;
 
         if (JobOperatorImpl.class.isInstance(jobOperator)) {
@@ -52,7 +80,7 @@ public class Batches {
                     return getBatchStatus(jobOperator, id);
                 }
             }
-            while (!BATCH_END_STATUSES.contains(batchStatus));
+            while (!isDone(batchStatus));
         }
 
         return batchStatus;
