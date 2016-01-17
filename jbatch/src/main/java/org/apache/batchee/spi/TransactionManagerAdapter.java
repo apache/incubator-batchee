@@ -45,6 +45,11 @@ public interface TransactionManagerAdapter {
      * Roll back the transaction associated with the
      * current thread. When this method completes,
      * the thread becomes associated with no transaction.
+     *
+     * Attention: this must not throw an Exception until there is a setup problem!
+     * So if the tx is not active anymore and we get an Exception while trying
+     * to rollback then it MUST get catched away. Otoh if there is a setup
+     * or system issue the Exception from the rollback needs to get thrown.
      */
     public void rollback();
 

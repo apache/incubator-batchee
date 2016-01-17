@@ -104,6 +104,7 @@
         <module>gui</module>
         <module>tools</module>
         <module>test</module>
+        <module>integration-tests</module>
     </modules>
 
     <dependencyManagement>
