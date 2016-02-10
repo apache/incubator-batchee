@@ -37,6 +37,8 @@ import org.apache.batchee.container.services.persistence.jpa.domain.JobInstanceE
 import org.apache.batchee.container.services.persistence.jpa.domain.StepExecutionEntity;
 import org.apache.batchee.container.services.persistence.jpa.provider.DefaultEntityManagerProvider;
 import org.apache.batchee.container.services.persistence.jpa.provider.DefaultTransactionProvider;
+import org.apache.batchee.container.services.persistence.jpa.provider.EEEntityManagerProvider;
+import org.apache.batchee.container.services.persistence.jpa.provider.EETransactionProvider;
 import org.apache.batchee.container.status.JobStatus;
 import org.apache.batchee.container.status.StepStatus;
 import org.apache.batchee.spi.PersistenceManagerService;
@@ -850,7 +852,9 @@ public class JPAPersistenceManagerService implements PersistenceManagerService {
 
     @Override
     public void init(final Properties batchConfig) {
-        final String txProviderClass = batchConfig.getProperty("persistence.jpa.transaction-provider", DefaultTransactionProvider.class.getName());
+        final boolean ee = "true".equalsIgnoreCase(batchConfig.getProperty("persistence.jpa.ee", "false"));
+        final String txProviderClass = batchConfig.getProperty(
+            "persistence.jpa.transaction-provider", ee ? EETransactionProvider.class.getName() : DefaultTransactionProvider.class.getName());
         try {
             txProvider = TransactionProvider.class.cast(Thread.currentThread().getContextClassLoader().loadClass(txProviderClass).newInstance());
         } catch (final Exception e) {
@@ -858,7 +862,8 @@ public class JPAPersistenceManagerService implements PersistenceManagerService {
         }
         txProvider.init(batchConfig);
 
-        final String providerClass = batchConfig.getProperty("persistence.jpa.entity-manager-provider", DefaultEntityManagerProvider.class.getName());
+        final String providerClass = batchConfig.getProperty(
+            "persistence.jpa.entity-manager-provider", ee ? EEEntityManagerProvider.class.getName() : DefaultEntityManagerProvider.class.getName());
         try {
             emProvider = EntityManagerProvider.class.cast(Thread.currentThread().getContextClassLoader().loadClass(providerClass).newInstance());
         } catch (final Exception e) {

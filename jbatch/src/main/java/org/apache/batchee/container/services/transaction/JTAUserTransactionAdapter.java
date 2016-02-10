@@ -22,9 +22,11 @@ import org.apache.batchee.spi.TransactionManagerAdapter;
 import javax.naming.InitialContext;
 import javax.transaction.HeuristicMixedException;
 import javax.transaction.HeuristicRollbackException;
+import javax.transaction.InvalidTransactionException;
 import javax.transaction.NotSupportedException;
 import javax.transaction.RollbackException;
 import javax.transaction.SystemException;
+import javax.transaction.Transaction;
 import javax.transaction.TransactionManager;
 
 public class JTAUserTransactionAdapter implements TransactionManagerAdapter {
@@ -85,6 +87,28 @@ public class JTAUserTransactionAdapter implements TransactionManagerAdapter {
         try {
             mgr.begin();
         } catch (final NotSupportedException e) {
+            throw new TransactionManagementException(e);
+        } catch (final SystemException e) {
+            throw new TransactionManagementException(e);
+        }
+    }
+
+    public Transaction beginSuspending() throws TransactionManagementException {
+        try {
+            final Transaction t = mgr.getTransaction() != null ? mgr.suspend() : null;
+            mgr.begin();
+            return t;
+        } catch (final NotSupportedException e) {
+            throw new TransactionManagementException(e);
+        } catch (final SystemException e) {
+            throw new TransactionManagementException(e);
+        }
+    }
+
+    public void resume(final Transaction transaction) {
+        try {
+            mgr.resume(transaction);
+        } catch (final InvalidTransactionException e) {
             throw new TransactionManagementException(e);
         } catch (final SystemException e) {
             throw new TransactionManagementException(e);
