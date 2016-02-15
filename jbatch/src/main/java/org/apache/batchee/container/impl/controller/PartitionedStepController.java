@@ -103,7 +103,13 @@ public class PartitionedStepController extends BaseStepController {
             if (parallelBatchWorkUnits != null) {
                 for (BatchWorkUnit subJob : parallelBatchWorkUnits) {
                     try {
-                        kernelService.stopJob(subJob.getJobExecutionImpl().getExecutionId());
+
+                        // only try to stop the sub-jobs if they are running
+                        if (subJob.getJobExecutionImpl().getBatchStatus() == BatchStatus.STARTING ||
+                            subJob.getJobExecutionImpl().getBatchStatus() == BatchStatus.STARTED) {
+
+                            kernelService.stopJob(subJob.getJobExecutionImpl().getExecutionId());
+                        }
                     } catch (Exception e) {
                         // TODO - Is this what we want to know.
                         // Blow up if it happens to force the issue.
