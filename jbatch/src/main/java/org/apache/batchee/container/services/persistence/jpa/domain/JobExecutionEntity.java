@@ -27,8 +27,6 @@ import javax.persistence.ManyToOne;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.Table;
-import javax.persistence.Temporal;
-import javax.persistence.TemporalType;
 import java.sql.Timestamp;
 import java.util.Arrays;
 import java.util.List;
@@ -61,16 +59,12 @@ public class JobExecutionEntity {
     @GeneratedValue
     private long executionId;
 
-    @Temporal(TemporalType.TIMESTAMP)
     private Timestamp createTime;
 
-    @Temporal(TemporalType.TIMESTAMP)
     private Timestamp startTime;
 
-    @Temporal(TemporalType.TIMESTAMP)
     private Timestamp endTime;
 
-    @Temporal(TemporalType.TIMESTAMP)
     private Timestamp updateTime;
 
     @Enumerated(EnumType.STRING)

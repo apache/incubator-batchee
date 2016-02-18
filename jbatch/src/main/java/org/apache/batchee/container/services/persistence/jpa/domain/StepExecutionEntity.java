@@ -28,8 +28,6 @@ import javax.persistence.ManyToOne;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.Table;
-import javax.persistence.Temporal;
-import javax.persistence.TemporalType;
 import java.sql.Timestamp;
 
 @Entity
@@ -85,10 +83,8 @@ public class StepExecutionEntity {
     @Column(name="exec_writeskip")
     private long writeSkip;
 
-    @Temporal(TemporalType.TIMESTAMP)
     private Timestamp startTime;
 
-    @Temporal(TemporalType.TIMESTAMP)
     private Timestamp endTime;
 
     @Lob
