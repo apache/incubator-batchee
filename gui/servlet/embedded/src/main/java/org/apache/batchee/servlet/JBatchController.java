@@ -30,19 +30,28 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
 import java.net.URLDecoder;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class JBatchController extends HttpServlet {
     private static final String DEFAULT_MAPPING_SERVLET25 = "/jbatch";
@@ -64,6 +73,8 @@ public class JBatchController extends HttpServlet {
     private String mapping = DEFAULT_MAPPING_SERVLET25;
     private int executionByPage = DEFAULT_PAGE_SIZE;
     private boolean readOnly = false;
+    private boolean defaultScan = false;
+    private final Set<String> appBatches = new HashSet<String>();
 
     public JBatchController mapping(final String rawMapping) {
         this.mapping = rawMapping.substring(0, rawMapping.length() - 2); // mapping pattern is /xxx/*
@@ -80,6 +91,11 @@ public class JBatchController extends HttpServlet {
         return this;
     }
 
+    public JBatchController defaultScan(final boolean defaultScan) {
+        this.defaultScan = defaultScan;
+        return this;
+    }
+
     @Override
     public void init(final ServletConfig config) throws ServletException {
         this.operator = BatchRuntime.getJobOperator();
@@ -91,7 +107,32 @@ public class JBatchController extends HttpServlet {
 
         mapping = context + mapping;
         this.simpleRestController = new SimpleRestController(operator);
+
+        // this is not perfect but when it works it list jobs not executed yet which is helpful
+        // try to find not yet started jobs
+        if (defaultScan) {
+            final ClassLoader loader = Thread.currentThread().getContextClassLoader();
+            final Enumeration<URL> resources;
+            try {
+                resources = loader.getResources("META-INF/batch-jobs");
+            } catch (final IOException e) {
+                return;
+            }
+            while (resources.hasMoreElements()) {
+                final URL url = resources.nextElement();
+                final File file = toFile(url);
+
+                if (file != null) {
+                    if (file.isDirectory()) {
+                        findInDirectory(file);
+                    } else {
+                        findInJar(file);
+                    }
+                }
+            }
+        }
     }
+
 
     @Override
     protected void service(final HttpServletRequest req, final HttpServletResponse resp) throws ServletException, IOException {
@@ -244,9 +285,10 @@ public class JBatchController extends HttpServlet {
     }
 
     private void listJobs(final HttpServletRequest req) throws ServletException, IOException {
-        Set<String> names = operator.getJobNames();
-        if (names == null) {
-            names = Collections.emptySet();
+        final Set<String> names = new HashSet<String>(appBatches);
+        final Set<String> registered = operator.getJobNames();
+        if (registered != null) {
+            names.addAll(registered);
         }
 
         req.setAttribute("view", "jobs");
@@ -282,6 +324,56 @@ public class JBatchController extends HttpServlet {
             }
         }
         return properties;
+    }
+
+    private Collection<String> findInJar(final File file) {
+        final Pattern pattern = Pattern.compile("META\\-INF/batch-jobs/\\(*\\).xml");
+        final JarFile jar;
+        try {
+            jar = new JarFile(file);
+        } catch (final IOException e) {
+            return Collections.emptySet();
+        }
+        final Enumeration<JarEntry> entries = jar.entries();
+        final Collection<String> values = new HashSet<String>();
+        while (entries.hasMoreElements()) {
+            final JarEntry entry = entries.nextElement();
+            final Matcher matcher = pattern.matcher(entry.getName());
+            if (matcher.matches()) {
+                values.add(matcher.group(1));
+            }
+        }
+        return values;
+    }
+
+    private Collection<String> findInDirectory(final File file) {
+        final String[] batches = file.list(new FilenameFilter() {
+            @Override
+            public boolean accept(final File dir, final String name) {
+                return name.endsWith(".xml");
+            }
+        });
+        if (batches != null) {
+            final Collection<String> values = new HashSet<String>();
+            for (final String batch : batches) {
+                values.add(batch.substring(0, batch.length() - ".xml".length()));
+            }
+            return values;
+        }
+        return Collections.emptySet();
+    }
+
+    private static File toFile(final URL url) {
+        final File file;
+        final String externalForm = url.toExternalForm();
+        if ("jar".equals(url.getProtocol())) {
+            file = new File(externalForm.substring("jar:".length(), externalForm.lastIndexOf('!')));
+        } else if ("file".equals(url.getProtocol())) {
+            file = new File(externalForm.substring("file:".length()));
+        } else {
+            file = null;
+        }
+        return file;
     }
 
     private static class JobInstanceIdComparator implements java.util.Comparator<JobInstance> {

@@ -35,6 +35,7 @@ import java.util.Set;
 public class JBatchServletInitializer implements ServletContainerInitializer {
     public static final String ACTIVE = "org.apache.batchee.servlet.active";
     public static final String CONTROLLER_MAPPING = "org.apache.batchee.servlet.mapping";
+    public static final String DEFAULT_SCANNING = "org.apache.batchee.servlet.scan";
     public static final String ACTIVE_PRIVATE_FILTER = "org.apache.batchee.servlet.filter.private";
     public static final String BY_PAGE = "org.apache.batchee.servlet.pagination";
 
@@ -63,6 +64,7 @@ public class JBatchServletInitializer implements ServletContainerInitializer {
 
         ctx.addServlet("JBatch Servlet", new JBatchController()
                                             .readOnly(false)
+                                            .defaultScan(Boolean.parseBoolean(ctx.getInitParameter(DEFAULT_SCANNING)))
                                             .mapping(mapping)
                                             .executionByPage(Integer.parseInt(byPage)))
                                             .addMapping(mapping);
