@@ -4,6 +4,13 @@ idea/
 .java-version
 .site-content/
 .idea
+
+# Eclipse
+.apt_generated/
+.externalToolBuilders/
+.settings/
 .classpath
+.factorypath
 .project
+
 batchee-site-generated
