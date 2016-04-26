@@ -185,6 +185,9 @@ public class DefaultBatchKernel implements BatchKernelService {
         return batchWorkUnits;
     }
 
+    /*
+     * There are some assumptions that all partition subjobs have associated DB entries
+     */
     @Override
     public List<BatchPartitionWorkUnit> buildOnRestartParallelPartitions(final PartitionsBuilderConfig config, final JobContextImpl jc, final StepContextImpl sc)
             throws JobRestartException, JobExecutionAlreadyCompleteException, JobExecutionNotMostRecentException {
@@ -201,7 +204,7 @@ public class DefaultBatchKernel implements BatchKernelService {
             final Properties partitionProps = (partitionProperties == null) ? null : partitionProperties[instance];
 
             try {
-                final long execId = getMostRecentExecutionId(parallelJob);
+                final long execId = getMostRecentSubJobExecutionId(parallelJob);
                 final RuntimeJobExecution jobExecution;
                 try {
                     jobExecution = JobExecutionHelper.restartPartition(servicesManager, execId, parallelJob, partitionProps);
@@ -244,15 +247,13 @@ public class DefaultBatchKernel implements BatchKernelService {
         return batchWork;
     }
 
-    private long getMostRecentExecutionId(final JSLJob jobModel) {
+    private long getMostRecentSubJobExecutionId(JSLJob jobModel) {
 
-        //There can only be one instance associated with a subjob's id since it is generated from an unique
-        //job instance id. So there should be no way to directly start a subjob with particular
-        final List<Long> instanceIds = persistenceService.jobOperatorGetJobInstanceIds(jobModel.getId(), 0, 2);
+        // Pick off the first, knowing the ordering.  There could be more than one.
+        List<Long> instanceIds = persistenceService.jobOperatorGetJobInstanceIds(jobModel.getId(), 0, 1);
 
-        // Maybe we should blow up on '0' too?
-        if (instanceIds.size() > 1) {
-            throw new IllegalStateException("Found " + instanceIds.size() + " entries for instance id = " + jobModel.getId() + ", which should not have happened.  Blowing up.");
+        if (instanceIds.size() == 0) {
+            throw new IllegalStateException("Did not find an entry for job name = " + jobModel.getId());
         }
 
         final List<InternalJobExecution> partitionExecs = persistenceService.jobOperatorGetJobExecutions(instanceIds.get(0));
@@ -271,7 +272,7 @@ public class DefaultBatchKernel implements BatchKernelService {
         throws JobRestartException, JobExecutionAlreadyCompleteException, JobExecutionNotMostRecentException {
 
         final JSLJob jobModel = config.getJobModel();
-        final long execId = getMostRecentExecutionId(jobModel);
+        final long execId = getMostRecentSubJobExecutionId(jobModel);
         final RuntimeFlowInSplitExecution jobExecution;
         try {
             jobExecution = JobExecutionHelper.restartFlowInSplit(servicesManager, execId, jobModel);
