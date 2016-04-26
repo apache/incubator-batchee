@@ -25,8 +25,6 @@ import javax.batch.runtime.context.StepContext;
 import java.util.Properties;
 
 public class DefaultBatchTransactionService implements TransactionManagementService {
-    protected static final int DEFAULT_TRANSACTION_TIMEOUT = 180; // seconds
-
     protected Properties batchConfig = null;
 
     @Override
@@ -45,31 +43,8 @@ public class DefaultBatchTransactionService implements TransactionManagementServ
 
     @Override
     public TransactionManagerAdapter getTransactionManager(final StepContext stepContext) throws TransactionManagementException {
-        final TransactionManagerAdapter transactionManager = getTransactionManager();
-        try {
-            transactionManager.setTransactionTimeout(getTransactionTimeout(stepContext));
-        } catch (final Exception e) {
-            throw new TransactionManagementException(e);
-        }
-        return transactionManager;
-    }
-
-
-    /**
-     * @param stepContext current step context
-     * @return global transaction timeout defined in step properties. default
-     * timeout value is 180
-     */
-    private int getTransactionTimeout(final StepContext stepContext) {
-        final Properties p = stepContext.getProperties();
-        int timeout = DEFAULT_TRANSACTION_TIMEOUT; // default as per spec.
-        if (p != null && !p.isEmpty()) {
-            final String propertyTimeOut = p.getProperty("javax.transaction.global.timeout");
-            if (propertyTimeOut != null && !propertyTimeOut.isEmpty()) {
-                timeout = Integer.parseInt(propertyTimeOut, 10);
-            }
-        }
-        return timeout;
+        // Doesn't currently make use of stepContext but keeping signature
+        return  getTransactionManager();
     }
 
     @Override

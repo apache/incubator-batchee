@@ -22,7 +22,6 @@ import org.apache.batchee.container.impl.MetricImpl;
 import org.apache.batchee.container.impl.StepContextImpl;
 import org.apache.batchee.container.impl.controller.SingleThreadedStepController;
 import org.apache.batchee.container.impl.jobinstance.RuntimeJobExecution;
-import org.apache.batchee.container.proxy.CheckpointAlgorithmProxy;
 import org.apache.batchee.container.proxy.InjectionReferences;
 import org.apache.batchee.container.proxy.ProxyFactory;
 import org.apache.batchee.container.services.ServicesManager;
@@ -53,6 +52,7 @@ import javax.batch.runtime.BatchStatus;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 import java.util.concurrent.BlockingQueue;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -60,6 +60,8 @@ import java.util.logging.Logger;
 public class ChunkStepController extends SingleThreadedStepController {
 
     private final static Logger logger = Logger.getLogger(ChunkStepController.class.getName());
+
+    protected static final int DEFAULT_TRAN_TIMEOUT_SECONDS = 180;  // From the spec Sec. 9.7
 
     private final PersistenceManagerService persistenceManagerService;
     private final BatchArtifactFactory artifactFactory;
@@ -69,8 +71,6 @@ public class ChunkStepController extends SingleThreadedStepController {
     private ItemReader readerProxy = null;
     private ItemProcessor processorProxy = null;
     private ItemWriter writerProxy = null;
-    private CheckpointAlgorithmProxy checkpointProxy = null;
-    private CheckpointAlgorithm chkptAlg = null;
     private CheckpointManager checkpointManager;
     private SkipHandler skipHandler = null;
     private CheckpointDataKey readerChkptDK = null;
@@ -81,7 +81,14 @@ public class ChunkStepController extends SingleThreadedStepController {
     private List<ItemWriteListener> itemWriteListeners = null;
     private RetryHandler retryHandler;
 
-    private boolean rollbackRetry = false;
+    protected ChunkStatus currentChunkStatus;
+    protected SingleItemStatus currentItemStatus;
+
+    // Default is item-based policy
+    protected boolean customCheckpointPolicy = false;
+    protected Integer checkpointAtThisItemCount = null;  // Default to spec value elsewhere.
+
+    protected int stepPropertyTranTimeoutSeconds = DEFAULT_TRAN_TIMEOUT_SECONDS;
 
     public ChunkStepController(final RuntimeJobExecution jobExecutionImpl, final Step step, final StepContextImpl stepContext,
                                final long rootJobExecutionId, final BlockingQueue<PartitionDataWrapper> analyzerStatusQueue,
@@ -93,9 +100,10 @@ public class ChunkStepController extends SingleThreadedStepController {
     }
 
     /**
-     * Utility Class to hold statuses at each level of Read-Process-Write loop
+     * Utility Class to hold status for a single item as the read-process portion of
+     * the chunk loop interact.
      */
-    private class ItemStatus {
+    private class SingleItemStatus  {
 
         public boolean isSkipped() {
             return skipped;
@@ -113,12 +121,67 @@ public class ChunkStepController extends SingleThreadedStepController {
             this.filtered = filtered;
         }
 
-        public boolean isCheckPointed() {
-            return checkPointed;
+        private boolean skipped = false;
+        private boolean filtered = false;
+    }
+
+    private enum ChunkStatusType {
+        NORMAL, RETRY_AFTER_ROLLBACK
+    }
+
+    /**
+     * Utility Class to hold status for the chunk as a whole.
+     *
+     * One key usage is to maintain the state reflecting the sequence in which
+     * we catch a retryable exception, rollback the previous chunk, process 1-item-at-a-time
+     * until we reach "where we left off", then revert to normal chunk processing.
+     *
+     * Another usage is simply to communicate that the reader readItem() returned 'null', so
+     * we're done the chunk.
+     */
+    private class ChunkStatus {
+        ChunkStatusType type;
+
+        ChunkStatus() {
+            this(ChunkStatusType.NORMAL);
         }
 
-        public void setCheckPointed(boolean checkPointed) {
-            this.checkPointed = checkPointed;
+        ChunkStatus(ChunkStatusType type) {
+            this.type = type;
+        }
+
+        public boolean isRetryingAfterRollback() {
+            return type == ChunkStatusType.RETRY_AFTER_ROLLBACK;
+        }
+
+        public boolean wasMarkedForRollbackWithRetry() {
+            return markedForRollbackWithRetry;
+        }
+
+        public Exception getRetryableException() {
+            return retryableException;
+        }
+
+        public void markForRollbackWithRetry(Exception retryableException) {
+            this.markedForRollbackWithRetry = true;
+            this.retryableException = retryableException;
+        }
+
+        public int getItemsTouchedInCurrentChunk() {
+            return itemsTouchedInCurrentChunk;
+        }
+
+        public void incrementItemsTouchedInCurrentChunk() {
+            this.itemsTouchedInCurrentChunk++;
+        }
+
+        public int getItemsToProcessOneByOneAfterRollback() {
+            return itemsToProcessOneByOneAfterRollback;
+        }
+
+        public void setItemsToProcessOneByOneAfterRollback(
+                int itemsToProcessOneByOneAfterRollback) {
+            this.itemsToProcessOneByOneAfterRollback = itemsToProcessOneByOneAfterRollback;
         }
 
         public boolean isFinished() {
@@ -129,24 +192,11 @@ public class ChunkStepController extends SingleThreadedStepController {
             this.finished = finished;
         }
 
-        public void setRetry(boolean ignored) {
-            // no-op
-        }
-
-        public boolean isRollback() {
-            return rollback;
-        }
-
-        public void setRollback(boolean rollback) {
-            this.rollback = rollback;
-        }
-
-        private boolean skipped = false;
-        private boolean filtered = false;
         private boolean finished = false;
-        private boolean checkPointed = false;
-        private boolean rollback = false;
-
+        private Exception retryableException = null;
+        private boolean markedForRollbackWithRetry = false;
+        private int itemsTouchedInCurrentChunk = 0;
+        private int itemsToProcessOneByOneAfterRollback = 0; // For retry with rollback
     }
 
     /**
@@ -155,65 +205,57 @@ public class ChunkStepController extends SingleThreadedStepController {
      * reader (not more items to read), or the writer buffer is full or a
      * checkpoint is triggered.
      *
-     * @param chunkSize write buffer size
-     * @param theStatus flags when the read-process reached the last record or a
-     *                  checkpoint is required
      * @return an array list of objects to write
      */
-    private List<Object> readAndProcess(int chunkSize, ItemStatus theStatus) {
+    private List<Object> readAndProcess() {
         List<Object> chunkToWrite = new ArrayList<Object>();
         Object itemRead;
         Object itemProcessed;
         int readProcessedCount = 0;
 
         while (true) {
-            ItemStatus status = new ItemStatus();
-            itemRead = readItem(status);
+            currentItemStatus = new SingleItemStatus();
+            currentChunkStatus.incrementItemsTouchedInCurrentChunk();
+            itemRead = readItem();
 
-            if (status.isRollback()) {
-                theStatus.setRollback(true);
-                // inc rollbackCount
-                stepContext.getMetric(MetricImpl.MetricType.ROLLBACK_COUNT).incValue();
+            if (currentChunkStatus.wasMarkedForRollbackWithRetry()) {
                 break;
             }
 
-            if (!status.isSkipped() && !status.isFinished()) {
-                itemProcessed = processItem(itemRead, status);
+            if (!currentItemStatus.isSkipped() && !currentChunkStatus.isFinished()) {
+                itemProcessed = processItem(itemRead);
 
-                if (status.isRollback()) {
-                    theStatus.setRollback(true);
-                    // inc rollbackCount
-                    stepContext.getMetric(MetricImpl.MetricType.ROLLBACK_COUNT).incValue();
+                if (currentChunkStatus.wasMarkedForRollbackWithRetry()) {
                     break;
                 }
 
-                if (!status.isSkipped() && !status.isFiltered()) {
+                if (!currentItemStatus.isSkipped() && !currentItemStatus.isFiltered()) {
                     chunkToWrite.add(itemProcessed);
-                    readProcessedCount++;
                 }
             }
 
-            theStatus.setFinished(status.isFinished());
-            theStatus.setCheckPointed(checkpointManager.applyCheckPointPolicy());
-
-            // This will force the current item to finish processing on a stop
-            // request
-            if (stepContext.getBatchStatus().equals(BatchStatus.STOPPING)) {
-                theStatus.setFinished(true);
-            }
-
-            // write buffer size reached
-            if ((readProcessedCount == chunkSize) && !("custom".equals(checkpointProxy.getCheckpointType()))) {
+            // Break out of the loop to deliver one-at-a-time processing after rollback.
+            // No point calling isReadyToCheckpoint(), we know we're done.  Let's not
+            // complicate the checkpoint algorithm to hold this logic, just break right here.
+            if (currentChunkStatus.isRetryingAfterRollback()) {
                 break;
             }
 
-            // checkpoint reached
-            if (theStatus.isCheckPointed()) {
+            // write buffer size reached
+            // This will force the current item to finish processing on a stop request
+            if (stepContext.getBatchStatus().equals(BatchStatus.STOPPING)) {
+                currentChunkStatus.setFinished(true);
+            }
+
+            // The spec, in Sec. 11.10, Chunk with Custom Checkpoint Processing, clearly
+            // outlines that this gets called even when we've already read a null (which
+            // arguably is pointless).   But we'll follow the spec.
+            if (checkpointManager.applyCheckPointPolicy()) {
                 break;
             }
 
             // last record in readerProxy reached
-            if (theStatus.isFinished()) {
+            if (currentChunkStatus.isFinished()) {
                 break;
             }
 
@@ -223,11 +265,10 @@ public class ChunkStepController extends SingleThreadedStepController {
 
     /**
      * Reads an item from the reader
-     *
-     * @param status flags the current read status
+     *h
      * @return the item read
      */
-    private Object readItem(ItemStatus status) {
+    private Object readItem() {
         Object itemRead = null;
 
         try {
@@ -244,10 +285,7 @@ public class ChunkStepController extends SingleThreadedStepController {
 
             // itemRead == null means we reached the end of
             // the readerProxy "resultset"
-            status.setFinished(itemRead == null);
-            if (!status.isFinished()) {
-                stepContext.getMetric(MetricImpl.MetricType.READ_COUNT).incValue();
-            }
+            currentChunkStatus.setFinished(itemRead == null);
         } catch (Exception e) {
             stepContext.setException(e);
             for (ItemReadListener readListenerProxy : itemReadListeners) {
@@ -257,26 +295,16 @@ public class ChunkStepController extends SingleThreadedStepController {
                     ExceptionConfig.wrapBatchException(e1);
                 }
             }
-            if (!rollbackRetry) {
+            if(!currentChunkStatus.isRetryingAfterRollback()) {
                 if (retryReadException(e)) {
-                    for (ItemReadListener readListenerProxy : itemReadListeners) {
-                        try {
-                            readListenerProxy.onReadError(e);
-                        } catch (Exception e1) {
-                            ExceptionConfig.wrapBatchException(e1);
-                        }
-                    }
-                    // if not a rollback exception, just retry the current item
                     if (!retryHandler.isRollbackException(e)) {
-                        itemRead = readItem(status);
+                        itemRead = readItem();
                     } else {
-                        status.setRollback(true);
-                        rollbackRetry = true;
-                        // inc rollbackCount
-                        stepContext.getMetric(MetricImpl.MetricType.ROLLBACK_COUNT).incValue();
+                        // retry with rollback
+                        currentChunkStatus.markForRollbackWithRetry(e);
                     }
                 } else if (skipReadException(e)) {
-                    status.setSkipped(true);
+                    currentItemStatus.setSkipped(true);
                     stepContext.getMetric(MetricImpl.MetricType.READ_SKIP_COUNT).incValue();
 
                 } else {
@@ -285,16 +313,16 @@ public class ChunkStepController extends SingleThreadedStepController {
             } else {
                 // coming from a rollback retry
                 if (skipReadException(e)) {
-                    status.setSkipped(true);
+                    currentItemStatus.setSkipped(true);
                     stepContext.getMetric(MetricImpl.MetricType.READ_SKIP_COUNT).incValue();
 
                 } else if (retryReadException(e)) {
                     if (!retryHandler.isRollbackException(e)) {
-                        itemRead = readItem(status);
+                        // retry without rollback
+                        itemRead = readItem();
                     } else {
-                        status.setRollback(true);
-                        // inc rollbackCount
-                        stepContext.getMetric(MetricImpl.MetricType.ROLLBACK_COUNT).incValue();
+                        // retry with rollback
+                        currentChunkStatus.markForRollbackWithRetry(e);
                     }
                 } else {
                     throw new BatchContainerRuntimeException(e);
@@ -313,10 +341,9 @@ public class ChunkStepController extends SingleThreadedStepController {
      * Process an item previously read by the reader
      *
      * @param itemRead the item read
-     * @param status   flags the current process status
      * @return the processed item
      */
-    private Object processItem(final Object itemRead, final ItemStatus status) {
+    private Object processItem(final Object itemRead) {
         Object processedItem = null;
 
         // if no processor defined for this chunk
@@ -334,9 +361,7 @@ public class ChunkStepController extends SingleThreadedStepController {
             processedItem = processorProxy.processItem(itemRead);
 
             if (processedItem == null) {
-                // inc filterCount
-                stepContext.getMetric(MetricImpl.MetricType.FILTER_COUNT).incValue();
-                status.setFiltered(true);
+                currentItemStatus.setFiltered(true);
             }
 
             for (final ItemProcessListener processListenerProxy : itemProcessListeners) {
@@ -350,78 +375,30 @@ public class ChunkStepController extends SingleThreadedStepController {
                     ExceptionConfig.wrapBatchException(e1);
                 }
             }
-            if (!rollbackRetry) {
+            if(!currentChunkStatus.isRetryingAfterRollback()) {
                 if (retryProcessException(e, itemRead)) {
                     if (!retryHandler.isRollbackException(e)) {
-                        // call process listeners before and after the actual
-                        // process call
-                        for (ItemProcessListener processListenerProxy : itemProcessListeners) {
-                            try {
-                                processListenerProxy.beforeProcess(itemRead);
-                            } catch (Exception e1) {
-                                ExceptionConfig.wrapBatchException(e1);
-                            }
-                        }
-                        processedItem = processItem(itemRead, status);
-                        if (processedItem == null) {
-                            // inc filterCount
-                            stepContext.getMetric(MetricImpl.MetricType.FILTER_COUNT).incValue();
-                            status.setFiltered(true);
-                        }
-
-                        for (final ItemProcessListener processListenerProxy : itemProcessListeners) {
-                            try {
-                                processListenerProxy.afterProcess(itemRead, processedItem);
-                            } catch (Exception e1) {
-                                ExceptionConfig.wrapBatchException(e1);
-                            }
-                        }
+                        processedItem = processItem(itemRead);
                     } else {
-                        status.setRollback(true);
-                        rollbackRetry = true;
-                        // inc rollbackCount
-                        stepContext.getMetric(MetricImpl.MetricType.ROLLBACK_COUNT).incValue();
+                        currentChunkStatus.markForRollbackWithRetry(e);
                     }
                 } else if (skipProcessException(e, itemRead)) {
-                    status.setSkipped(true);
+                    currentItemStatus.setSkipped(true);
                     stepContext.getMetric(MetricImpl.MetricType.PROCESS_SKIP_COUNT).incValue();
                 } else {
                     throw new BatchContainerRuntimeException(e);
                 }
             } else {
                 if (skipProcessException(e, itemRead)) {
-                    status.setSkipped(true);
+                    currentItemStatus.setSkipped(true);
                     stepContext.getMetric(MetricImpl.MetricType.PROCESS_SKIP_COUNT).incValue();
                 } else if (retryProcessException(e, itemRead)) {
                     if (!retryHandler.isRollbackException(e)) {
-                        // call process listeners before and after the actual
-                        // process call
-                        for (final ItemProcessListener processListenerProxy : itemProcessListeners) {
-                            try {
-                                processListenerProxy.beforeProcess(itemRead);
-                            } catch (Exception e1) {
-                                ExceptionConfig.wrapBatchException(e1);
-                            }
-                        }
-                        processedItem = processItem(itemRead, status);
-                        if (processedItem == null) {
-                            // inc filterCount
-                            stepContext.getMetric(MetricImpl.MetricType.FILTER_COUNT).incValue();
-                            status.setFiltered(true);
-                        }
-
-                        for (final ItemProcessListener processListenerProxy : itemProcessListeners) {
-                            try {
-                                processListenerProxy.afterProcess(itemRead, processedItem);
-                            } catch (Exception e1) {
-                                ExceptionConfig.wrapBatchException(e1);
-                            }
-                        }
+                        // retry without rollback
+                        processedItem = processItem(itemRead);
                     } else {
-                        status.setRollback(true);
-                        rollbackRetry = true;
-                        // inc rollbackCount
-                        stepContext.getMetric(MetricImpl.MetricType.ROLLBACK_COUNT).incValue();
+                        // retry with rollback
+                        currentChunkStatus.markForRollbackWithRetry(e);
                     }
                 } else {
                     throw new BatchContainerRuntimeException(e);
@@ -440,7 +417,7 @@ public class ChunkStepController extends SingleThreadedStepController {
      *
      * @param theChunk the array list with all items processed ready to be written
      */
-    private void writeChunk(List<Object> theChunk, ItemStatus status) {
+    private void writeChunk(List<Object> theChunk) {
         if (!theChunk.isEmpty()) {
             try {
 
@@ -454,7 +431,6 @@ public class ChunkStepController extends SingleThreadedStepController {
                 for (ItemWriteListener writeListenerProxy : itemWriteListeners) {
                     writeListenerProxy.afterWrite(theChunk);
                 }
-                stepContext.getMetric(MetricImpl.MetricType.WRITE_COUNT).incValueBy(theChunk.size());
             } catch (Exception e) {
                 this.stepContext.setException(e);
                 for (ItemWriteListener writeListenerProxy : itemWriteListeners) {
@@ -464,15 +440,14 @@ public class ChunkStepController extends SingleThreadedStepController {
                         ExceptionConfig.wrapBatchException(e1);
                     }
                 }
-                if (!rollbackRetry) {
+                if(!currentChunkStatus.isRetryingAfterRollback()) {
                     if (retryWriteException(e, theChunk)) {
                         if (!retryHandler.isRollbackException(e)) {
-                            writeChunk(theChunk, status);
+                            // retry without rollback
+                            writeChunk(theChunk);
                         } else {
-                            rollbackRetry = true;
-                            status.setRollback(true);
-                            // inc rollbackCount
-                            stepContext.getMetric(MetricImpl.MetricType.ROLLBACK_COUNT).incValue();
+                            // retry with rollback
+                            currentChunkStatus.markForRollbackWithRetry(e);
                         }
                     } else if (skipWriteException(e, theChunk)) {
                         stepContext.getMetric(MetricImpl.MetricType.WRITE_SKIP_COUNT).incValueBy(1);
@@ -485,13 +460,11 @@ public class ChunkStepController extends SingleThreadedStepController {
                         stepContext.getMetric(MetricImpl.MetricType.WRITE_SKIP_COUNT).incValueBy(1);
                     } else if (retryWriteException(e, theChunk)) {
                         if (!retryHandler.isRollbackException(e)) {
-                            status.setRetry(true);
-                            writeChunk(theChunk, status);
+                            // retry without rollback
+                            writeChunk(theChunk);
                         } else {
-                            rollbackRetry = true;
-                            status.setRollback(true);
-                            // inc rollbackCount
-                            stepContext.getMetric(MetricImpl.MetricType.ROLLBACK_COUNT).incValue();
+                            // retry with rollback
+                            currentChunkStatus.markForRollbackWithRetry(e);
                         }
                     } else {
                         throw new BatchContainerRuntimeException(e);
@@ -504,13 +477,63 @@ public class ChunkStepController extends SingleThreadedStepController {
         }
     }
 
-    private void invokeChunk() {
-        int itemCount = ChunkHelper.getItemCount(chunk);
-        int timeInterval = ChunkHelper.getTimeLimit(chunk);
-        boolean checkPointed = true;
-        boolean rollback = false;
+    /**
+     * Prime the next chunk's ChunkStatus based on the previous one
+     * (if there was one), particularly taking into account retry-with-rollback
+     * and the one-at-a-time processing it entails.
+     * @return the upcoming chunk's ChunkStatus
+     */
+    private ChunkStatus getNextChunkStatusBasedOnPrevious() {
+        // If this is the first chunk
+        if (currentChunkStatus == null) {
+            return new ChunkStatus();
+        }
 
-        // begin new transaction at first iteration or after a checkpoint commit
+        ChunkStatus nextChunkStatus = null;
+
+        // At this point the 'current' status is the previous chunk's status.
+        if (currentChunkStatus.wasMarkedForRollbackWithRetry()) {
+
+            // Re-position reader & writer
+            transactionManager.begin();
+            positionReaderAtCheckpoint();
+            positionWriterAtCheckpoint();
+            transactionManager.commit();
+
+            nextChunkStatus = new ChunkStatus(ChunkStatusType.RETRY_AFTER_ROLLBACK);
+
+            // What happens if we get a retry-with-rollback on a single item that we were processing
+            // after a prior retry with rollback?   We don't want to revert to normal processing
+            // after completing only the single item of the "single item chunk".  We want to complete
+            // the full portion of the original chunk.  So be careful to propagate this number if
+            // it already exists.
+            int numToProcessOneByOne = currentChunkStatus.getItemsToProcessOneByOneAfterRollback();
+            if (numToProcessOneByOne > 0) {
+                // Retry after rollback AFTER a previous retry after rollback
+                nextChunkStatus.setItemsToProcessOneByOneAfterRollback(numToProcessOneByOne);
+            } else {
+                // "Normal" (i.e. the first) retry after rollback.
+                nextChunkStatus.setItemsToProcessOneByOneAfterRollback(currentChunkStatus.getItemsTouchedInCurrentChunk());
+            }
+        } else if (currentChunkStatus.isRetryingAfterRollback()) {
+            // In this case the 'current' (actually the last) chunk was a single-item retry after rollback chunk,
+            // so we have to see if it's time to revert to normal processing.
+            int numToProcessOneByOne = currentChunkStatus.getItemsToProcessOneByOneAfterRollback();
+            if (numToProcessOneByOne == 1) {
+                // we're done, revert to normal
+                nextChunkStatus = new ChunkStatus();
+            } else {
+                nextChunkStatus = new ChunkStatus(ChunkStatusType.RETRY_AFTER_ROLLBACK);
+                nextChunkStatus.setItemsToProcessOneByOneAfterRollback(numToProcessOneByOne - 1);
+            }
+        } else {
+            nextChunkStatus = new ChunkStatus();
+        }
+
+        return nextChunkStatus;
+    }
+
+    private void invokeChunk() {
 
         try {
             transactionManager.begin();
@@ -523,101 +546,67 @@ public class ChunkStepController extends SingleThreadedStepController {
         try {
             while (true) {
 
-                if (checkPointed || rollback) {
-                    if ("custom".equals(checkpointProxy.getCheckpointType())) {
-                        int newtimeOut = this.checkpointManager.checkpointTimeout();
-                        transactionManager.setTransactionTimeout(newtimeOut);
-                    }
+                currentChunkStatus = getNextChunkStatusBasedOnPrevious();
+
+                // Sequence surrounding beginCheckpoint() updated per MR
+                // https://java.net/bugzilla/show_bug.cgi?id=5873
+                setNextChunkTransactionTimeout();
+
+                // Remember we "wrap" the built-in item-count + time-limit "algorithm"
+                // in a CheckpointAlgorithm for ease in keeping the sequence consistent
+                checkpointManager.beginCheckpoint();
+
+                transactionManager.begin();
+
+                for (ChunkListener chunkProxy : chunkListeners) {
+                    chunkProxy.beforeChunk();
+                }
+
+                final List<Object> chunkToWrite = readAndProcess();
+
+                if (currentChunkStatus.wasMarkedForRollbackWithRetry()) {
+                    rollbackAfterRetryableException();
+                    continue;
+                }
+
+                // MR 1.0 Rev A clarified we'd only write a chunk with at least one item.
+                // See, e.g. Sec 11.6 of Spec
+                if (chunkToWrite.size() > 0) {
+                    writeChunk(chunkToWrite);
+                }
+
+                if (currentChunkStatus.wasMarkedForRollbackWithRetry()) {
+                    rollbackAfterRetryableException();
+
+                    continue;
+                }
+
+                for (ChunkListener chunkProxy : chunkListeners) {
+                    chunkProxy.afterChunk();
+                }
+
+                checkpointManager.checkpoint();
+
+                this.persistUserData();
+
+                transactionManager.commit();
+
+                checkpointManager.endCheckpoint();
+
+                invokeCollectorIfPresent();
+
+                updateNormalMetrics(chunkToWrite.size());
+
+                // exit loop when last record is written
+                if (currentChunkStatus.isFinished()) {
                     transactionManager.begin();
-                    for (ChunkListener chunkProxy : chunkListeners) {
-                        chunkProxy.beforeChunk();
-                    }
-
-                    if (rollback) {
-                        positionReaderAtCheckpoint();
-                        positionWriterAtCheckpoint();
-                        checkpointManager = new CheckpointManager(readerProxy, writerProxy,
-                            getCheckpointAlgorithm(itemCount, timeInterval), jobExecutionImpl
-                            .getJobInstance().getInstanceId(), step.getId(), persistenceManagerService, dataRepresentationService);
-                    }
-                }
-
-                ItemStatus status = new ItemStatus();
-
-                if (rollback) {
-                    rollback = false;
-                }
-
-                final List<Object> chunkToWrite = readAndProcess(itemCount, status);
-
-                if (status.isRollback()) {
-                    itemCount = 1;
-                    rollback = true;
-
-                    doClose();
-
-                    transactionManager.rollback();
-
-                    continue;
-                }
-
-                writeChunk(chunkToWrite, status);
-
-                if (status.isRollback()) {
-                    itemCount = 1;
-                    rollback = true;
-
-                    doClose();
-
-                    transactionManager.rollback();
-
-                    continue;
-                }
-                checkPointed = status.isCheckPointed();
-
-                // we could finish the chunk in 3 conditions: buffer is full,
-                // checkpoint, not more input
-                if (status.isCheckPointed() || status.isFinished()) {
-                    // TODO: missing before checkpoint listeners
-                    // 1.- check if spec list proper steps for before checkpoint
-                    // 2.- ask Andy about retry
-                    // 3.- when do we stop?
-
-                    checkpointManager.checkpoint();
-
-                    for (ChunkListener chunkProxy : chunkListeners) {
-                        chunkProxy.afterChunk();
-                    }
-
-                    this.persistUserData();
-
-                    this.chkptAlg.beginCheckpoint();
-
-                    transactionManager.commit();
-
-                    this.chkptAlg.endCheckpoint();
-
-                    invokeCollectorIfPresent();
-
-                    // exit loop when last record is written
-                    if (status.isFinished()) {
-                        transactionManager.begin();
-
-                        if (doClose()) {
-                            transactionManager.commit();
-                            stepContext.getMetric(MetricImpl.MetricType.COMMIT_COUNT).incValue();
-                        } else {
-                            stepContext.getMetric(MetricImpl.MetricType.ROLLBACK_COUNT).incValue();
-                            transactionManager.rollback();
-                        }
-                        break;
+                    if (doClose()) {
+                        transactionManager.commit();
                     } else {
-                        // increment commitCount
-                        stepContext.getMetric(MetricImpl.MetricType.COMMIT_COUNT).incValue();
+                        transactionManager.rollback();
                     }
-
+                    break;
                 }
-
             }
         } catch (final Exception e) {
             logger.log(Level.SEVERE, "Failure in Read-Process-Write Loop", e);
@@ -635,7 +624,24 @@ public class ChunkStepController extends SingleThreadedStepController {
         }
     }
 
-    private boolean doClose() throws Exception {
+    private void updateNormalMetrics(int writeCount) {
+        int readCount = currentChunkStatus.getItemsTouchedInCurrentChunk();
+        if (currentChunkStatus.isFinished()) {
+            readCount--;
+        }
+        int filterCount = readCount - writeCount;
+
+        if (readCount < 0 || filterCount < 0 || writeCount < 0) {
+            throw new IllegalStateException("Somehow one of the metrics was zero.  Read count: " + readCount +
+                    ", Filter count: " + filterCount + ", Write count: " + writeCount);
+        }
+        stepContext.getMetric(MetricImpl.MetricType.COMMIT_COUNT).incValue();
+        stepContext.getMetric(MetricImpl.MetricType.READ_COUNT).incValueBy(readCount);
+        stepContext.getMetric(MetricImpl.MetricType.FILTER_COUNT).incValueBy(filterCount);
+        stepContext.getMetric(MetricImpl.MetricType.WRITE_COUNT).incValueBy(writeCount);
+    }
+
+    private boolean doClose() {
         try {
             readerProxy.close();
             writerProxy.close();
@@ -646,45 +652,106 @@ public class ChunkStepController extends SingleThreadedStepController {
         }
     }
 
+    /**
+     * Reflect spec order in Sec. 11.9 "Rollback Procedure".
+     *
+     * Also do final rollback in try-finally
+     */
     private void rollback(final Throwable t) {
-        transactionManager.setRollbackOnly();
         try {
-            doClose();
-        } catch (Exception e) {
             // ignore, we blow up anyway
+            transactionManager.setRollbackOnly();
+            try {
+                doClose();
+            } catch (Exception e) {
+                // ignore, we blow up anyway
+            }
+
+            if (t instanceof Exception) {
+                Exception e = (Exception) t;
+                for (ChunkListener chunkProxy : chunkListeners) {
+                    try {
+                        chunkProxy.onError(e);
+                    } catch (final Exception e1) {
+                        logger.log(Level.SEVERE, e1.getMessage(), e1);
+                    }
+                }
+            }
+            // Count non-retryable rollback against metric as well.  Not sure this has
+            // ever come up in the spec, but seems marginally more useful.
+            stepContext.getMetric(MetricImpl.MetricType.ROLLBACK_COUNT).incValue();
+        } finally {
+            transactionManager.rollback();
+            throw new BatchContainerRuntimeException("Failure in Read-Process-Write Loop", t);
         }
-        transactionManager.rollback();
-        throw new BatchContainerRuntimeException("Failure in Read-Process-Write Loop", t);
     }
 
+    private void rollbackAfterRetryableException() throws Exception {
+        doClose();
+
+        for (ChunkListener chunkProxy : chunkListeners) {
+            try {
+                chunkProxy.onError(currentChunkStatus.getRetryableException());
+            } catch (final Exception e1) {
+                logger.log(Level.SEVERE, e1.getMessage(), e1);
+            }
+        }
+        transactionManager.rollback();
+
+        stepContext.getMetric(MetricImpl.MetricType.ROLLBACK_COUNT).incValue();
+    }
+
+    @Override
     protected void invokeCoreStep() throws BatchContainerServiceException {
 
         this.chunk = step.getChunk();
 
         initializeChunkArtifacts();
 
+        initializeCheckpointManager();
+
         invokeChunk();
     }
 
-    private CheckpointAlgorithm getCheckpointAlgorithm(final int itemCount, final int timeInterval) {
-        final CheckpointAlgorithm alg;
-        if ("item".equals(checkpointProxy.getCheckpointType())) {
-            alg = new ItemCheckpointAlgorithm();
-            ((ItemCheckpointAlgorithm) alg).setThresholds(itemCount, timeInterval);
-        } else { // custom chkpt alg
-            alg = checkpointProxy;
+    private void initializeCheckpointManager() {
+        CheckpointAlgorithm checkpointAlgorithm = null;
+
+        checkpointAtThisItemCount = ChunkHelper.getItemCount(chunk);
+        int timeLimitSeconds = ChunkHelper.getTimeLimit(chunk);
+        customCheckpointPolicy = ChunkHelper.isCustomCheckpointPolicy(chunk);  // Supplies default if needed
+
+        if (!customCheckpointPolicy) {
+            ItemCheckpointAlgorithm ica = new ItemCheckpointAlgorithm();
+            ica.setItemCount(checkpointAtThisItemCount);
+            ica.setTimeLimitSeconds(timeLimitSeconds);
+            checkpointAlgorithm = ica;
+
+        } else {
+            final List<Property> propList;
+
+            if (chunk.getCheckpointAlgorithm() == null) {
+                throw new IllegalArgumentException("Configured checkpoint-policy of 'custom' but without a corresponding <checkpoint-algorithm> element.");
+            } else {
+                propList = (chunk.getCheckpointAlgorithm().getProperties() == null) ? null : chunk.getCheckpointAlgorithm().getProperties().getPropertyList();
+            }
+
+            InjectionReferences injectionRef = new InjectionReferences(jobExecutionImpl.getJobContext(), stepContext, propList);
+            checkpointAlgorithm = ProxyFactory.createCheckpointAlgorithmProxy(artifactFactory, chunk.getCheckpointAlgorithm().getRef(), injectionRef, jobExecutionImpl);
         }
 
-        return alg;
+        // Finally, for both policies now
+        checkpointManager = new CheckpointManager(readerProxy, writerProxy, checkpointAlgorithm,
+                jobExecutionImpl.getJobInstance().getInstanceId(), step.getId(), persistenceManagerService, dataRepresentationService);
+
+        // A related piece of data we'll calculate here is the tran timeout.   Though we won't include
+        // it in the checkpoint manager since we'll set it directly on the tran mgr before each chunk.
+        stepPropertyTranTimeoutSeconds = initStepTransactionTimeout();
     }
 
     /*
      * Initialize itemreader, itemwriter, and item processor checkpoint
      */
     private void initializeChunkArtifacts() {
-        final int itemCount = ChunkHelper.getItemCount(chunk);
-        final int timeInterval = ChunkHelper.getTimeLimit(chunk);
-
         {
             final org.apache.batchee.jaxb.ItemReader itemReader = chunk.getReader();
             final List<Property> itemReaderProps = itemReader.getProperties() == null ? null : itemReader.getProperties().getPropertyList();
@@ -709,18 +776,6 @@ public class ChunkStepController extends SingleThreadedStepController {
         }
 
         {
-            final List<Property> propList;
-            if (chunk.getCheckpointAlgorithm() != null) {
-                propList = (chunk.getCheckpointAlgorithm().getProperties() == null) ? null : chunk.getCheckpointAlgorithm().getProperties().getPropertyList();
-            } else {
-                propList = null;
-            }
-
-            final InjectionReferences injectionRef = new InjectionReferences(jobExecutionImpl.getJobContext(), stepContext, propList);
-            checkpointProxy = CheckpointAlgorithmFactory.getCheckpointAlgorithmProxy(artifactFactory, step, injectionRef, jobExecutionImpl);
-        }
-
-        {
             final InjectionReferences injectionRef = new InjectionReferences(jobExecutionImpl.getJobContext(), stepContext, null);
 
             this.chunkListeners = jobExecutionImpl.getListenerFactory().getListeners(ChunkListener.class, step, injectionRef, jobExecutionImpl);
@@ -740,16 +795,6 @@ public class ChunkStepController extends SingleThreadedStepController {
             final List<RetryWriteListener> retryWriteListeners
                     = jobExecutionImpl.getListenerFactory().getListeners(RetryWriteListener.class, step, injectionRef, jobExecutionImpl);
 
-            if ("item".equals(checkpointProxy.getCheckpointType())) {
-                chkptAlg = new ItemCheckpointAlgorithm();
-                ItemCheckpointAlgorithm.class.cast(chkptAlg).setThresholds(itemCount, timeInterval);
-            } else { // custom chkpt alg
-                chkptAlg = checkpointProxy;
-            }
-
-            checkpointManager = new CheckpointManager(readerProxy, writerProxy, chkptAlg, jobExecutionImpl.getJobInstance().getInstanceId(), step.getId(),
-                                                      persistenceManagerService, dataRepresentationService);
-
             skipHandler = new SkipHandler(chunk);
             skipHandler.addSkipProcessListener(skipProcessListeners);
             skipHandler.addSkipReadListener(skipReadListeners);
@@ -761,6 +806,43 @@ public class ChunkStepController extends SingleThreadedStepController {
             retryHandler.addRetryReadListener(retryReadListeners);
             retryHandler.addRetryWriteListener(retryWriteListeners);
         }
+    }
+
+    private void setNextChunkTransactionTimeout() {
+        int nextTimeout = 0;
+
+        if (customCheckpointPolicy) {
+            // Even on a retry-with-rollback, we'll continue to let
+            // the custom CheckpointAlgorithm set a tran timeout.
+            //
+            // We're guessing the application could need a smaller timeout than
+            // 180 seconds, (the default established by the batch chunk).
+            nextTimeout = this.checkpointManager.checkpointTimeout();
+        } else  {
+            nextTimeout = stepPropertyTranTimeoutSeconds;
+        }
+        transactionManager.setTransactionTimeout(nextTimeout);
+    }
+
+    /**
+     * Note we can rely on the StepContext properties already having been set at this point.
+     *
+     * @return global transaction timeout defined in step properties. default
+     */
+    private int initStepTransactionTimeout() {
+        Properties p = stepContext.getProperties();
+        int timeout = DEFAULT_TRAN_TIMEOUT_SECONDS; // default as per spec.
+        if (p != null && !p.isEmpty()) {
+
+            String propertyTimeOut = p.getProperty("javax.transaction.global.timeout");
+            if (logger.isLoggable(Level.FINE)) {
+                logger.log(Level.FINE, "javax.transaction.global.timeout = {0}", propertyTimeOut==null ? "<null>" : propertyTimeOut);
+            }
+            if (propertyTimeOut != null && !propertyTimeOut.isEmpty()) {
+                timeout = Integer.parseInt(propertyTimeOut, 10);
+            }
+        }
+        return timeout;
     }
 
     private void openReaderAndWriter() {

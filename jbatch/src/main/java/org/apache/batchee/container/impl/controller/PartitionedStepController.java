@@ -71,6 +71,27 @@ public class PartitionedStepController extends BaseStepController {
 
     private PartitionReducer partitionReducerProxy = null;
 
+    private enum ExecutionType {
+      /**
+       * First execution of this step for the job instance (among all job executions)
+       */
+      START,
+      /**
+       * Step previously executed but did not complete successfully, override=false so continue from previous partitions' checkpoints, etc.
+       */
+      RESTART_NORMAL,
+      /**
+       * Step previously executed but did not complete successfully, override=true so start with an entire set of new partitions, checkpoints, etc.
+       */
+      RESTART_OVERRIDE,
+      /**
+       * Step previously completed, but we are re-executing with an entire set of new partitions, checkpoints, etc.
+       */
+      RESTART_AFTER_COMPLETION
+    }
+
+    private ExecutionType executionType = null;
+
     // On invocation this will be re-primed to reflect already-completed partitions from a previous execution.
     int numPreviouslyCompleted = 0;
 
@@ -247,6 +268,37 @@ public class PartitionedStepController extends BaseStepController {
         return plan;
     }
 
+    private void calculateExecutionType() {
+        // We want to ignore override on the initial execution
+        if (isRestartExecution()) {
+            if (restartAfterCompletion) {
+                executionType = ExecutionType.RESTART_AFTER_COMPLETION;
+            } else if (plan.getPartitionsOverride()) {
+                executionType = ExecutionType.RESTART_OVERRIDE;
+            } else {
+                executionType = ExecutionType.RESTART_NORMAL;
+            }
+        } else {
+            executionType = ExecutionType.START;
+        }
+    }
+
+    private void validateNumberOfPartitions() {
+
+        int currentPlanSize = plan.getPartitions();
+
+        if (executionType == ExecutionType.RESTART_NORMAL) {
+            int previousPlanSize = stepStatus.getNumPartitions();
+            if (previousPlanSize > 0 && previousPlanSize != currentPlanSize) {
+                String msg = "On a normal restart, the plan on restart specified: " + currentPlanSize + " # of partitions, but the previous " +
+                        "executions' plan specified a different number: " + previousPlanSize + " # of partitions.  Failing job.";
+                throw new IllegalStateException(msg);
+            }
+        }
+
+        //persist the partition plan so on restart we have the same plan to reuse
+        stepStatus.setNumPartitions(currentPlanSize);
+    }
 
     @Override
     protected void invokeCoreStep() throws JobRestartException, JobStartException, JobExecutionAlreadyCompleteException, JobExecutionNotMostRecentException {
@@ -255,6 +307,9 @@ public class PartitionedStepController extends BaseStepController {
 
         //persist the partition plan so on restart we have the same plan to reuse
         stepStatus.setNumPartitions(plan.getPartitions());
+        calculateExecutionType();
+
+        validateNumberOfPartitions();
 
         /* When true is specified, the partition count from the current run
          * is used and all results from past partitions are discarded. Any
@@ -263,7 +318,7 @@ public class PartitionedStepController extends BaseStepController {
          * rollbackPartitionedStep method is invoked during restart before any
          * partitions begin processing to provide a cleanup hook.
          */
-        if (plan.getPartitionsOverride()) {
+        if (executionType == ExecutionType.RESTART_OVERRIDE) {
             if (this.partitionReducerProxy != null) {
                 try {
                     this.partitionReducerProxy.rollbackPartitionedStep();
@@ -303,9 +358,14 @@ public class PartitionedStepController extends BaseStepController {
             PartitionsBuilderConfig config =
                     new PartitionsBuilderConfig(subJobs, partitionProperties, analyzerStatusQueue, completedWorkQueue, jobExecutionImpl.getExecutionId());
             // Then build all the subjobs but do not start them yet
-            if (stepStatus.getStartCount() > 1 && !plan.getPartitionsOverride()) {
+            if (executionType == ExecutionType.RESTART_NORMAL) {
                 parallelBatchWorkUnits = kernelService.buildOnRestartParallelPartitions(config, jobExecutionImpl.getJobContext(), stepContext);
             } else {
+                // This case includes RESTART_OVERRIDE and RESTART_AFTER_COMPLETION.
+                //
+                // So we're just going to create new "subjob" job instances in the DB in these cases,
+                // and we'll have to make sure we're dealing with the correct ones, say in a subsequent "normal" restart
+                // (of the current execution which is itself a restart)
                 parallelBatchWorkUnits = kernelService.buildNewParallelPartitions(config, jobExecutionImpl.getJobContext(), stepContext);
             }
 
@@ -323,6 +383,11 @@ public class PartitionedStepController extends BaseStepController {
         this.numPreviouslyCompleted = partitions - numTotalForThisExecution;
         int numCurrentCompleted = 0;
         int numCurrentSubmitted = 0;
+
+        // All partitions have already completed on a previous execution.
+        if (numTotalForThisExecution == 0) {
+          return;
+        }
 
         //Start up to to the max num we are allowed from the num threads attribute
         for (int i = 0; i < this.threads && i < numTotalForThisExecution; i++, numCurrentSubmitted++) {

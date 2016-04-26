@@ -51,6 +51,22 @@ public class CheckpointManager {
         this.dataRepresentationService = dataRepresentationService;
     }
 
+    public void beginCheckpoint() {
+        try {
+            this.checkpointAlgorithm.beginCheckpoint();
+        } catch (final Exception e) {
+            throw new BatchContainerRuntimeException("Checkpoint algorithm beginCheckpoint() failed", e);
+        }
+    }
+
+    public void endCheckpoint() {
+        try {
+            this.checkpointAlgorithm.endCheckpoint();
+        } catch (final Exception e) {
+            throw new BatchContainerRuntimeException("Checkpoint algorithm endCheckpoint() failed", e);
+        }
+    }
+
     public boolean applyCheckPointPolicy() {
         try {
             return checkpointAlgorithm.isReadyToCheckpoint();

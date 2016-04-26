@@ -67,11 +67,15 @@ public abstract class BaseStepController implements ExecutionElementController {
 
     protected StepContextImpl stepContext;
     protected Step step;
+    protected String stepName;
     protected StepStatus stepStatus;
 
     protected BlockingQueue<PartitionDataWrapper> analyzerStatusQueue = null;
 
     protected long rootJobExecutionId;
+
+    // Restart of partitioned steps needs to be handled specially
+    protected boolean restartAfterCompletion = false;
 
     protected final BatchKernelService kernelService;
     protected final PersistenceManagerService persistenceManagerService;
@@ -90,6 +94,7 @@ public abstract class BaseStepController implements ExecutionElementController {
             throw new IllegalArgumentException("Step parameter to ctor cannot be null.");
         }
         this.step = step;
+        this.stepName = step.getId();
 
         this.txService = servicesManager.service(TransactionManagementService.class);
         this.kernelService = servicesManager.service(BatchKernelService.class);
@@ -311,6 +316,8 @@ public abstract class BaseStepController implements ExecutionElementController {
             // boolean, but it should default to 'false', which is the spec'd default.
             if (!Boolean.parseBoolean(step.getAllowStartIfComplete())) {
                 return false;
+            } else {
+                restartAfterCompletion = true;
             }
         }
 
@@ -340,6 +347,9 @@ public abstract class BaseStepController implements ExecutionElementController {
         return true;
     }
 
+    protected boolean isRestartExecution() {
+        return stepStatus.getStartCount() > 1;
+    }
 
     protected void statusStarting() {
         stepStatus.setBatchStatus(BatchStatus.STARTING);

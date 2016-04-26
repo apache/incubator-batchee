@@ -19,16 +19,18 @@ package org.apache.batchee.container.impl.controller.chunk;
 import javax.batch.api.chunk.CheckpointAlgorithm;
 
 public final class ItemCheckpointAlgorithm implements CheckpointAlgorithm {
-    private long requests = 0;
     private long checkpointBeginTime = 0;
+    private int itemsRead = 0;
 
     private int time;
     private int item;
-    private long currentTime;
 
-    public ItemCheckpointAlgorithm() {
-        checkpointBeginTime = System.currentTimeMillis();
-        currentTime = checkpointBeginTime;
+    public void setItemCount(int itemCount) {
+        this.item = itemCount;
+    }
+
+    public void setTimeLimitSeconds(int timeLimitSeconds) {
+        this.time = timeLimitSeconds;
     }
 
     @Override
@@ -37,18 +39,12 @@ public final class ItemCheckpointAlgorithm implements CheckpointAlgorithm {
     }
 
     public boolean isReadyToCheckpointItem() throws Exception {
-        requests++;
-
-        final boolean itemready = (requests >= item);
-        if (itemready) {
-            requests = 0;
-        }
-        return itemready;
+        return (itemsRead >= item);
     }
 
     public boolean isReadyToCheckpointTime() throws Exception {
         boolean timeready = false;
-        currentTime = System.currentTimeMillis();
+        final long currentTime = System.currentTimeMillis();
         final long curdiff = currentTime - checkpointBeginTime;
         final int diff = (int) curdiff / 1000;
 
@@ -66,6 +62,8 @@ public final class ItemCheckpointAlgorithm implements CheckpointAlgorithm {
     public boolean isReadyToCheckpoint() throws Exception {
         boolean ready = false;
 
+        itemsRead++;
+
         if (time == 0) { // no time limit, just check if item count has been reached
             if (isReadyToCheckpointItem()) {
                 ready = true;
@@ -77,14 +75,10 @@ public final class ItemCheckpointAlgorithm implements CheckpointAlgorithm {
         return ready;
     }
 
-    public void setThresholds(int itemthreshold, int timethreshold) {
-        item = itemthreshold;
-        time = timethreshold;
-    }
-
     @Override
     public void beginCheckpoint() throws Exception {
-        checkpointBeginTime = currentTime;
+        checkpointBeginTime = System.currentTimeMillis();
+        itemsRead = 0;
     }
 
     @Override

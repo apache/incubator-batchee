@@ -17,34 +17,17 @@
 package org.apache.batchee.container.proxy;
 
 import org.apache.batchee.container.exception.BatchContainerRuntimeException;
-import org.apache.batchee.container.impl.controller.chunk.ItemCheckpointAlgorithm;
 
 import javax.batch.api.chunk.CheckpointAlgorithm;
 
 public class CheckpointAlgorithmProxy extends AbstractProxy<CheckpointAlgorithm> implements CheckpointAlgorithm {
-
-    private String checkpointType = null;
-
     /*
      * Allow this to be public as a special case so we can easily treat the built-in algorithms
      * as identical to custom ones.
      */
     public CheckpointAlgorithmProxy(final CheckpointAlgorithm delegate) {
         super(delegate);
-
-        if (delegate instanceof ItemCheckpointAlgorithm) {
-            checkpointType = "item";
-        } else {
-            checkpointType = "custom";
-        }
-
     }
-
-
-    public String getCheckpointType() {
-        return checkpointType;
-    }
-
 
     @Override
     public void beginCheckpoint() {

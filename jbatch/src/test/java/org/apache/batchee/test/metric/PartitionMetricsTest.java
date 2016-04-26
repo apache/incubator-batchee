@@ -45,7 +45,7 @@ public class PartitionMetricsTest {
         int checked = 0;
         for (final Metric metric : metrics) {
             if (Metric.MetricType.ROLLBACK_COUNT == metric.getType()) {
-                assertEquals(metric.getValue(), 2);
+                assertEquals(metric.getValue(), 1);
                 checked++;
             } else if (Metric.MetricType.READ_SKIP_COUNT == metric.getType()) {
                 assertEquals(metric.getValue(), 1);
