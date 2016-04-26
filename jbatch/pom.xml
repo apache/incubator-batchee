@@ -97,7 +97,7 @@
     <dependency>
       <groupId>com.ibm.jbatch.tck</groupId>
       <artifactId>com.ibm.jbatch.tck</artifactId>
-      <version>1.1-b02</version>
+      <version>1.1-b03</version>
       <scope>test</scope>
       <exclusions>
         <exclusion>
@@ -118,7 +118,7 @@
     <dependency>
       <groupId>com.ibm.jbatch.tck</groupId>
       <artifactId>com.ibm.jbatch.tck.spi</artifactId>
-      <version>1.1-b02</version>
+      <version>1.1-b03</version>
       <scope>test</scope>
       <exclusions>
         <exclusion>
