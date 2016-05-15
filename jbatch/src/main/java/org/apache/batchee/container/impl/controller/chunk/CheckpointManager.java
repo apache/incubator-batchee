@@ -16,6 +16,9 @@
 */
 package org.apache.batchee.container.impl.controller.chunk;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.apache.batchee.container.exception.BatchContainerRuntimeException;
 import org.apache.batchee.container.exception.BatchContainerServiceException;
 import org.apache.batchee.spi.DataRepresentationService;
@@ -75,28 +78,45 @@ public class CheckpointManager {
         }
     }
 
-    public void checkpoint() {
+    /**
+     * Takes the current checkpoint data from the ItemReader and ItemWriter
+     * and store them in the database
+     */
+    public Map<CheckpointDataKey, CheckpointData> prepareCheckpoints() {
         final CheckpointDataKey readerChkptDK;
         final CheckpointDataKey writerChkptDK;
+        Map<CheckpointDataKey, CheckpointData> checkpoints = new HashMap<CheckpointDataKey, CheckpointData>(2);
         try {
             byte[] checkpointBytes = dataRepresentationService.toInternalRepresentation(readerProxy.checkpointInfo());
             CheckpointData readerChkptData = new CheckpointData(jobInstanceID, stepId, CheckpointType.READER);
             readerChkptData.setRestartToken(checkpointBytes);
             readerChkptDK = new CheckpointDataKey(jobInstanceID, stepId, CheckpointType.READER);
 
-            persistenceManagerService.setCheckpointData(readerChkptDK, readerChkptData);
+            checkpoints.put(readerChkptDK, readerChkptData);
 
             checkpointBytes = dataRepresentationService.toInternalRepresentation(writerProxy.checkpointInfo());
             CheckpointData writerChkptData = new CheckpointData(jobInstanceID, stepId, CheckpointType.WRITER);
             writerChkptData.setRestartToken(checkpointBytes);
             writerChkptDK = new CheckpointDataKey(jobInstanceID, stepId, CheckpointType.WRITER);
 
-            persistenceManagerService.setCheckpointData(writerChkptDK, writerChkptData);
-
+            checkpoints.put(writerChkptDK, writerChkptData);
         } catch (final Exception ex) {
             // is this what I should be throwing here?
             throw new BatchContainerServiceException("Cannot persist the checkpoint data for [" + stepId + "]", ex);
         }
+
+        return checkpoints;
+    }
+
+    public void storeCheckPoints(Map<CheckpointDataKey, CheckpointData> checkpoints) {
+        try {
+            for (Map.Entry<CheckpointDataKey, CheckpointData> checkpointEntry : checkpoints.entrySet()) {
+                persistenceManagerService.setCheckpointData(checkpointEntry.getKey(), checkpointEntry.getValue());
+            }
+        } catch (final Exception ex) {
+            throw new BatchContainerServiceException("Cannot persist the checkpoint data for [" + stepId + "]", ex);
+        }
+
     }
 
     public int checkpointTimeout() {

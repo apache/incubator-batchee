@@ -18,9 +18,6 @@
         <chunk item-count="1">
             <reader ref="org.apache.batchee.its.transaction.TxErrorReader"></reader>
             <writer ref="org.apache.batchee.its.transaction.TxErrorWriter1"></writer>
-            <skippable-exception-classes>
-                <include class="java.lang.Exception"/> <!-- all exceptions... -->
-            </skippable-exception-classes>
         </chunk>
     </step>
 </job>

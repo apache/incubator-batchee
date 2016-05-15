@@ -359,6 +359,11 @@ public abstract class BaseStepController implements ExecutionElementController {
     }
 
     protected void persistUserData() {
+        PersistentDataWrapper userData = resolveUserData();
+        storeUserData(userData);
+    }
+
+    protected PersistentDataWrapper resolveUserData() {
         final ByteArrayOutputStream persistentBAOS = new ByteArrayOutputStream();
         final ObjectOutputStream persistentDataOOS;
 
@@ -370,8 +375,16 @@ public abstract class BaseStepController implements ExecutionElementController {
             throw new BatchContainerServiceException("Cannot persist the persistent user data for the step.", e);
         }
 
-        stepStatus.setPersistentUserData(new PersistentDataWrapper(persistentBAOS.toByteArray()));
-        statusManagerService.updateStepStatus(stepStatus.getStepExecutionId(), stepStatus);
+        return new PersistentDataWrapper(persistentBAOS.toByteArray());
+    }
+
+    protected void storeUserData(PersistentDataWrapper userData) {
+        try {
+            stepStatus.setPersistentUserData(userData);
+            statusManagerService.updateStepStatus(stepStatus.getStepExecutionId(), stepStatus);
+        } catch (final Exception e) {
+            throw new BatchContainerServiceException("Cannot persist the persistent user data for the step.", e);
+        }
     }
 
     protected void persistExitStatusAndEndTimestamp() {

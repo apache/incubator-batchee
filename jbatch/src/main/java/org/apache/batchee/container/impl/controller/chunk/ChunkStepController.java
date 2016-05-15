@@ -48,10 +48,14 @@ import javax.batch.api.chunk.listener.RetryWriteListener;
 import javax.batch.api.chunk.listener.SkipProcessListener;
 import javax.batch.api.chunk.listener.SkipReadListener;
 import javax.batch.api.chunk.listener.SkipWriteListener;
+import javax.batch.operations.BatchRuntimeException;
 import javax.batch.runtime.BatchStatus;
+import javax.transaction.Status;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.BlockingQueue;
 import java.util.logging.Level;
@@ -585,11 +589,22 @@ public class ChunkStepController extends SingleThreadedStepController {
                     chunkProxy.afterChunk();
                 }
 
-                checkpointManager.checkpoint();
-
-                this.persistUserData();
-
-                transactionManager.commit();
+                Map<CheckpointDataKey, CheckpointData> checkpoints = checkpointManager.prepareCheckpoints();
+                PersistentDataWrapper userData = resolveUserData();
+                try {
+                    transactionManager.commit();
+                    storeUserData(userData);
+                    checkpointManager.storeCheckPoints(checkpoints);
+                } catch (Exception e) {
+                    // only set the Exception if we didn't blow up before anyway
+                    if (this.stepContext.getException() != null) {
+                        this.stepContext.setException(e);
+                    }
+                    if (e instanceof BatchRuntimeException) {
+                        throw e;
+                    }
+                    throw new BatchContainerServiceException("Cannot commit the transaction for the step.", e);
+                }
 
                 checkpointManager.endCheckpoint();
 
@@ -659,13 +674,14 @@ public class ChunkStepController extends SingleThreadedStepController {
      */
     private void rollback(final Throwable t) {
         try {
-            // ignore, we blow up anyway
-            transactionManager.setRollbackOnly();
             try {
                 doClose();
             } catch (Exception e) {
                 // ignore, we blow up anyway
             }
+
+            // ignore, we blow up anyway
+            transactionManager.setRollbackOnly();
 
             if (t instanceof Exception) {
                 Exception e = (Exception) t;
@@ -681,7 +697,10 @@ public class ChunkStepController extends SingleThreadedStepController {
             // ever come up in the spec, but seems marginally more useful.
             stepContext.getMetric(MetricImpl.MetricType.ROLLBACK_COUNT).incValue();
         } finally {
-            transactionManager.rollback();
+            int txStatus = transactionManager.getStatus();
+            if (txStatus == Status.STATUS_ACTIVE || txStatus == Status.STATUS_MARKED_ROLLBACK) {
+                transactionManager.rollback();
+            }
             throw new BatchContainerRuntimeException("Failure in Read-Process-Write Loop", t);
         }
     }
