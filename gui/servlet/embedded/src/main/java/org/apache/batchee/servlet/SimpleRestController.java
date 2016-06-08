@@ -16,12 +16,6 @@
  */
 package org.apache.batchee.servlet;
 
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.util.Map;
-import java.util.Properties;
-
 import javax.batch.operations.JobExecutionAlreadyCompleteException;
 import javax.batch.operations.JobExecutionNotRunningException;
 import javax.batch.operations.JobOperator;
@@ -29,20 +23,37 @@ import javax.batch.operations.JobStartException;
 import javax.batch.operations.NoSuchJobExecutionException;
 import javax.batch.runtime.BatchStatus;
 import javax.batch.runtime.JobExecution;
+import javax.batch.runtime.Metric;
+import javax.batch.runtime.StepExecution;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.ListIterator;
+import java.util.Map;
+import java.util.Properties;
 
 /**
  * Simple REST api for JBatch
  */
 public class SimpleRestController {
     public static final String REST_CONTENT_TYPE = "text/plain";
+    public static final String NOT_FOUND_STRING = "-";
+    public static final char CSV_DELIMITER = ';';
 
     public static final String OP_START = "start/";
     public static final String OP_STATUS = "status/";
+    public static final String OP_METRICS = "metrics/";
+
     public static final String OP_STOP = "stop/";
     public static final String OP_RESTART = "restart/";
-
     public static final long NO_JOB_ID = -1L;
 
     private final JobOperator jobOperator;
@@ -62,6 +73,8 @@ public class SimpleRestController {
             startBatch(path.substring(OP_START.length()), req, resp);
         } else if (path != null && path.startsWith(OP_STATUS)) {
             batchStatus(path.substring(OP_STATUS.length()), req, resp);
+        } else if (path != null && path.startsWith(OP_METRICS)) {
+            batchMetrics(path.substring(OP_METRICS.length()), req, resp);
         } else if (path != null && path.startsWith(OP_STOP)) {
             batchStop(path.substring(OP_STOP.length()), req, resp);
         } else if (path != null && path.startsWith(OP_RESTART)) {
@@ -97,6 +110,28 @@ public class SimpleRestController {
             JobExecution jobExecution = jobOperator.getJobExecution(executionId);
             BatchStatus batchStatus = jobExecution.getBatchStatus();
             reportSuccess(executionId, resp, batchStatus.name());
+        } catch (NoSuchJobExecutionException noSuchJob) {
+            reportFailure(executionId, resp, "NoSuchJob");
+        } catch (Exception generalException) {
+            StringBuilder msg = new StringBuilder("Failure in BatchExecution");
+            appendExceptionMsg(msg, generalException);
+            reportFailure(executionId, resp, msg.toString());
+        }
+    }
+
+    private void batchMetrics(String batchId, HttpServletRequest req, HttpServletResponse resp) {
+        Long executionId = extractExecutionId(batchId, resp);
+        if (executionId == null) {
+            return;
+        }
+
+        try {
+            JobExecution jobExecution = jobOperator.getJobExecution(executionId);
+            BatchStatus batchStatus = jobExecution.getBatchStatus();
+
+            List<StepExecution> stepExecutions = jobOperator.getStepExecutions(executionId);
+            reportSuccess(executionId, resp, batchStatus.name());
+            reportMetricsCsv(resp, stepExecutions);
         } catch (NoSuchJobExecutionException noSuchJob) {
             reportFailure(executionId, resp, "NoSuchJob");
         } catch (Exception generalException) {
@@ -166,6 +201,10 @@ public class SimpleRestController {
         msg.append("  Sample: http://localhost:8080/myapp/jbatch/rest/status/23\n");
         msg.append("  will return the state of executionId 23\n\n");
 
+        msg.append("* ").append(OP_METRICS).append(" - query the current metrics \n");
+        msg.append("  Sample: http://localhost:8080/myapp/jbatch/rest/metrics/23\n");
+        msg.append("  will return the metrics of executionId 23\n\n");
+
         msg.append("* ").append(OP_STOP).append(" - stop the job with the given executionId \n");
         msg.append("  Sample: http://localhost:8080/myapp/jbatch/rest/stop/23\n");
         msg.append("  will stop the job with executionId 23\n\n");
@@ -226,6 +265,56 @@ public class SimpleRestController {
         writeContent(resp, Long.toString(jobId) + "\n");
         writeContent(resp, "FAILURE\n");
         writeContent(resp, content);
+    }
+
+    private void reportMetricsCsv(HttpServletResponse resp, List<StepExecution> stepExecutions) {
+        StringBuilder stringBuilder = new StringBuilder(200);
+        stringBuilder.append("\n");
+
+        // append csv header to stringbuilder
+        joinCsv(stringBuilder, Arrays.asList("STEP_EXECUTION_ID", "STEP_NAME"));
+        stringBuilder.append(CSV_DELIMITER);
+        joinCsv(stringBuilder, Arrays.asList(Metric.MetricType.values()));
+        stringBuilder.append("\n");
+
+        Collections.sort(stepExecutions, new Comparator<StepExecution>() {
+            @Override
+            public int compare(StepExecution o1, StepExecution o2) {
+                return Long.compare(o1.getStepExecutionId(), o2.getStepExecutionId());
+            }
+        });
+        // append csv values to stringbuilder, one stepExecution per line
+        for (StepExecution stepExecution : stepExecutions) {
+            stringBuilder.append(stepExecution.getStepExecutionId());
+            stringBuilder.append(CSV_DELIMITER);
+            stringBuilder.append(stepExecution.getStepName());
+            stringBuilder.append(CSV_DELIMITER);
+
+            Metric[] metricsArray = stepExecution.getMetrics();
+            Map<Metric.MetricType, Metric> sourceMap = new HashMap<Metric.MetricType, Metric>();
+            for (Metric metric : metricsArray) {
+                sourceMap.put(metric.getType(), metric);
+            }
+
+            List<String> orderedMetricsValues = new ArrayList<String>();
+            for (Metric.MetricType type : Metric.MetricType.values()) {
+                orderedMetricsValues.add(sourceMap.containsKey(type) ? String.valueOf(sourceMap.get(type).getValue()) : NOT_FOUND_STRING);
+            }
+            joinCsv(stringBuilder, orderedMetricsValues);
+
+            stringBuilder.append("\n");
+        }
+
+        writeContent(resp, stringBuilder.toString());
+    }
+
+    private void joinCsv(StringBuilder builder, List values) {
+        for (ListIterator iter = values.listIterator(); iter.hasNext(); ) {
+            builder.append(iter.next());
+            if (iter.hasNext()) {
+                builder.append(CSV_DELIMITER);
+            }
+        }
     }
 
     private void writeContent(HttpServletResponse resp, String content) {
