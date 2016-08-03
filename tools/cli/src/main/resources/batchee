@@ -45,6 +45,11 @@ if [ -z "$_RUNJAVA" ]; then
   _RUNJAVA="$JAVA_HOME"/bin/java
 fi
 
+if $cygwin; then
+  _RUNJAVA=`cygpath --absolute --unix "$_RUNJAVA"`
+  echo $_RUNJAVA
+fi
+
 if [ -z "$BATCHEE_HOME" -o ! -d "$BATCHEE_HOME" ] ; then
   # find batchee
   if [ -d /opt/batchee ] ; then
@@ -102,4 +107,4 @@ if [ -f "$logging" ] ; then
     BATCHEE_OPTS="$BATCHEE_OPTS -Djava.util.logging.config.file=$logging"
 fi
 
-$_RUNJAVA $BATCHEE_OPTS -cp "$bin" org.apache.batchee.cli.bootstrap.Bootstrap $@
+"$_RUNJAVA" $BATCHEE_OPTS -cp "$bin" org.apache.batchee.cli.bootstrap.Bootstrap $@
