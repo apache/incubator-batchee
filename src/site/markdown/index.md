@@ -32,4 +32,6 @@ If you want to learn about JBatch extensions please visit our [extensions](./ext
 
 If you are more interested in a GUI solution, have a look to [gui](./gui.html) page.
 
+If you want to learn to launch your batches through a CLI, have a look to [cli](./cli.html) page.
+
 Finally if you want to control your batches from Maven just open the [maven plugin](./maven.html) page.

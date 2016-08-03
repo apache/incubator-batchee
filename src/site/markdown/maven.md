@@ -27,6 +27,27 @@ under the License.
 </plugin>
 ]]></pre>
 
+## Documentation generation parsing batch components
+
+BatchEE provides a `doc` goal allowing to parse `BatchProperty` to generate your JBatch component documentation.
+
+You can run it on a plain JBatch module but it is recommanded to add `doc-api` dependency to be able to use `@Documentation`
+to describe what the property is used for:
+
+<pre class="prettyprint linenums"><![CDATA[
+<dependency>
+  <groupId>org.apache.batchee</groupId>
+  <artifactId>batchee-doc-api</artifactId>
+  <version>${batchee.version}</version>
+</plugin>
+]]></pre>
+
+Then simply run:
+
+<pre class="prettyprint"><![CDATA[
+mvn batchee:doc
+]]></pre>
+
 ## Configuration for a remote BatchEE instance (JAX-RS client)
 
 <pre class="prettyprint linenums"><![CDATA[
