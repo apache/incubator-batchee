@@ -85,19 +85,19 @@ public class DocumentationMojoTest {
             "\n" +
             "a child comp\n" +
             "\n" +
-            "* config2: 2\n" +
-            "* configByDefault: this is an important config\n" +
-            "* expl: this one is less important\n" +
+            "* `config2`: 2\n" +
+            "* `configByDefault`: this is an important config\n" +
+            "* `expl`: this one is less important\n" +
             "\n" +
             "# myComponent\n" +
             "\n" +
-            "* configByDefault: this is an important config\n" +
-            "* expl: this one is less important\n" +
+            "* `configByDefault`: this is an important config\n" +
+            "* `expl`: this one is less important\n" +
             "\n" +
             "# org.apache.batchee.tools.maven.batchlet.SimpleBatchlet\n" +
             "\n" +
-            "* fail\n" +
-            "* sleep\n" +
+            "* `fail`\n" +
+            "* `sleep`\n" +
             "\n", IOUtil.toString(fis));
         fis.close();
     }

@@ -197,7 +197,7 @@ public abstract class ComponentDocumentationGenerator {
 
                 @Override
                 public void add(final Writer writer, final FieldDoc doc) throws IOException {
-                    writer.append("* ").append(doc.getName()).append(doc.getDoc() == null ? "" : ": " + doc.getDoc()).append("\n");
+                    writer.append("* `").append(doc.getName()).append('`').append(doc.getDoc() == null ? "" : ": " + doc.getDoc()).append("\n");
                 }
 
                 @Override

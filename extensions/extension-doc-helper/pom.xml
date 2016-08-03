@@ -110,7 +110,7 @@
                 def generatedFolder = new File(project.parent.parent.basedir, 'src/site/markdown/batchee-site-generated')
                 if (!generatedFolder.isDirectory()) throw new IllegalStateException('no generated doc, extensions pre-ste should have been executed')
                 new File(generatedFolder, 'index.md').withWriter { w ->
-                  w.println('= Generated Extensions Documentation\n')
+                  w.println('# Generated Extensions Documentation\n')
 
                   generatedFolder.listFiles(new FilenameFilter() {
                     boolean accept(File dir, String name) {
@@ -118,7 +118,7 @@
                     }
                   }).sort(true) { f1, f2 -> f1.name.compareTo(f2.name) }.each {
                     if (it.name == 'index.md') return
-                    w.println('* [' + it.name + '](./' + it.name.replace('.md', '.html') + ')')
+                    w.println('* [' + it.name.replace('.md', '').replace('batchee-', '').capitalize() + '](./' + it.name.replace('.md', '.html') + ')')
                   }
                 }
                 ]]>
