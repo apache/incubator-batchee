@@ -43,7 +43,7 @@ to map `javax.batch.operations.BatchRuntimeException` to status 500:
     <init-param>
       <param-name>jaxrs.providers</param-name>
       <param-value>
-        com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider,
+        org.apache.batchee.jaxrs.common.johnzon.JohnzonBatcheeProvider,
         org.apache.batchee.jaxrs.server.JBatchExceptionMapper
       </param-value>
     </init-param>
@@ -60,6 +60,10 @@ to map `javax.batch.operations.BatchRuntimeException` to status 500:
   </servlet-mapping>
 </web-app>
 ]]></pre>
+
+Note: instead of johnzon you can also use jackson as JAX-RS Json provider: `com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider`.
+Note: `JohnzonBatcheeProvider` is exactly the same as `org.apache.johnzon.jaxrs.JohnzonProvider` provider with `org.apache.batchee.jaxrs.common.johnzon.TimestampAdapter` registered
+to convert dates to timestamps. You can use Johnzon provider directly as well but the date conversion will be Johnzon one.
 
 Here is the mapping:
 

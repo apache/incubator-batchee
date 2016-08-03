@@ -183,9 +183,14 @@
             <version>${batch-api.version}</version>
           </dependency>
           <dependency>
-            <groupId>com.fasterxml.jackson.jaxrs</groupId>
-            <artifactId>jackson-jaxrs-json-provider</artifactId>
-            <version>${jackson.version}</version>
+            <groupId>org.apache.geronimo.specs</groupId>
+            <artifactId>geronimo-json_1.0_spec</artifactId>
+            <version>1.0-alpha-1</version>
+          </dependency>
+          <dependency>
+            <groupId>org.apache.johnzon</groupId>
+            <artifactId>johnzon-jaxrs</artifactId>
+            <version>${johnzon.version}</version>
           </dependency>
           <dependency>
             <groupId>org.apache.cxf</groupId>

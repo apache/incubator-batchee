@@ -24,6 +24,10 @@ import java.util.Properties;
 public class RestProperties {
     private List<RestEntry> entries = new LinkedList<RestEntry>();
 
+    public void setEntries(final List<RestEntry> entries) {
+        this.entries = entries;
+    }
+
     public List<RestEntry> getEntries() {
         return entries;
     }

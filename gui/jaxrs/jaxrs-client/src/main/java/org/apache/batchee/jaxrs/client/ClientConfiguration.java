@@ -20,7 +20,7 @@ import static java.util.Arrays.asList;
 
 public class ClientConfiguration {
     private static final String JACKSON_PROVIDER = "com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider";
-    private static final String JOHNZON_PROVIDER = "org.apache.johnzon.jaxrs.JohnzonProvider";
+    private static final String JOHNZON_PROVIDER = "org.apache.batchee.jaxrs.common.johnzon.JohnzonBatcheeProvider";
 
     private String baseUrl = null;
     private String jsonProvider = null;

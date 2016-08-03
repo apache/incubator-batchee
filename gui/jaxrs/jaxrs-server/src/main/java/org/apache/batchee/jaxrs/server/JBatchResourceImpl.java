@@ -58,6 +58,7 @@ public class JBatchResourceImpl implements JBatchResource {
 
     @GET
     @Path("job-instance/count/{name}")
+    @Produces(MediaType.TEXT_PLAIN)
     public int getJobInstanceCount(final @PathParam("name") String jobName) {
         return operator.getJobInstanceCount(jobName);
     }
@@ -110,12 +111,14 @@ public class JBatchResourceImpl implements JBatchResource {
 
     @POST
     @Path("execution/start/{name}")
+    @Produces(MediaType.TEXT_PLAIN)
     public long start(final @PathParam("name") String jobXMLName, final RestProperties jobParameters) {
         return operator.start(jobXMLName, RestProperties.unwrap(jobParameters));
     }
 
     @POST
     @Path("execution/restart/{id}")
+    @Produces(MediaType.TEXT_PLAIN)
     public long restart(final @PathParam("id") long executionId, final RestProperties restartParameters) {
         return operator.restart(executionId, RestProperties.unwrap(restartParameters));
     }

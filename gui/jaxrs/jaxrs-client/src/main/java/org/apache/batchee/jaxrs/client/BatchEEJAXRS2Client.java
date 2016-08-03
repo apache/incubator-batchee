@@ -138,7 +138,7 @@ class BatchEEJAXRS2Client extends BatchEEJAXRSClientBase<Response> {
             resolvedTarget = resolvedTarget.queryParam(qp.getKey(), qp.getValue());
         }
 
-        final Invocation.Builder request = resolvedTarget.resolveTemplates(templates).request(MediaType.APPLICATION_JSON_TYPE);
+        final Invocation.Builder request = resolvedTarget.resolveTemplates(templates).request(findType(method.getReturnType()));
         if (jaxrsMethod.getAnnotation(GET.class) != null) {
             return request.get();
         } else if (jaxrsMethod.getAnnotation(HEAD.class) != null) {
@@ -147,6 +147,10 @@ class BatchEEJAXRS2Client extends BatchEEJAXRSClientBase<Response> {
             return request.post(Entity.entity(body, MediaType.APPLICATION_JSON_TYPE));
         }
         throw new IllegalArgumentException("Unexpected http method");
+    }
+
+    private MediaType findType(final Class<?> returnType) {
+        return returnType.isPrimitive() ? MediaType.TEXT_PLAIN_TYPE : MediaType.APPLICATION_JSON_TYPE;
     }
 
     @Override

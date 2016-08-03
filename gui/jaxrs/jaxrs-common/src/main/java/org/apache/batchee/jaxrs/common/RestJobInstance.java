@@ -41,6 +41,14 @@ public class RestJobInstance {
         return name;
     }
 
+    public void setName(final String name) {
+        this.name = name;
+    }
+
+    public void setId(final long id) {
+        this.id = id;
+    }
+
     public static List<RestJobInstance> wrap(final List<JobInstance> jobInstances) {
         final List<RestJobInstance> instances = new ArrayList<RestJobInstance>(jobInstances.size());
         for (final JobInstance instance : jobInstances) {

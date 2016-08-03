@@ -37,7 +37,7 @@ under the License.
   <configuration>
     <clientConfiguration>
       <baseUrl>http://localhost:8080/myapp/</baseUrl>
-      <jsonProvider>com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider</jsonProvider>
+      <jsonProvider>org.apache.johnzon.jaxrs.JohnzonProvider</jsonProvider>
       <security>
         <type>Basic</type>
         <username>foo</username>

@@ -16,13 +16,13 @@
  */
 package org.apache.batchee.jaxrs.server;
 
-import com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider;
 import org.apache.batchee.jaxrs.common.JBatchResource;
 import org.apache.batchee.jaxrs.common.RestEntry;
 import org.apache.batchee.jaxrs.common.RestJobExecution;
 import org.apache.batchee.jaxrs.common.RestJobInstance;
 import org.apache.batchee.jaxrs.common.RestProperties;
 import org.apache.batchee.jaxrs.common.RestStepExecution;
+import org.apache.batchee.jaxrs.common.johnzon.JohnzonBatcheeProvider;
 import org.apache.batchee.jaxrs.server.util.CreateSomeJobs;
 import org.apache.cxf.interceptor.LoggingOutInterceptor;
 import org.apache.cxf.jaxrs.client.WebClient;
@@ -43,8 +43,8 @@ import javax.batch.runtime.BatchStatus;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.net.URL;
-import java.util.Arrays;
 
+import static java.util.Collections.singletonList;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
@@ -63,7 +63,7 @@ public class RestTest {
 
     @Test
     public void getJobInstanceCount() {
-        final int count = newClient().path("job-instance/count/{id}", "init").get(Integer.class);
+        final int count = newClient().path("job-instance/count/{id}", "init").accept(MediaType.TEXT_PLAIN_TYPE).get(Integer.class);
         assertEquals(1, count);
     }
 
@@ -152,7 +152,7 @@ public class RestTest {
                     .up()
                     .createInitParam()
                     .paramName("jaxrs.providers")
-                    .paramValue("com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider," + JBatchExceptionMapper.class.getName())
+                    .paramValue(JohnzonBatcheeProvider.class.getName() + "," + JBatchExceptionMapper.class.getName())
                     .up()
                     .createInitParam()
                     .paramName("jaxrs.outInterceptors")
@@ -171,6 +171,6 @@ public class RestTest {
     }
 
     private WebClient newClient() {
-        return WebClient.create(base.toExternalForm() + "api/batchee", Arrays.asList(new JacksonJsonProvider())).accept(MediaType.APPLICATION_JSON_TYPE);
+        return WebClient.create(base.toExternalForm() + "api/batchee", singletonList(new JohnzonBatcheeProvider())).accept(MediaType.APPLICATION_JSON_TYPE);
     }
 }

@@ -26,8 +26,8 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 
-@Consumes({MediaType.APPLICATION_JSON})
-@Produces({MediaType.APPLICATION_JSON})
+@Consumes(MediaType.APPLICATION_JSON)
+@Produces(MediaType.APPLICATION_JSON)
 @Path("batchee")
 public interface JBatchResource {
     @GET
@@ -36,6 +36,7 @@ public interface JBatchResource {
 
     @GET
     @Path("job-instance/count/{name}")
+    @Produces(MediaType.TEXT_PLAIN)
     int getJobInstanceCount(final @PathParam("name") String jobName);
 
     @GET
@@ -68,10 +69,12 @@ public interface JBatchResource {
 
     @POST
     @Path("execution/start/{name}")
+    @Produces(MediaType.TEXT_PLAIN)
     long start(final @PathParam("name") String jobXMLName, final RestProperties jobParameters);
 
     @POST
     @Path("execution/restart/{id}")
+    @Produces(MediaType.TEXT_PLAIN)
     long restart(final @PathParam("id") long executionId, final RestProperties restartParameters);
 
     @HEAD
