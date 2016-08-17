@@ -571,6 +571,30 @@ public class JDBCPersistenceManagerService implements PersistenceManagerService 
     }
 
     @Override
+    public Set<String> getJobNames() {
+        Connection conn = null;
+        PreparedStatement statement = null;
+        ResultSet rs = null;
+
+        Set<String> jobNames = new HashSet<String>();
+        try {
+            conn = getConnection();
+
+            statement = conn.prepareStatement(dictionary.getFindJobNames());
+            rs = statement.executeQuery();
+            while (rs.next()) {
+                jobNames.add(rs.getString(1));
+            }
+
+        } catch (final SQLException e) {
+            throw new PersistenceException(e);
+        } finally {
+            cleanupConnection(conn, rs, statement);
+        }
+        return jobNames;
+    }
+
+    @Override
     public Timestamp jobOperatorQueryJobExecutionTimestamp(final long key, final TimestampType timestampType) {
         Connection conn = null;
         PreparedStatement statement = null;

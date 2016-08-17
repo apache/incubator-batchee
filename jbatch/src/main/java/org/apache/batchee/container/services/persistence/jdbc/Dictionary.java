@@ -20,7 +20,7 @@ import org.apache.batchee.container.impl.controller.PartitionedStepBuilder;
 import org.apache.batchee.container.services.persistence.jdbc.database.Database;
 
 public class Dictionary {
-    public static interface SQL { // needs to be kept aligned with JPA mapping, we can't use reflection to find fields since order can change between executions with java 7
+    public interface SQL { // needs to be kept aligned with JPA mapping, we can't use reflection to find fields since order can change between executions with java 7
         String CREATE_TABLE = "create table ";
         String INSERT_INTO = "insert into ";
         String SELECT = "select ";
@@ -45,6 +45,7 @@ public class Dictionary {
         String JOB_INSTANCE_COUNT = JOB_INSTANCE_COUNT_FROM_NAME + " and %s = ?";
         String JOB_INSTANCE_IDS = SELECT + "%s" + FROM + "%s" + WHERE + "%s = ? and %s = ? order by %s desc";
         String JOB_INSTANCE_IDS_FROM_NAME = SELECT + "%s" + FROM + "%s" + WHERE + " %s = ? order by %s desc";
+        String JOB_NAMES = SELECT + "distinct %s" + FROM + "%s" + WHERE + "%s not like '%s'";
         String EXTERNAL_JOB_INSTANCE = SELECT + "distinct %s, %s" + FROM + "%s" + WHERE + "%s not like '%s'";
         String JOB_INSTANCE_CREATE = INSERT_INTO + "%s" + "(%s, %s) VALUES(?, ?)";
         String JOB_INSTANCE_CREATE_WITH_JOB_XML = INSERT_INTO + "%s" + "(%s, %s, %s) VALUES(?, ?, ?)";
@@ -112,6 +113,7 @@ public class Dictionary {
     private final String countJobInstanceByNameAndTag;
     private final String findJoBInstanceIds;
     private final String findJobInstanceIdsByName;
+    private final String findJobNames;
     private final String findExternalJobInstances;
     private final String createJobInstance;
     private final String createJobInstanceWithJobXml;
@@ -199,6 +201,7 @@ public class Dictionary {
             this.findJoBInstanceIds = String.format(SQL.JOB_INSTANCE_IDS, jobInstanceColumns[0], jobInstanceTable, jobInstanceColumns[3],
                     jobInstanceColumns[8], jobInstanceColumns[0]);
             this.findJobInstanceIdsByName = String.format(SQL.JOB_INSTANCE_IDS_FROM_NAME, jobInstanceColumns[0], jobInstanceTable, jobInstanceColumns[3], jobInstanceColumns[0]);
+            this.findJobNames = String.format(SQL.JOB_NAMES, jobInstanceColumns[3], jobInstanceTable, jobInstanceColumns[3], PartitionedStepBuilder.JOB_ID_SEPARATOR + "%");
             this.findExternalJobInstances = String.format(SQL.EXTERNAL_JOB_INSTANCE, jobInstanceColumns[0], jobInstanceColumns[3], jobInstanceTable,
                     jobInstanceColumns[3], PartitionedStepBuilder.JOB_ID_SEPARATOR + "%");
             this.createJobInstance = String.format(SQL.JOB_INSTANCE_CREATE, jobInstanceTable, jobInstanceColumns[3], jobInstanceColumns[8]);
@@ -363,6 +366,10 @@ public class Dictionary {
 
     public String getFindExternalJobInstances() {
         return findExternalJobInstances;
+    }
+
+    public String getFindJobNames() {
+        return findJobNames;
     }
 
     public String getCreateJobInstance() {

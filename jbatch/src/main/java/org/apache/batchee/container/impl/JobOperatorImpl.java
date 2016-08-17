@@ -54,7 +54,6 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.logging.Level;
@@ -284,11 +283,10 @@ public class JobOperatorImpl implements JobOperator {
     @Override
     public Set<String> getJobNames() throws JobSecurityException {
         final Set<String> jobNames = new HashSet<String>();
-        final Map<Long, String> data = persistenceManagerService.jobOperatorGetExternalJobInstanceData();
-        for (final Map.Entry<Long, String> entry : data.entrySet()) {
-            long instanceId = entry.getKey();
-            if (securityService.isAuthorized(instanceId)) {
-                jobNames.add(entry.getValue());
+        final Set<String> jobNamesFromDb = persistenceManagerService.getJobNames();
+        for (String jobName : jobNamesFromDb) {
+            if (securityService.isAuthorizedJobName(jobName)) {
+                jobNames.add(jobName);
             }
         }
         return jobNames;

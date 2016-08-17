@@ -35,6 +35,11 @@ public class DefaultSecurityService implements SecurityService {
     }
 
     @Override
+    public boolean isAuthorizedJobName(String jobName) {
+        return isDefaultUserAuthorized();
+    }
+
+    @Override
     public String getLoggedUser() {
         return defaultUser;
     }

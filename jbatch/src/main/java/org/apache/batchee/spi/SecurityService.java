@@ -21,6 +21,12 @@ public interface SecurityService extends BatchService {
     boolean isAuthorized(String perm);
 
     /**
+     * @return whether the current user is allowed to see the given jobName
+     * @see javax.batch.operations.JobOperator#getJobNames()
+     */
+    boolean isAuthorizedJobName(String jobName);
+
+    /**
      * @return logged user if exists or a default name for anonymous launches
      */
     String getLoggedUser();

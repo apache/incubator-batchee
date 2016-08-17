@@ -25,6 +25,7 @@ import static org.apache.shiro.SecurityUtils.getSubject;
 public class ShiroSecurityService extends DefaultSecurityService {
     private String instancePrefix;
     private String permissionPrefix;
+    private String jobNamePrefix;
 
     private boolean isAuthenticatedAndAuthorized(final String permission) {
         return getSubject().isAuthenticated() && getSubject().isPermitted(permission);
@@ -41,6 +42,11 @@ public class ShiroSecurityService extends DefaultSecurityService {
     }
 
     @Override
+    public boolean isAuthorizedJobName(String jobName) {
+        return isAuthenticatedAndAuthorized(jobNamePrefix + jobName);
+    }
+
+    @Override
     public String getLoggedUser() {
         if (getSubject().isAuthenticated()) {
             return getSubject().getPrincipal().toString();
@@ -53,5 +59,6 @@ public class ShiroSecurityService extends DefaultSecurityService {
         super.init(batchConfig);
         permissionPrefix = batchConfig.getProperty("security.job.permission-prefix", "jbatch:");
         instancePrefix = permissionPrefix + batchConfig.getProperty("security.job.permission-prefix", "instance:");
+        jobNamePrefix = permissionPrefix + batchConfig.getProperty("security.job.permission-prefix", "jobName:");
     }
 }

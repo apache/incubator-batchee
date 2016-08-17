@@ -51,6 +51,11 @@ public class JAASSecurityService extends DefaultSecurityService {
     }
 
     @Override
+    public boolean isAuthorizedJobName(String jobName) {
+        return isAuthenticatedAndAuthorized("read");
+    }
+
+    @Override
     public String getLoggedUser() {
         final Subject subject = getSubject();
         if (subject != null) {

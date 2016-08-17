@@ -144,6 +144,17 @@ public class MemoryPersistenceManagerService implements PersistenceManagerServic
     }
 
     @Override
+    public Set<String> getJobNames() {
+        Set<String> jobNames = new HashSet<String>();
+        for (final Structures.JobInstanceData jobInstanceData : data.jobInstanceData.values()) {
+            if (jobInstanceData.instance.getJobName() != null && !jobInstanceData.instance.getJobName().startsWith(PartitionedStepBuilder.JOB_ID_SEPARATOR)) {
+                jobNames.add(jobInstanceData.instance.getJobName());
+            }
+        }
+        return jobNames;
+    }
+
+    @Override
     public List<Long> jobOperatorGetJobInstanceIds(final String jobName, final int start, final int count) {
         return jobOperatorGetJobInstanceIds(jobName, null, start, count);
     }

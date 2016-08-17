@@ -49,6 +49,11 @@ public interface PersistenceManagerService extends BatchService {
 
     int jobOperatorGetJobInstanceCount(String jobName, String appTag);
 
+    Set<String> getJobNames();
+
+    /**
+     * @deprecated replaced by {@link #getJobNames()} 
+     */
     Map<Long, String> jobOperatorGetExternalJobInstanceData();
 
     List<Long> jobOperatorGetJobInstanceIds(String jobName, int start, int count);

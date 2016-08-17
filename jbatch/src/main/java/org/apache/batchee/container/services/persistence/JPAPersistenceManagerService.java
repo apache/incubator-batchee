@@ -63,6 +63,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -163,6 +164,22 @@ public class JPAPersistenceManagerService implements PersistenceManagerService {
             emProvider.release(em);
         }
         return data;
+    }
+
+    @Override
+    public Set<String> getJobNames() {
+        Set<String> jobNames = new TreeSet<String>();
+        final EntityManager em = emProvider.newEntityManager();
+
+        try {
+            final List<String> list = em.createNamedQuery(JobInstanceEntity.Queries.FIND_JOBNAMES, String.class)
+                                        .setParameter("pattern", PartitionedStepBuilder.JOB_ID_SEPARATOR + "%")
+                                        .getResultList();
+            jobNames.addAll(list);
+        } finally {
+            emProvider.release(em);
+        }
+        return jobNames;
     }
 
     @Override

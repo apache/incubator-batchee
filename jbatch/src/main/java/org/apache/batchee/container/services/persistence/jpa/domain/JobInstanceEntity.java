@@ -39,6 +39,7 @@ import java.util.List;
     @NamedQuery(name = JobInstanceEntity.Queries.COUNT_BY_NAME, query = "select count(j) from JobInstanceEntity j where j.name = :name"),
     @NamedQuery(name = JobInstanceEntity.Queries.FIND_FROM_EXECUTION, query = "select j from JobInstanceEntity j inner join j.executions e where e.executionId = :executionId"),
     @NamedQuery(name = JobInstanceEntity.Queries.FIND_EXTERNALS, query = "select j from JobInstanceEntity j where j.name not like :pattern"),
+    @NamedQuery(name = JobInstanceEntity.Queries.FIND_JOBNAMES, query = "select distinct(j.name) from JobInstanceEntity j where j.name not like :pattern"),
     @NamedQuery(name = JobInstanceEntity.Queries.FIND_BY_NAME_AND_TAG, query = "select j from JobInstanceEntity j where j.name = :name and j.tag = :tag"),
     @NamedQuery(name = JobInstanceEntity.Queries.FIND_BY_NAME, query = "select j from JobInstanceEntity j where j.name = :name"),
     @NamedQuery(name = JobInstanceEntity.Queries.DELETE_BY_INSTANCE_ID, query = "delete from JobInstanceEntity e where e.jobInstanceId = :instanceId"),
@@ -48,12 +49,13 @@ import java.util.List;
 })
 @Table(name=JobInstanceEntity.TABLE_NAME)
 public class JobInstanceEntity {
-    public static interface Queries {
+    public interface Queries {
         String COUNT_BY_NAME_AND_TAG = "org.apache.batchee.container.services.persistence.jpa.domain.JobInstanceEntity.countByNameAndTag";
         String COUNT_BY_NAME = "org.apache.batchee.container.services.persistence.jpa.domain.JobInstanceEntity.countByName";
         String FIND_BY_NAME = "org.apache.batchee.container.services.persistence.jpa.domain.JobInstanceEntity.findByName";
         String FIND_BY_NAME_AND_TAG = "org.apache.batchee.container.services.persistence.jpa.domain.JobInstanceEntity.findByNameAndTag";
         String FIND_EXTERNALS = "org.apache.batchee.container.services.persistence.jpa.domain.JobInstanceEntity.findExternals";
+        String FIND_JOBNAMES = "org.apache.batchee.container.services.persistence.jpa.domain.JobInstanceEntity.findJobNames";
         String FIND_FROM_EXECUTION = "org.apache.batchee.container.services.persistence.jpa.domain.JobInstanceEntity.findByExecution";
         String DELETE_BY_INSTANCE_ID = "org.apache.batchee.container.services.persistence.jpa.domain.JobInstanceEntity.deleteFromInstanceId";
         String DELETE_BY_DATE = "org.apache.batchee.container.services.persistence.jpa.domain.JobInstanceEntity.deleteByDate";
