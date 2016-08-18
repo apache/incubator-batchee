@@ -33,7 +33,6 @@ import javax.batch.runtime.StepExecution;
 import java.sql.Timestamp;
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
@@ -47,18 +46,9 @@ public interface PersistenceManagerService extends BatchService {
 
     int jobOperatorGetJobInstanceCount(String jobName);
 
-    int jobOperatorGetJobInstanceCount(String jobName, String appTag);
-
     Set<String> getJobNames();
 
-    /**
-     * @deprecated replaced by {@link #getJobNames()} 
-     */
-    Map<Long, String> jobOperatorGetExternalJobInstanceData();
-
     List<Long> jobOperatorGetJobInstanceIds(String jobName, int start, int count);
-
-    List<Long> jobOperatorGetJobInstanceIds(String jobName, String appTag, int start, int count);
 
     Timestamp jobOperatorQueryJobExecutionTimestamp(long key, TimestampType timetype);
 
@@ -92,11 +82,10 @@ public interface PersistenceManagerService extends BatchService {
      * Creates a JobIntance
      *
      * @param name          the job id from job.xml
-     * @param apptag        the application tag that owns this job
      * @param jobXml        the resolved job xml
      * @return the job instance
      */
-    JobInstance createJobInstance(String name, String apptag, String jobXml);
+    JobInstance createJobInstance(String name, String jobXml);
 
     // EXECUTIONINSTANCEDATA
 
@@ -192,7 +181,7 @@ public interface PersistenceManagerService extends BatchService {
 
     long getMostRecentExecutionId(long jobInstanceId);
 
-    JobInstance createSubJobInstance(String name, String apptag);
+    JobInstance createSubJobInstance(String name);
 
     RuntimeFlowInSplitExecution createFlowInSplitExecution(JobInstance jobInstance, BatchStatus batchStatus);
 

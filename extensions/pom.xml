@@ -29,7 +29,6 @@
     <packaging>pom</packaging>
 
     <modules>
-        <module>shiro</module>
         <module>extras</module>
         <module>beanio</module>
         <module>camel</module>

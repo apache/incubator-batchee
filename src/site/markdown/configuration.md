@@ -55,10 +55,6 @@ Here are the available configurable services:
 Note about JPA persistence service: to stay portable entities are not enhanced. Therefore you need to use a javaagent to do so.
 
 To override a service implementation just set the key name (from the previous list) to a qualified name.
-For instance to use shiro security service create a batchee.properties with:
-
-<pre class="prettyprint linenums"><![CDATA[
-SecurityService = org.apache.batchee.shiro.ShiroSecurityService]]></pre>
 
 Some more configuration is available in batchee.properties:
 

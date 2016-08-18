@@ -43,7 +43,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -65,7 +64,6 @@ public class MemoryPersistenceManagerService implements PersistenceManagerServic
     protected static interface Structures extends Serializable {
         static class JobInstanceData implements Structures {
             protected JobInstanceImpl instance;
-            protected String tag;
             protected JobStatus status;
             protected final List<ExecutionInstanceData> executions = new LinkedList<ExecutionInstanceData>();
             protected final Collection<CheckpointDataKey> checkpoints = new LinkedList<CheckpointDataKey>();
@@ -117,30 +115,13 @@ public class MemoryPersistenceManagerService implements PersistenceManagerServic
 
     @Override
     public int jobOperatorGetJobInstanceCount(final String jobName) {
-        return jobOperatorGetJobInstanceCount(jobName, null);
-    }
-
-    @Override
-    public int jobOperatorGetJobInstanceCount(final String jobName, final String appTag) {
-        final boolean hasTag = appTag != null;
         int i = 0;
         for (final Structures.JobInstanceData jobInstanceData : data.jobInstanceData.values()) {
-            if (jobInstanceData.instance.getJobName().equals(jobName) && (!hasTag || appTag.equals(jobInstanceData.tag))) {
+            if (jobInstanceData.instance.getJobName().equals(jobName)) {
                 i++;
             }
         }
         return i;
-    }
-
-    @Override
-    public Map<Long, String> jobOperatorGetExternalJobInstanceData() {
-        final Map<Long, String> out = new HashMap<Long, String>();
-        for (final Structures.JobInstanceData jobInstanceData : data.jobInstanceData.values()) {
-            if (jobInstanceData.instance.getJobName() != null && !jobInstanceData.instance.getJobName().startsWith(PartitionedStepBuilder.JOB_ID_SEPARATOR)) {
-                out.put(jobInstanceData.instance.getInstanceId(), jobInstanceData.instance.getJobName());
-            }
-        }
-        return out;
     }
 
     @Override
@@ -156,18 +137,10 @@ public class MemoryPersistenceManagerService implements PersistenceManagerServic
 
     @Override
     public List<Long> jobOperatorGetJobInstanceIds(final String jobName, final int start, final int count) {
-        return jobOperatorGetJobInstanceIds(jobName, null, start, count);
-    }
-
-    @Override
-    public List<Long> jobOperatorGetJobInstanceIds(final String jobName, final String appTag, final int start, final int count) {
         final List<Long> out = new LinkedList<Long>();
         for (final Structures.JobInstanceData jobInstanceData : data.jobInstanceData.values()) {
             if (jobInstanceData.instance.getJobName() != null && jobInstanceData.instance.getJobName().equals(jobName)) {
-                final boolean hasTag = appTag != null;
-                if (!hasTag || appTag.equals(jobInstanceData.tag)) {
-                    out.add(jobInstanceData.instance.getInstanceId());
-                }
+                out.add(jobInstanceData.instance.getInstanceId());
             }
         }
 
@@ -320,12 +293,11 @@ public class MemoryPersistenceManagerService implements PersistenceManagerServic
     }
 
     @Override
-    public JobInstance createJobInstance(final String name, final String apptag, final String jobXml) {
+    public JobInstance createJobInstance(final String name, final String jobXml) {
         final JobInstanceImpl jobInstance = new JobInstanceImpl(data.jobInstanceIdGenerator.getAndIncrement(), jobXml);
         jobInstance.setJobName(name);
 
         final Structures.JobInstanceData jobInstanceData = new Structures.JobInstanceData();
-        jobInstanceData.tag = apptag;
         jobInstanceData.instance = jobInstance;
         if (maxSize > 0 && data.jobInstanceData.size() >= maxSize) {
             synchronized (this) {
@@ -632,8 +604,8 @@ public class MemoryPersistenceManagerService implements PersistenceManagerServic
     }
 
     @Override
-    public JobInstance createSubJobInstance(final String name, final String apptag) {
-        return createJobInstance(name, apptag, null);
+    public JobInstance createSubJobInstance(final String name) {
+        return createJobInstance(name, null);
     }
 
     @Override

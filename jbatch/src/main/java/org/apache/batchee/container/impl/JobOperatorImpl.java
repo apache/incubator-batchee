@@ -28,7 +28,6 @@ import org.apache.batchee.jmx.BatchEEMBeanImpl;
 import org.apache.batchee.spi.JobExecutionCallbackService;
 import org.apache.batchee.spi.JobXMLLoaderService;
 import org.apache.batchee.spi.PersistenceManagerService;
-import org.apache.batchee.spi.SecurityService;
 
 import javax.batch.operations.JobExecutionAlreadyCompleteException;
 import javax.batch.operations.JobExecutionIsRunningException;
@@ -109,7 +108,6 @@ public class JobOperatorImpl implements JobOperator {
     private final PersistenceManagerService persistenceManagerService;
     private final JobXMLLoaderService xmlLoaderService;
     private final JobStatusManagerService statusManagerService;
-    private final SecurityService securityService;
     private final JobExecutionCallbackService callbackService;
 
     public JobOperatorImpl() {
@@ -119,7 +117,6 @@ public class JobOperatorImpl implements JobOperator {
             persistenceManagerService = servicesManager.service(PersistenceManagerService.class);
             xmlLoaderService = servicesManager.service(JobXMLLoaderService.class);
             statusManagerService = servicesManager.service(JobStatusManagerService.class);
-            securityService = servicesManager.service(SecurityService.class);
             callbackService = servicesManager.service(JobExecutionCallbackService.class);
         } catch (RuntimeException e) {
             LOGGER.log(Level.SEVERE, "Error while booting BatchEE", e);
@@ -129,10 +126,6 @@ public class JobOperatorImpl implements JobOperator {
 
     @Override
     public long start(final String jobXMLName, final Properties jobParameters) throws JobStartException, JobSecurityException {
-        if (!securityService.isAuthorized(Permissions.START.name)) {
-            throw new JobSecurityException("The current user is not authorized to perform this operation");
-        }
-
         /*
          * The whole point of this method is to have JobStartException serve as a blanket exception for anything other
          * than the rest of the more specific exceptions declared on the throws clause.  So we won't log but just rethrow.
@@ -165,10 +158,6 @@ public class JobOperatorImpl implements JobOperator {
 
     @Override
     public void abandon(final long executionId) throws NoSuchJobExecutionException, JobExecutionIsRunningException, JobSecurityException {
-        if (!securityService.isAuthorized(persistenceManagerService.getJobInstanceIdByExecutionId(executionId))) {
-            throw new JobSecurityException("The current user is not authorized to perform this operation");
-        }
-
         final InternalJobExecution jobEx = persistenceManagerService.jobOperatorGetJobExecution(executionId);
 
         // if it is not in STARTED or STARTING state, mark it as ABANDONED
@@ -187,18 +176,12 @@ public class JobOperatorImpl implements JobOperator {
     @Override
     public InternalJobExecution getJobExecution(final long executionId)
         throws NoSuchJobExecutionException, JobSecurityException {
-        if (!securityService.isAuthorized(persistenceManagerService.getJobInstanceIdByExecutionId(executionId))) {
-            throw new JobSecurityException("The current user is not authorized to perform this operation");
-        }
         return kernelService.getJobExecution(executionId);
     }
 
     @Override
     public List<JobExecution> getJobExecutions(final JobInstance instance)
         throws NoSuchJobInstanceException, JobSecurityException {
-        if (!securityService.isAuthorized(instance.getInstanceId())) {
-            throw new JobSecurityException("The current user is not authorized to perform this operation");
-        }
 
         // Mediate between one
         final List<JobExecution> executions = new ArrayList<JobExecution>();
@@ -215,22 +198,12 @@ public class JobOperatorImpl implements JobOperator {
     @Override
     public JobInstance getJobInstance(long executionId)
         throws NoSuchJobExecutionException, JobSecurityException {
-        if (!securityService.isAuthorized(persistenceManagerService.getJobInstanceIdByExecutionId(executionId))) {
-            throw new JobSecurityException("The current user is not authorized to perform this operation");
-        }
         return kernelService.getJobInstance(executionId);
     }
 
     @Override
     public int getJobInstanceCount(String jobName) throws NoSuchJobException, JobSecurityException {
-        int jobInstanceCount;
-        if (securityService.isAuthorized(JBATCH_ADMIN)) {
-            // Do an unfiltered query
-            jobInstanceCount = persistenceManagerService.jobOperatorGetJobInstanceCount(jobName);
-        } else {
-            jobInstanceCount = persistenceManagerService.jobOperatorGetJobInstanceCount(jobName, securityService.getLoggedUser());
-        }
-
+        final int jobInstanceCount = persistenceManagerService.jobOperatorGetJobInstanceCount(jobName);
         if (jobInstanceCount > 0) {
             return jobInstanceCount;
         }
@@ -249,13 +222,7 @@ public class JobOperatorImpl implements JobOperator {
             throw new IllegalArgumentException("Count should be a positive integer (or 0, which will return an empty list)");
         }
 
-        final List<Long> instanceIds;
-        if (securityService.isAuthorized(JBATCH_ADMIN)) {
-            // Do an unfiltered query
-            instanceIds = persistenceManagerService.jobOperatorGetJobInstanceIds(jobName, start, count);
-        } else {
-            instanceIds = persistenceManagerService.jobOperatorGetJobInstanceIds(jobName, securityService.getLoggedUser(), start, count);
-        }
+        final List<Long> instanceIds = persistenceManagerService.jobOperatorGetJobInstanceIds(jobName, start, count);
 
         // get the jobinstance ids associated with this job name
 
@@ -265,9 +232,7 @@ public class JobOperatorImpl implements JobOperator {
                 // get the job instance obj, add it to the list
                 final JobStatus jobStatus = statusManagerService.getJobStatus(id);
                 final JobInstance jobInstance = jobStatus.getJobInstance();
-                if (securityService.isAuthorized(jobInstance.getInstanceId())) {
-                    jobInstances.add(jobInstance);
-                }
+                jobInstances.add(jobInstance);
             }
             // send the list of objs back to caller
             return jobInstances;
@@ -282,22 +247,12 @@ public class JobOperatorImpl implements JobOperator {
      */
     @Override
     public Set<String> getJobNames() throws JobSecurityException {
-        final Set<String> jobNames = new HashSet<String>();
-        final Set<String> jobNamesFromDb = persistenceManagerService.getJobNames();
-        for (String jobName : jobNamesFromDb) {
-            if (securityService.isAuthorizedJobName(jobName)) {
-                jobNames.add(jobName);
-            }
-        }
-        return jobNames;
+        return new HashSet<String>(persistenceManagerService.getJobNames());
     }
 
     @Override
     public Properties getParameters(final long executionId) throws NoSuchJobExecutionException, JobSecurityException {
         final JobInstance requestedJobInstance = kernelService.getJobInstance(executionId);
-        if (!securityService.isAuthorized(requestedJobInstance.getInstanceId())) {
-            throw new JobSecurityException("The current user is not authorized to perform this operation");
-        }
         return persistenceManagerService.getParameters(executionId);
     }
 
@@ -316,11 +271,9 @@ public class JobOperatorImpl implements JobOperator {
         // for every job instance id
         for (final long id : executionIds) {
             try {
-                if (securityService.isAuthorized(persistenceManagerService.getJobInstanceIdByExecutionId(id))) {
-                    if (kernelService.isExecutionRunning(id)) {
-                        final InternalJobExecution jobEx = kernelService.getJobExecution(id);
-                        jobExecutions.add(jobEx.getExecutionId());
-                    }
+                if (kernelService.isExecutionRunning(id)) {
+                    final InternalJobExecution jobEx = kernelService.getJobExecution(id);
+                    jobExecutions.add(jobEx.getExecutionId());
                 }
             } catch (final NoSuchJobExecutionException e) {
                 throw new IllegalStateException("Just found execution with id = " + id + " in table, but now seeing it as gone", e);
@@ -337,10 +290,7 @@ public class JobOperatorImpl implements JobOperator {
         if (jobEx == null) {
             throw new NoSuchJobExecutionException("Job Execution: " + executionId + " not found");
         }
-        if (securityService.isAuthorized(persistenceManagerService.getJobInstanceIdByExecutionId(executionId))) {
-            return persistenceManagerService.getStepExecutionsForJobExecution(executionId);
-        }
-        throw new JobSecurityException("The current user is not authorized to perform this operation");
+        return persistenceManagerService.getStepExecutionsForJobExecution(executionId);
     }
 
     @Override
@@ -367,10 +317,6 @@ public class JobOperatorImpl implements JobOperator {
 
     private long restartInternal(final long oldExecutionId, final Properties restartParameters)
             throws JobExecutionAlreadyCompleteException, NoSuchJobExecutionException, JobExecutionNotMostRecentException, JobRestartException, JobSecurityException {
-        if (!securityService.isAuthorized(persistenceManagerService.getJobInstanceIdByExecutionId(oldExecutionId))) {
-            throw new JobSecurityException("The current user is not authorized to perform this operation");
-        }
-
         final StringWriter jobParameterWriter = new StringWriter();
         if (restartParameters != null) {
             try {
@@ -387,10 +333,6 @@ public class JobOperatorImpl implements JobOperator {
 
     @Override
     public void stop(final long executionId) throws NoSuchJobExecutionException, JobExecutionNotRunningException, JobSecurityException {
-        if (!securityService.isAuthorized(persistenceManagerService.getJobInstanceIdByExecutionId(executionId))) {
-            throw new JobSecurityException("The current user is not authorized to perform this operation");
-        }
-
         kernelService.stopJob(executionId);
     }
 

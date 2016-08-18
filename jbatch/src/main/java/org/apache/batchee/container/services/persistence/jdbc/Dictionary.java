@@ -37,18 +37,17 @@ public class Dictionary {
         String DELETE_CHECKPOINT = DELETE + "%s" + WHERE + "%s = ?";
         String DELETE_CHECKPOINT_UNTIL = DELETE + "%s WHERE %s IN (" + SELECT + " DISTINCT t1.%s FROM %s t1 WHERE (SELECT MAX(t0.%s) FROM %s t0 WHERE t0.%s = t1.%s) < ?)";
 
-        String[] JOB_INSTANCE_COLUMNS = { "jobInstanceId", "batchStatus", "exitStatus", "jobName", "jobXml", "latestExecution", "restartOn", "step", "tag" };
-        String CREATE_JOB_INSTANCE = CREATE_TABLE + "%s(%s %s %s, %s %s, %s %s, %s %s, %s %s, %s %s, %s %s, %s %s, %s %s, PRIMARY KEY (%s))";
+        String[] JOB_INSTANCE_COLUMNS = { "jobInstanceId", "batchStatus", "exitStatus", "jobName", "jobXml", "latestExecution", "restartOn", "step" };
+        String CREATE_JOB_INSTANCE = CREATE_TABLE + "%s(%s %s %s, %s %s, %s %s, %s %s, %s %s, %s %s, %s %s, %s %s, PRIMARY KEY (%s))";
         String JOB_INSTANCE_COUNT_FROM_NAME = SELECT + "count(%s) as jobinstancecount" + FROM + "%s" + WHERE + "%s = ?";
         String JOB_INSTANCE_BY_ID = SELECT + "*" + FROM + "%s" + WHERE + "%s = ?";
         String JOB_INSTANCE_UPDATE_STATUS = UPDATE + "%s set %s = ?, %s = ?, %s = ?, %s = ?, %s = ?, %s = ?" + WHERE + "%s = ?";
-        String JOB_INSTANCE_COUNT = JOB_INSTANCE_COUNT_FROM_NAME + " and %s = ?";
-        String JOB_INSTANCE_IDS = SELECT + "%s" + FROM + "%s" + WHERE + "%s = ? and %s = ? order by %s desc";
+        String JOB_INSTANCE_IDS = SELECT + "%s" + FROM + "%s" + WHERE + "%s = ? order by %s desc";
         String JOB_INSTANCE_IDS_FROM_NAME = SELECT + "%s" + FROM + "%s" + WHERE + " %s = ? order by %s desc";
         String JOB_NAMES = SELECT + "distinct %s" + FROM + "%s" + WHERE + "%s not like '%s'";
         String EXTERNAL_JOB_INSTANCE = SELECT + "distinct %s, %s" + FROM + "%s" + WHERE + "%s not like '%s'";
-        String JOB_INSTANCE_CREATE = INSERT_INTO + "%s" + "(%s, %s) VALUES(?, ?)";
-        String JOB_INSTANCE_CREATE_WITH_JOB_XML = INSERT_INTO + "%s" + "(%s, %s, %s) VALUES(?, ?, ?)";
+        String JOB_INSTANCE_CREATE = INSERT_INTO + "%s" + "(%s) VALUES(?)";
+        String JOB_INSTANCE_CREATE_WITH_JOB_XML = INSERT_INTO + "%s" + "(%s, %s) VALUES(?, ?)";
         String DELETE_JOB_INSTANCE = DELETE + "%s" + WHERE + "%s = ?";
         String DELETE_JOB_INSTANCE_UNTIL = DELETE + "%s" + WHERE + "%s IN (" + SELECT + "distinct t1.%s" + FROM + "%s t1" + WHERE + "(" + SELECT + "max(t0.%s)" + FROM + "%s t0" +
             WHERE + "t0.%s = t1.%s) < ?)";
@@ -110,7 +109,6 @@ public class Dictionary {
     private final String countJobInstanceByName;
     private final String findJobInstance;
     private final String updateJobInstanceStatus;
-    private final String countJobInstanceByNameAndTag;
     private final String findJoBInstanceIds;
     private final String findJobInstanceIdsByName;
     private final String findJobNames;
@@ -178,6 +176,7 @@ public class Dictionary {
             this.selectCheckpoint = String.format(SQL.SELECT_CHECKPOINT, checkpointColumns[1], checkpointTable, checkpointColumns[4], checkpointColumns[3], checkpointColumns[2]);
             this.updateCheckpoint = String.format(SQL.UPDATE_CHECKPOINT, checkpointTable, checkpointColumns[1], checkpointColumns[4], checkpointColumns[3], checkpointColumns[2]);
             this.deleteCheckpoint = String.format(SQL.DELETE_CHECKPOINT, checkpointTable, checkpointColumns[4]);
+            // String DELETE_CHECKPOINT_UNTIL = DELETE + "%s WHERE %s IN (" + SELECT + " DISTINCT t1.%s FROM %s t1 WHERE (SELECT MAX(t0.%s) FROM %s t0 WHERE t0.%s = t1.%s) < ?)";
             this.deleteCheckpointUntil = String.format(SQL.DELETE_CHECKPOINT_UNTIL, checkpointTable, checkpointColumns[0], checkpointColumns[0], checkpointTable,
                 jobExecutionColumns[3], jobExecutionTable, checkpointColumns[4], jobExecutionColumns[8]);
         }
@@ -192,21 +191,18 @@ public class Dictionary {
                                                         jobInstanceColumns[5], database.bigint(),
                                                         jobInstanceColumns[6], database.varchar255(),
                                                         jobInstanceColumns[7], database.varchar255(),
-                                                        jobInstanceColumns[8], database.varchar255(), jobInstanceColumns[0]);
+                                                        jobInstanceColumns[0]);
             this.countJobInstanceByName = String.format(SQL.JOB_INSTANCE_COUNT_FROM_NAME, jobInstanceColumns[0], jobInstanceTable, jobInstanceColumns[3]);
             this.findJobInstance = String.format(SQL.JOB_INSTANCE_BY_ID, jobInstanceTable, jobInstanceColumns[0]);
             this.updateJobInstanceStatus = String.format(SQL.JOB_INSTANCE_UPDATE_STATUS, jobInstanceTable, jobInstanceColumns[1], jobInstanceColumns[2], jobInstanceColumns[5],
                     jobInstanceColumns[6], jobInstanceColumns[7], jobInstanceColumns[3], jobInstanceColumns[0]);
-            this.countJobInstanceByNameAndTag = String.format(SQL.JOB_INSTANCE_COUNT, jobInstanceColumns[0], jobInstanceTable, jobInstanceColumns[6], jobInstanceColumns[8]);
-            this.findJoBInstanceIds = String.format(SQL.JOB_INSTANCE_IDS, jobInstanceColumns[0], jobInstanceTable, jobInstanceColumns[3],
-                    jobInstanceColumns[8], jobInstanceColumns[0]);
+            this.findJoBInstanceIds = String.format(SQL.JOB_INSTANCE_IDS, jobInstanceColumns[0], jobInstanceTable, jobInstanceColumns[3], jobInstanceColumns[0]);
             this.findJobInstanceIdsByName = String.format(SQL.JOB_INSTANCE_IDS_FROM_NAME, jobInstanceColumns[0], jobInstanceTable, jobInstanceColumns[3], jobInstanceColumns[0]);
             this.findJobNames = String.format(SQL.JOB_NAMES, jobInstanceColumns[3], jobInstanceTable, jobInstanceColumns[3], PartitionedStepBuilder.JOB_ID_SEPARATOR + "%");
             this.findExternalJobInstances = String.format(SQL.EXTERNAL_JOB_INSTANCE, jobInstanceColumns[0], jobInstanceColumns[3], jobInstanceTable,
                     jobInstanceColumns[3], PartitionedStepBuilder.JOB_ID_SEPARATOR + "%");
-            this.createJobInstance = String.format(SQL.JOB_INSTANCE_CREATE, jobInstanceTable, jobInstanceColumns[3], jobInstanceColumns[8]);
-            this.createJobInstanceWithJobXml = String.format(SQL.JOB_INSTANCE_CREATE_WITH_JOB_XML, jobInstanceTable, jobInstanceColumns[3],
-                    jobInstanceColumns[8], jobInstanceColumns[4]);
+            this.createJobInstance = String.format(SQL.JOB_INSTANCE_CREATE, jobInstanceTable, jobInstanceColumns[3]);
+            this.createJobInstanceWithJobXml = String.format(SQL.JOB_INSTANCE_CREATE_WITH_JOB_XML, jobInstanceTable, jobInstanceColumns[3], jobInstanceColumns[4]);
             this.deleteJobInstance = String.format(SQL.DELETE_JOB_INSTANCE, jobInstanceTable, jobInstanceColumns[0]);
             this.deleteJobInstanceUntil = String.format(SQL.DELETE_JOB_INSTANCE_UNTIL, jobInstanceTable, jobInstanceColumns[0], jobInstanceColumns[0], jobInstanceTable,
                 jobExecutionColumns[3], jobExecutionTable, jobExecutionColumns[8], jobInstanceColumns[0]);
@@ -350,10 +346,6 @@ public class Dictionary {
 
     public String getUpdateJobInstanceStatus() {
         return updateJobInstanceStatus;
-    }
-
-    public String getCountJobInstanceByNameAndTag() {
-        return countJobInstanceByNameAndTag;
     }
 
     public String getFindJoBInstanceIds() {
@@ -520,3 +512,4 @@ public class Dictionary {
         return deleteStepExecutionUntil;
     }
 }
+

@@ -64,7 +64,7 @@ public class PersistenceManagerServiceTest {
             System.out.println("");
 
             for (int i = 0; i < 3; i++) {
-                final JobInstance instance = service.createJobInstance("test", "app", "xml");
+                final JobInstance instance = service.createJobInstance("test", "xml");
                 final RuntimeJobExecution exec = service.createJobExecution(instance, new Properties(), BatchStatus.COMPLETED);
                 final StepExecutionImpl step = service.createStepExecution(exec.getExecutionId(), new StepContextImpl("step"));
                 service.createStepStatus(step.getStepExecutionId()).setBatchStatus(BatchStatus.STARTED);

@@ -29,13 +29,12 @@ import org.apache.batchee.jaxb.JSLJob;
 import org.apache.batchee.jaxb.JSLProperties;
 import org.apache.batchee.jaxb.Step;
 import org.apache.batchee.spi.PersistenceManagerService;
-import org.apache.batchee.spi.SecurityService;
 
-import java.util.Properties;
 import javax.batch.runtime.BatchStatus;
 import javax.batch.runtime.JobExecution;
 import javax.batch.runtime.JobInstance;
 import javax.batch.runtime.StepExecution;
+import java.util.Properties;
 
 public class StepLauncher {
     private static final Properties EMPTY_PROPERTIES = new Properties();
@@ -70,7 +69,7 @@ public class StepLauncher {
         job.getExecutionElements().add(step);
 
         // contextual data
-        final JobInstance jobInstance = persistenceManagerService.createJobInstance(step.getId(), manager.service(SecurityService.class).getLoggedUser(), null);
+        final JobInstance jobInstance = persistenceManagerService.createJobInstance(step.getId(), null);
         manager.service(JobStatusManagerService.class).createJobStatus(jobInstance.getInstanceId());
 
         final JobContextImpl jobContext = new JobContextImpl(new JobNavigator(job), EMPTY_JSL_PROPERTIES);

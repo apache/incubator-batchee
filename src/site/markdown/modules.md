@@ -32,22 +32,6 @@ under the License.
 
 Implements JBatch (aka JSR 352). More details on [configuration](./configuration.html) page.
 
-## Shiro
-### Dependency
-
-<pre class="prettyprint linenums"><![CDATA[
-<dependency>
-  <groupId>org.apache.batchee</groupId>
-  <artifactId>batchee-shiro</artifactId>
-  <version>${batchee.version}</version>
-</dependency>
-]]></pre>
-
-### Goal
-
-A simple integration with Apache Shiro to check permissions when running a batch.
-
-
 ## Hazelcast
 ### Dependency
 

@@ -30,7 +30,6 @@ import org.apache.batchee.container.status.JobStatus;
 import org.apache.batchee.jaxb.JSLJob;
 import org.apache.batchee.jaxb.JSLProperties;
 import org.apache.batchee.spi.PersistenceManagerService;
-import org.apache.batchee.spi.SecurityService;
 
 import javax.batch.operations.JobExecutionAlreadyCompleteException;
 import javax.batch.operations.JobExecutionNotMostRecentException;
@@ -72,12 +71,11 @@ public class JobExecutionHelper {
 
     private static JobInstance getNewJobInstance(final ServicesManager servicesManager, final String name, final String jobXml) {
         return servicesManager.service(PersistenceManagerService.class).createJobInstance(
-                name, servicesManager.service(SecurityService.class).getLoggedUser(), jobXml);
+                name, jobXml);
     }
 
     private static JobInstance getNewSubJobInstance(final ServicesManager servicesManager, final String name) {
-        return servicesManager.service(PersistenceManagerService.class).createSubJobInstance(
-                name, servicesManager.service(SecurityService.class).getLoggedUser());
+        return servicesManager.service(PersistenceManagerService.class).createSubJobInstance(name);
     }
 
     private static JobStatus createNewJobStatus(final JobStatusManagerService statusManagerService, final JobInstance jobInstance) {

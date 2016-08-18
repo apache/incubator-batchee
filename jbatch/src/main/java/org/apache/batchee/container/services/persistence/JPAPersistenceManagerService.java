@@ -57,10 +57,8 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
@@ -145,25 +143,6 @@ public class JPAPersistenceManagerService implements PersistenceManagerService {
         } finally {
             emProvider.release(em);
         }
-    }
-
-    @Override
-    public Map<Long, String> jobOperatorGetExternalJobInstanceData() {
-        final Map<Long, String> data = new HashMap<Long, String>();
-        final EntityManager em = emProvider.newEntityManager();
-        try {
-            final List<JobInstanceEntity> list = em.createNamedQuery(JobInstanceEntity.Queries.FIND_EXTERNALS, JobInstanceEntity.class)
-                .setParameter("pattern", PartitionedStepBuilder.JOB_ID_SEPARATOR)
-                .getResultList();
-            if (list != null) {
-                for (final JobInstanceEntity elt : list) {
-                    data.put(elt.getJobInstanceId(), elt.getName());
-                }
-            }
-        } finally {
-            emProvider.release(em);
-        }
-        return data;
     }
 
     @Override
@@ -622,25 +601,16 @@ public class JPAPersistenceManagerService implements PersistenceManagerService {
     }
 
     @Override
-    public JobInstance createSubJobInstance(final String name, final String apptag) {
-        return createJobInstance(name, apptag, null);
+    public JobInstance createSubJobInstance(final String name) {
+        return createJobInstance(name, null);
     }
 
     @Override
     public List<Long> jobOperatorGetJobInstanceIds(final String jobName, final int start, final int count) {
-        return jobOperatorGetJobInstanceIds(jobName, null, start, count);
-    }
-
-    @Override
-    public List<Long> jobOperatorGetJobInstanceIds(final String jobName, final String appTag, final int start, final int count) {
         final EntityManager em = emProvider.newEntityManager();
         try {
             final TypedQuery<JobInstanceEntity> query;
-            if (appTag != null) {
-                query = em.createNamedQuery(JobInstanceEntity.Queries.FIND_BY_NAME, JobInstanceEntity.class).setParameter("tag", appTag);
-            } else {
-                query = em.createNamedQuery(JobInstanceEntity.Queries.FIND_BY_NAME, JobInstanceEntity.class);
-            }
+            query = em.createNamedQuery(JobInstanceEntity.Queries.FIND_BY_NAME, JobInstanceEntity.class);
             query.setParameter("name", jobName);
 
             final List<JobInstanceEntity> resultList = query
@@ -663,11 +633,10 @@ public class JPAPersistenceManagerService implements PersistenceManagerService {
     }
 
     @Override
-    public JobInstance createJobInstance(final String name, final String apptag, final String jobXml) {
+    public JobInstance createJobInstance(final String name, final String jobXml) {
         final EntityManager em = emProvider.newEntityManager();
         try {
             final JobInstanceEntity instance = new JobInstanceEntity();
-            instance.setTag(apptag);
             instance.setName(name);
             instance.setJobXml(jobXml);
 
@@ -693,19 +662,6 @@ public class JPAPersistenceManagerService implements PersistenceManagerService {
         try {
             return em.createNamedQuery(JobInstanceEntity.Queries.COUNT_BY_NAME, Number.class)
                 .setParameter("name", jobName)
-                .getSingleResult().intValue();
-        } finally {
-            emProvider.release(em);
-        }
-    }
-
-    @Override
-    public int jobOperatorGetJobInstanceCount(final String jobName, final String appTag) {
-        final EntityManager em = emProvider.newEntityManager();
-        try {
-            return em.createNamedQuery(JobInstanceEntity.Queries.COUNT_BY_NAME, Number.class)
-                .setParameter("name", jobName)
-                .setParameter("tag", appTag)
                 .getSingleResult().intValue();
         } finally {
             emProvider.release(em);

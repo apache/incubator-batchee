@@ -30,17 +30,14 @@ import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
-
 import java.util.List;
 
 @Entity
 @NamedQueries({
-    @NamedQuery(name = JobInstanceEntity.Queries.COUNT_BY_NAME_AND_TAG, query = "select count(j) from JobInstanceEntity j where j.name = :name and j.tag = :tag"),
     @NamedQuery(name = JobInstanceEntity.Queries.COUNT_BY_NAME, query = "select count(j) from JobInstanceEntity j where j.name = :name"),
     @NamedQuery(name = JobInstanceEntity.Queries.FIND_FROM_EXECUTION, query = "select j from JobInstanceEntity j inner join j.executions e where e.executionId = :executionId"),
     @NamedQuery(name = JobInstanceEntity.Queries.FIND_EXTERNALS, query = "select j from JobInstanceEntity j where j.name not like :pattern"),
     @NamedQuery(name = JobInstanceEntity.Queries.FIND_JOBNAMES, query = "select distinct(j.name) from JobInstanceEntity j where j.name not like :pattern"),
-    @NamedQuery(name = JobInstanceEntity.Queries.FIND_BY_NAME_AND_TAG, query = "select j from JobInstanceEntity j where j.name = :name and j.tag = :tag"),
     @NamedQuery(name = JobInstanceEntity.Queries.FIND_BY_NAME, query = "select j from JobInstanceEntity j where j.name = :name"),
     @NamedQuery(name = JobInstanceEntity.Queries.DELETE_BY_INSTANCE_ID, query = "delete from JobInstanceEntity e where e.jobInstanceId = :instanceId"),
     @NamedQuery(
@@ -50,10 +47,8 @@ import java.util.List;
 @Table(name=JobInstanceEntity.TABLE_NAME)
 public class JobInstanceEntity {
     public interface Queries {
-        String COUNT_BY_NAME_AND_TAG = "org.apache.batchee.container.services.persistence.jpa.domain.JobInstanceEntity.countByNameAndTag";
         String COUNT_BY_NAME = "org.apache.batchee.container.services.persistence.jpa.domain.JobInstanceEntity.countByName";
         String FIND_BY_NAME = "org.apache.batchee.container.services.persistence.jpa.domain.JobInstanceEntity.findByName";
-        String FIND_BY_NAME_AND_TAG = "org.apache.batchee.container.services.persistence.jpa.domain.JobInstanceEntity.findByNameAndTag";
         String FIND_EXTERNALS = "org.apache.batchee.container.services.persistence.jpa.domain.JobInstanceEntity.findExternals";
         String FIND_JOBNAMES = "org.apache.batchee.container.services.persistence.jpa.domain.JobInstanceEntity.findJobNames";
         String FIND_FROM_EXECUTION = "org.apache.batchee.container.services.persistence.jpa.domain.JobInstanceEntity.findByExecution";
@@ -68,7 +63,6 @@ public class JobInstanceEntity {
     private long jobInstanceId;
 
     private String name;
-    private String tag;
 
     @Lob
     private String jobXml;
@@ -94,14 +88,6 @@ public class JobInstanceEntity {
 
     public void setName(final String name) {
         this.name = name;
-    }
-
-    public String getTag() {
-        return tag;
-    }
-
-    public void setTag(final String tag) {
-        this.tag = tag;
     }
 
     public void setJobXml(final String jobXml) {

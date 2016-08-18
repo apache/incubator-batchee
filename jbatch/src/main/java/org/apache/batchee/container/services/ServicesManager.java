@@ -28,7 +28,6 @@ import org.apache.batchee.container.services.kernel.DefaultBatchKernel;
 import org.apache.batchee.container.services.loader.DefaultJobXMLLoaderService;
 import org.apache.batchee.container.services.locator.SingletonLocator;
 import org.apache.batchee.container.services.persistence.MemoryPersistenceManagerService;
-import org.apache.batchee.container.services.security.DefaultSecurityService;
 import org.apache.batchee.container.services.status.DefaultJobStatusManager;
 import org.apache.batchee.container.services.transaction.DefaultBatchTransactionService;
 import org.apache.batchee.container.util.BatchContainerConstants;
@@ -39,7 +38,6 @@ import org.apache.batchee.spi.DataRepresentationService;
 import org.apache.batchee.spi.JobExecutionCallbackService;
 import org.apache.batchee.spi.JobXMLLoaderService;
 import org.apache.batchee.spi.PersistenceManagerService;
-import org.apache.batchee.spi.SecurityService;
 import org.apache.batchee.spi.TransactionManagementService;
 
 import java.io.IOException;
@@ -65,7 +63,6 @@ public class ServicesManager implements BatchContainerConstants {
         SERVICE_IMPL_CLASS_NAMES.put(BatchThreadPoolService.class.getName(), DefaultThreadPoolService.class.getName());
         SERVICE_IMPL_CLASS_NAMES.put(BatchKernelService.class.getName(), DefaultBatchKernel.class.getName());
         SERVICE_IMPL_CLASS_NAMES.put(JobXMLLoaderService.class.getName(), DefaultJobXMLLoaderService.class.getName());
-        SERVICE_IMPL_CLASS_NAMES.put(SecurityService.class.getName(), DefaultSecurityService.class.getName());
         SERVICE_IMPL_CLASS_NAMES.put(JobExecutionCallbackService.class.getName(), SimpleJobExecutionCallbackService.class.getName());
         SERVICE_IMPL_CLASS_NAMES.put(DataRepresentationService.class.getName(), DefaultDataRepresentationService.class.getName());
         try {

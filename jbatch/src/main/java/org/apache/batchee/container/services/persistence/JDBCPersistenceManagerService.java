@@ -68,10 +68,8 @@ import java.sql.Statement;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
@@ -441,26 +439,6 @@ public class JDBCPersistenceManagerService implements PersistenceManagerService 
     }
 
     @Override
-    public int jobOperatorGetJobInstanceCount(final String jobName, final String appTag) {
-        Connection conn = null;
-        PreparedStatement statement = null;
-        ResultSet rs = null;
-        try {
-            conn = getConnection();
-            statement = conn.prepareStatement(dictionary.getCountJobInstanceByNameAndTag());
-            statement.setString(1, jobName);
-            statement.setString(2, appTag);
-            rs = statement.executeQuery();
-            rs.next();
-            return rs.getInt("jobinstancecount"); // not a column name so ok
-        } catch (final SQLException e) {
-            throw new PersistenceException(e);
-        } finally {
-            cleanupConnection(conn, rs, statement);
-        }
-    }
-
-    @Override
     public int jobOperatorGetJobInstanceCount(final String jobName) {
         Connection conn = null;
         PreparedStatement statement = null;
@@ -477,39 +455,6 @@ public class JDBCPersistenceManagerService implements PersistenceManagerService 
         } finally {
             cleanupConnection(conn, rs, statement);
         }
-    }
-
-
-    @Override
-    public List<Long> jobOperatorGetJobInstanceIds(final String jobName, final String appTag, final int start, final int count) {
-        Connection conn = null;
-        PreparedStatement statement = null;
-        ResultSet rs = null;
-
-        final List<Long> data = new ArrayList<Long>();
-        try {
-            conn = getConnection();
-            statement = conn.prepareStatement(dictionary.getFindJoBInstanceIds());
-            statement.setObject(1, jobName);
-            statement.setObject(2, appTag);
-            rs = statement.executeQuery();
-            while (rs.next()) {
-                data.add(rs.getLong(dictionary.jobInstanceColumns(0)));
-            }
-        } catch (final SQLException e) {
-            throw new PersistenceException(e);
-        } finally {
-            cleanupConnection(conn, rs, statement);
-        }
-
-        if (!data.isEmpty()) {
-            try {
-                return data.subList(start, start + count);
-            } catch (final IndexOutOfBoundsException oobEx) {
-                return data.subList(start, data.size());
-            }
-        }
-        return data;
     }
 
     @Override
@@ -541,32 +486,6 @@ public class JDBCPersistenceManagerService implements PersistenceManagerService 
                 return data.subList(start, data.size());
             }
         }
-        return data;
-    }
-
-    @Override
-    public Map<Long, String> jobOperatorGetExternalJobInstanceData() {
-        Connection conn = null;
-        PreparedStatement statement = null;
-        ResultSet rs = null;
-
-        final Map<Long, String> data = new HashMap<Long, String>();
-
-        try {
-            conn = getConnection();
-
-            // Filter out 'subjob' parallel execution entries which start with the special character
-            statement = conn.prepareStatement(dictionary.getFindExternalJobInstances());
-            rs = statement.executeQuery();
-            while (rs.next()) {
-                data.put(rs.getLong(dictionary.jobInstanceColumns(0)), rs.getString(dictionary.jobInstanceColumns(3)));
-            }
-        } catch (final SQLException e) {
-            throw new PersistenceException(e);
-        } finally {
-            cleanupConnection(conn, rs, statement);
-        }
-
         return data;
     }
 
@@ -1114,7 +1033,7 @@ public class JDBCPersistenceManagerService implements PersistenceManagerService 
     }
 
     @Override
-    public JobInstance createSubJobInstance(final String name, final String apptag) {
+    public JobInstance createSubJobInstance(final String name) {
         Connection conn = null;
         PreparedStatement statement = null;
         ResultSet rs = null;
@@ -1124,7 +1043,6 @@ public class JDBCPersistenceManagerService implements PersistenceManagerService 
             conn = getConnection();
             statement = conn.prepareStatement(dictionary.getCreateJobInstance(), Statement.RETURN_GENERATED_KEYS);
             statement.setString(1, name);
-            statement.setString(2, apptag);
             statement.executeUpdate();
             if (!conn.getAutoCommit()) {
                 conn.commit();
@@ -1144,7 +1062,7 @@ public class JDBCPersistenceManagerService implements PersistenceManagerService 
     }
 
     @Override
-    public JobInstance createJobInstance(final String name, final String apptag, final String jobXml) {
+    public JobInstance createJobInstance(final String name, final String jobXml) {
         Connection conn = null;
         PreparedStatement statement = null;
         ResultSet rs = null;
@@ -1153,8 +1071,7 @@ public class JDBCPersistenceManagerService implements PersistenceManagerService 
             conn = getConnection();
             statement = conn.prepareStatement(dictionary.getCreateJobInstanceWithJobXml(), Statement.RETURN_GENERATED_KEYS);
             statement.setString(1, name);
-            statement.setString(2, apptag);
-            statement.setBytes(3, jobXml.getBytes(UTF_8));
+            statement.setBytes(2, jobXml.getBytes(UTF_8));
             statement.executeUpdate();
             if (!conn.getAutoCommit()) {
                 conn.commit();
