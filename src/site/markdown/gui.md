@@ -17,6 +17,14 @@ specific language governing permissions and limitations
 under the License.
 -->
 # GUI
+
+Apache BatchEE provides a Web-UI and 2 different ways to expose Batch details via REST
+
+## SimpleRest 
+
+For a quick out of the box solution to gather information about the JBatch environment you can use our Servlet based solution
+
+
 ## JAX-RS resource
 
 `org.apache.batchee.jaxrs.server.JBatchResourceImpl` maps more or less `javax.batch.operations.JobOperator` API
