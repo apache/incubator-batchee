@@ -57,7 +57,7 @@ public class SimpleJobExecutionCallbackService implements JobExecutionCallbackSe
 
         // check before blocking
         final InternalJobExecution finalCheckExec = ServicesManager.find().service(BatchKernelService.class).getJobExecution(id);
-        if (Batches.isDone(finalCheckExec.getBatchStatus())) {
+        if (finalCheckExec != null && Batches.isDone(finalCheckExec.getBatchStatus())) {
             waiters.remove(id);
             return;
         }

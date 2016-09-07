@@ -255,7 +255,7 @@ public class JobOperatorImpl implements JobOperator {
         // get the jobexecution ids associated with this job name
         final Set<Long> executionIds = persistenceManagerService.jobOperatorGetRunningExecutions(jobName);
 
-        if (executionIds.size() <= 0) {
+        if (executionIds.isEmpty()) {
             throw new NoSuchJobException("Job Name " + jobName + " not found");
         }
 

@@ -232,7 +232,7 @@ public class MemoryPersistenceManagerService implements PersistenceManagerServic
     public List<InternalJobExecution> jobOperatorGetJobExecutions(final long jobInstanceId) {
         final List<InternalJobExecution> list = new LinkedList<InternalJobExecution>();
         final Structures.JobInstanceData jobInstanceData = data.jobInstanceData.get(jobInstanceId);
-        if (jobInstanceData == null || jobInstanceData.executions == null) {
+        if (jobInstanceData == null) {
             return list;
         }
         synchronized (jobInstanceData.executions) {
@@ -245,27 +245,20 @@ public class MemoryPersistenceManagerService implements PersistenceManagerServic
 
     @Override
     public Set<Long> jobOperatorGetRunningExecutions(final String jobName) {
-        Structures.JobInstanceData jobInstanceData = null;
-        for (final Structures.JobInstanceData instanceData : data.jobInstanceData.values()) {
-            if (instanceData.instance.getJobName().equals(jobName)) {
-                jobInstanceData = instanceData;
-                break;
-            }
-        }
-
-        if (jobInstanceData == null) {
-            return Collections.emptySet();
-        }
-
         final Set<Long> set = new HashSet<Long>();
 
-        synchronized (jobInstanceData.executions) {
-            for (final Structures.ExecutionInstanceData executionInstanceData : jobInstanceData.executions) {
-                if (RUNNING_STATUSES.contains(executionInstanceData.execution.getBatchStatus())) {
-                    set.add(executionInstanceData.execution.getExecutionId());
+        for (final Structures.JobInstanceData instanceData : data.jobInstanceData.values()) {
+            if (instanceData.instance.getJobName().equals(jobName)) {
+                synchronized (instanceData.executions) {
+                    for (final Structures.ExecutionInstanceData executionInstanceData : instanceData.executions) {
+                        if (RUNNING_STATUSES.contains(executionInstanceData.execution.getBatchStatus())) {
+                            set.add(executionInstanceData.execution.getExecutionId());
+                        }
+                    }
                 }
             }
         }
+
         return set;
     }
 
