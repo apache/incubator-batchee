@@ -92,26 +92,13 @@ public class JobOperatorImpl implements JobOperator {
         }
     }
 
-    enum Permissions {
-        START("start");
-
-        private final String name;
-
-        Permissions(final String permName) {
-            name = permName;
-        }
-    }
-
-    public static final String JBATCH_ADMIN = "admin";
-
     private final BatchKernelService kernelService;
     private final PersistenceManagerService persistenceManagerService;
     private final JobXMLLoaderService xmlLoaderService;
     private final JobStatusManagerService statusManagerService;
     private final JobExecutionCallbackService callbackService;
 
-    public JobOperatorImpl() {
-        final ServicesManager servicesManager = ServicesManager.find();
+    protected JobOperatorImpl(final ServicesManager servicesManager) {
         try {
             kernelService = servicesManager.service(BatchKernelService.class);
             persistenceManagerService = servicesManager.service(PersistenceManagerService.class);
@@ -122,6 +109,10 @@ public class JobOperatorImpl implements JobOperator {
             LOGGER.log(Level.SEVERE, "Error while booting BatchEE", e);
             throw e;
         }
+    }
+
+    public JobOperatorImpl() {
+        this(ServicesManager.find());
     }
 
     @Override
