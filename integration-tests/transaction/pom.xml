@@ -21,7 +21,7 @@
     <parent>
         <groupId>org.apache.batchee</groupId>
         <artifactId>integration-tests</artifactId>
-        <version>0.4-incubating</version>
+        <version>0.5-incubating-SNAPSHOT</version>
     </parent>
 
     <artifactId>integration-transaction</artifactId>
