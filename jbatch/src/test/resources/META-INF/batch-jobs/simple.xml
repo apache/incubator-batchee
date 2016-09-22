@@ -9,6 +9,10 @@
 	the specific language governing permissions and limitations under the License. -->
 <job id="simple" version="1.0" xmlns="http://xmlns.jcp.org/xml/ns/javaee">
   <step id="exec">
-    <batchlet ref="org.apache.batchee.component.SimpleBatchlet" />
+    <batchlet ref="org.apache.batchee.component.SimpleBatchlet">
+      <properties>
+        <property name="duration" value="#{jobParameters['duration']}"/>
+      </properties>
+    </batchlet>
   </step>
 </job>
