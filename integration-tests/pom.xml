@@ -25,6 +25,7 @@
     </parent>
 
     <artifactId>integration-tests</artifactId>
+    <name>BatchEE :: Integration Tests</name>
     <packaging>pom</packaging>
 
     <modules>
