@@ -68,6 +68,7 @@
       <item name="Configuration" href="/configuration.html"/>
       <item name="Extensions" href="/extensions.html"/>
       <item name="GUI" href="/gui.html"/>
+      <item name="Download" href="https://www.apache.org/dyn/closer.cgi/incubator/batchee"/>
     </menu>
 
     <menu ref="reports" inherit="bottom"/>
