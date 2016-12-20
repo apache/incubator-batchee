@@ -19,15 +19,15 @@ package org.apache.batchee.cdi.impl;
 import org.apache.batchee.cdi.scope.JobScoped;
 
 import java.lang.annotation.Annotation;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
-import static org.apache.batchee.cdi.impl.LocationHolder.currentJob;
 
-public class JobContextImpl extends BaseContext<JobContextImpl.JobKey> {
-    public static final BaseContext<?> INSTANCE = new JobContextImpl();
+public class JobContextImpl extends BaseContext {
 
-    private JobContextImpl() {
-        // no-op
-    }
+    private ConcurrentMap<Long, AtomicInteger> jobReferences = new ConcurrentHashMap<Long, AtomicInteger>();
+    private ThreadLocal<Long> currentJobExecutionId = new ThreadLocal<Long>();
 
     @Override
     public Class<? extends Annotation> getScope() {
@@ -35,31 +35,36 @@ public class JobContextImpl extends BaseContext<JobContextImpl.JobKey> {
     }
 
     @Override
-    protected JobKey[] currentKeys() {
-        return new JobKey[] { new JobKey(currentJob().getExecutionId()) };
+    protected Long currentKey() {
+        return currentJobExecutionId.get();
     }
 
-    public static class JobKey {
-        private final long executionId;
 
-        private final int hashCode;
+    public void enterJobExecution(Long jobExecutionId) {
+        AtomicInteger jobRefs = jobReferences.get(jobExecutionId);
+        if (jobRefs == null) {
+            jobRefs = new AtomicInteger(0);
+            AtomicInteger oldJobRefs = jobReferences.putIfAbsent(jobExecutionId, jobRefs);
+            if (oldJobRefs != null) {
+                jobRefs = oldJobRefs;
+            }
+        }
+        jobRefs.incrementAndGet();
 
-        public JobKey(final long executionId) {
-            this.executionId = executionId;
+        currentJobExecutionId.set(jobExecutionId);
+    }
 
-            hashCode = (int) (executionId ^ (executionId >>> 32));
+    public void exitJobExecution() {
+        Long jobExecutionId = currentJobExecutionId.get();
+        AtomicInteger jobRefs = jobReferences.get(jobExecutionId);
+        if (jobRefs != null) {
+            int references = jobRefs.decrementAndGet();
+            if (references == 0) {
+                endContext(jobExecutionId);
+            }
         }
 
-        @Override
-        public boolean equals(final Object o) {
-            return this == o
-                || (!(o == null || getClass() != o.getClass()) && executionId == JobKey.class.cast(o).executionId);
-
-        }
-
-        @Override
-        public int hashCode() {
-            return hashCode;
-        }
+        currentJobExecutionId.set(null);
+        currentJobExecutionId.remove();
     }
 }

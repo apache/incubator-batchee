@@ -24,13 +24,16 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-public abstract class BaseContext<K> implements Context {
-    private final ConcurrentMap<K, ConcurrentMap<Contextual<?>, Instance<?>>> storages = new ConcurrentHashMap<K, ConcurrentMap<Contextual<?>, Instance<?>>>();
+public abstract class BaseContext implements Context {
+    /**
+     * key == either the stepExecutionId or the jobExecutionId
+     */
+    private ConcurrentMap<Long, ConcurrentMap<Contextual<?>, Instance<?>>> storages = new ConcurrentHashMap<Long, ConcurrentMap<Contextual<?>, Instance<?>>>();
 
     /**
      * @return current keys (we inherit contexts here) sorted by order (the last is the most specific)
      */
-    protected abstract K[] currentKeys();
+    protected abstract Long currentKey();
 
     @Override
     public <T> T get(final Contextual<T> component, final CreationalContext<T> creationalContext) {
@@ -56,45 +59,35 @@ public abstract class BaseContext<K> implements Context {
     public <T> T get(final Contextual<T> component) {
         checkActive();
 
-        for (final K key : currentKeys()) {
-            final ConcurrentMap<Contextual<?>, Instance<?>> storage = storages.get(key);
-            if (storage != null) {
-                final Instance<?> instance = storage.get(component);
-                if (instance == null) {
-                    return null;
-                }
-                return (T) instance.value;
+        final ConcurrentMap<Contextual<?>, Instance<?>> storage = storages.get(currentKey());
+        if (storage != null) {
+            final Instance<?> instance = storage.get(component);
+            if (instance == null) {
+                return null;
             }
+            return (T) instance.value;
         }
         return null;
     }
 
     @Override
     public boolean isActive() {
-        final K[] ks = currentKeys();
-        return ks != null && ks.length != 0;
+        return currentKey() != null;
     }
 
-    public void endContext() {
-        final ConcurrentMap<Contextual<?>, Instance<?>> storage = storages.remove(lastKey());
+    public void endContext(Long key) {
+        final ConcurrentMap<Contextual<?>, Instance<?>> storage = storages.remove(key);
         if (storage == null) {
             return;
         }
 
         for (final Map.Entry<Contextual<?>, Instance<?>> entry : storage.entrySet()) {
             final Instance<?> instance = entry.getValue();
-            Contextual.class.cast(entry.getKey()).destroy(instance.value, instance.context);
+            Contextual.class.cast(entry.getKey()).destroy(instance.value, instance.cc);
         }
         storage.clear();
     }
 
-    private K lastKey() {
-        final K[] keys = currentKeys();
-        if (keys == null || keys.length == 0) {
-            return null;
-        }
-        return keys[keys.length - 1];
-    }
 
     private void checkActive() {
         if (!isActive()) {
@@ -103,7 +96,7 @@ public abstract class BaseContext<K> implements Context {
     }
 
     private ConcurrentMap<Contextual<?>, Instance<?>> getOrCreateCurrentStorage() {
-        final K key = lastKey();
+        final Long key = currentKey();
 
         ConcurrentMap<Contextual<?>, Instance<?>> storage = storages.get(key);
         if (storage == null) {
@@ -118,11 +111,11 @@ public abstract class BaseContext<K> implements Context {
 
     private static class Instance<T> {
         private final T value;
-        private final CreationalContext<T> context;
+        private final CreationalContext<T> cc;
 
         private Instance(final T value, final CreationalContext<T> context) {
             this.value = value;
-            this.context = context;
+            this.cc = context;
         }
     }
 }

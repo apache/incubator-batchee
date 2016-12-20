@@ -18,18 +18,11 @@ package org.apache.batchee.cdi.impl;
 
 import org.apache.batchee.cdi.scope.StepScoped;
 
-import javax.batch.runtime.context.StepContext;
 import java.lang.annotation.Annotation;
-import java.util.List;
 
-import static org.apache.batchee.cdi.impl.LocationHolder.currentSteps;
+public class StepContextImpl extends BaseContext {
 
-public class StepContextImpl extends BaseContext<StepContextImpl.StepKey> {
-    public static final BaseContext<?> INSTANCE = new StepContextImpl();
-
-    private StepContextImpl() {
-        // no-op
-    }
+    private ThreadLocal<Long> currentStepContext = new ThreadLocal<Long>();
 
     @Override
     public Class<? extends Annotation> getScope() {
@@ -37,38 +30,21 @@ public class StepContextImpl extends BaseContext<StepContextImpl.StepKey> {
     }
 
     @Override
-    protected StepKey[] currentKeys() {
-        final List<StepContext> stepContexts = currentSteps();
-        final StepKey[] keys = new StepKey[stepContexts.size()];
-
-        int i = 0;
-        for (final StepContext stepContext : stepContexts) {
-            keys[i++] = new StepKey(stepContext.getStepExecutionId());
-        }
-        return keys;
+    protected Long currentKey() {
+        return currentStepContext.get();
     }
 
-    public static class StepKey {
-        private final long stepExecutionId;
-
-        private final int hashCode;
-
-        public StepKey(final long stepExecutionId) {
-            this.stepExecutionId = stepExecutionId;
-
-            hashCode = (int) (stepExecutionId ^ (stepExecutionId >>> 32));
-        }
-
-        @Override
-        public boolean equals(final Object o) {
-            return this == o
-                || (!(o == null || getClass() != o.getClass()) && stepExecutionId == StepKey.class.cast(o).stepExecutionId);
-
-        }
-
-        @Override
-        public int hashCode() {
-            return hashCode;
-        }
+    public void enterStep(final Long stepContextId) {
+        currentStepContext.set(stepContextId);
     }
+
+    public void exitStep() {
+        Long stepContextId = currentKey();
+        endContext(stepContextId);
+        currentStepContext.set(null);
+        currentStepContext.remove();
+    }
+
+
+
 }

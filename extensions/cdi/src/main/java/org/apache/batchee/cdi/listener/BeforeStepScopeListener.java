@@ -16,25 +16,29 @@
  */
 package org.apache.batchee.cdi.listener;
 
-import org.apache.batchee.cdi.impl.LocationHolder;
+import org.apache.batchee.cdi.impl.BatchEEScopeExtension;
 
 import javax.batch.api.listener.StepListener;
 import javax.batch.runtime.context.StepContext;
+import javax.enterprise.context.Dependent;
 import javax.inject.Inject;
 import javax.inject.Named;
 
 @Named
-public class BeforeStepScopeListener extends LocationHolder implements StepListener {
-    @Inject
-    private StepContext stepContext;
+@Dependent
+public class BeforeStepScopeListener implements StepListener {
+
+    private @Inject StepContext stepContext;
+    private @Inject BatchEEScopeExtension scopeExtension;
+
 
     @Override
     public void beforeStep() throws Exception {
-        enterStep(stepContext);
+        scopeExtension.getStepContext().enterStep(stepContext.getStepExecutionId());
     }
 
     @Override
     public void afterStep() throws Exception {
-        // no-op
+        // no op
     }
 }

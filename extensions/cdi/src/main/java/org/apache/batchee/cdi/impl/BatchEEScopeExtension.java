@@ -20,17 +20,25 @@ import javax.enterprise.event.Observes;
 import javax.enterprise.inject.spi.AfterBeanDiscovery;
 import javax.enterprise.inject.spi.BeanManager;
 import javax.enterprise.inject.spi.Extension;
-import javax.enterprise.inject.spi.ProcessAnnotatedType;
 
 public class BatchEEScopeExtension implements Extension {
-    void vetoInternalBeans(final @Observes ProcessAnnotatedType<?> pat) {
-        if (pat.getAnnotatedType().getJavaClass().getName().startsWith(BatchEEScopeExtension.class.getPackage().getName())) {
-            pat.veto();
-        }
-    }
+
+    private JobContextImpl jobContext;
+    private StepContextImpl stepContext;
 
     void addBatchScopes(final @Observes AfterBeanDiscovery afterBeanDiscovery, final BeanManager bm) {
-        afterBeanDiscovery.addContext(JobContextImpl.INSTANCE);
-        afterBeanDiscovery.addContext(StepContextImpl.INSTANCE);
+        jobContext = new JobContextImpl();
+        stepContext = new StepContextImpl();
+
+        afterBeanDiscovery.addContext(jobContext);
+        afterBeanDiscovery.addContext(stepContext);
+    }
+
+    public JobContextImpl getJobContext() {
+        return jobContext;
+    }
+
+    public StepContextImpl getStepContext() {
+        return stepContext;
     }
 }

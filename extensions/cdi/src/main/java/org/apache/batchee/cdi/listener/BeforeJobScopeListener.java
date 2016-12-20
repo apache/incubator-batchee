@@ -16,7 +16,7 @@
  */
 package org.apache.batchee.cdi.listener;
 
-import org.apache.batchee.cdi.impl.LocationHolder;
+import org.apache.batchee.cdi.impl.BatchEEScopeExtension;
 
 import javax.batch.api.listener.JobListener;
 import javax.batch.runtime.context.JobContext;
@@ -24,13 +24,14 @@ import javax.inject.Inject;
 import javax.inject.Named;
 
 @Named
-public class BeforeJobScopeListener extends LocationHolder implements JobListener {
-    @Inject
-    private JobContext jobContext;
+public class BeforeJobScopeListener implements JobListener {
+
+    private @Inject JobContext jobContext;
+    private @Inject BatchEEScopeExtension scopeExtension;
 
     @Override
     public void beforeJob() throws Exception {
-        enterJob(jobContext);
+        scopeExtension.getJobContext().enterJobExecution(jobContext.getExecutionId());
     }
 
     @Override
