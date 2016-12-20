@@ -19,20 +19,29 @@ package org.apache.batchee.cdi;
 import org.apache.batchee.cdi.component.Holder;
 import org.apache.batchee.cdi.component.JobScopedBean;
 import org.apache.batchee.cdi.component.StepScopedBean;
+import org.apache.batchee.cdi.partitioned.PartitionedJobScopedReader;
 import org.apache.batchee.cdi.testng.CdiContainerLifecycle;
 import org.apache.batchee.util.Batches;
+import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Listeners;
 import org.testng.annotations.Test;
 
 import javax.batch.operations.JobOperator;
 import javax.batch.runtime.BatchRuntime;
+import javax.batch.runtime.BatchStatus;
 
-import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertNotSame;
-import static org.testng.Assert.assertTrue;
+import java.util.Properties;
+
+import static org.testng.Assert.*;
 
 @Listeners(CdiContainerLifecycle.class)
 public class BatchScopesTest {
+
+    @BeforeMethod
+    public void resetJobScopedBean() {
+        JobScopedBean.reset();
+    }
+
     @Test
     public void test() {
         final JobOperator jobOperator = BatchRuntime.getJobOperator();
@@ -46,5 +55,31 @@ public class BatchScopesTest {
 
         assertTrue(JobScopedBean.isDestroyed());
         assertTrue(StepScopedBean.isDestroyed());
+    }
+
+    @Test
+    public void testPartitionedJobScoped() throws Exception {
+
+        JobOperator jobOperator = BatchRuntime.getJobOperator();
+
+        long executionId = jobOperator.start("partitioned-job-scoped", new Properties());
+
+        Thread.sleep(100);
+
+        assertEquals(PartitionedJobScopedReader.currentBeanId(), PartitionedJobScopedReader.originalBeanId());
+
+        PartitionedJobScopedReader.stop();
+
+        Thread.sleep(100);
+
+        assertEquals(PartitionedJobScopedReader.currentBeanId(), PartitionedJobScopedReader.originalBeanId());
+        assertFalse(JobScopedBean.isDestroyed(), "JobScopedBean must not be destroyed -> partition 2 is still running :(");
+
+        PartitionedJobScopedReader.stopPartition2();
+
+        assertEquals(Batches.waitFor(executionId), BatchStatus.COMPLETED);
+
+        assertEquals(PartitionedJobScopedReader.currentBeanId(), PartitionedJobScopedReader.originalBeanId());
+        assertTrue(JobScopedBean.isDestroyed());
     }
 }

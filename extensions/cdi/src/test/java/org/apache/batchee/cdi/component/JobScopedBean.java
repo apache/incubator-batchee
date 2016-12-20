@@ -41,4 +41,8 @@ public class JobScopedBean {
     void destroy() {
         destroyed = true;
     }
+
+    public static void reset() {
+        destroyed = false;
+    }
 }
