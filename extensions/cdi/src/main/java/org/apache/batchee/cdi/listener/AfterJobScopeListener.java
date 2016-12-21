@@ -19,10 +19,12 @@ package org.apache.batchee.cdi.listener;
 import org.apache.batchee.cdi.impl.BatchEEScopeExtension;
 
 import javax.batch.api.listener.JobListener;
+import javax.enterprise.context.Dependent;
 import javax.inject.Inject;
 import javax.inject.Named;
 
 @Named
+@Dependent
 public class AfterJobScopeListener implements JobListener {
 
     private @Inject BatchEEScopeExtension scopeExtension;

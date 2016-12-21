@@ -23,7 +23,10 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import javax.enterprise.inject.Typed;
 
+
+@Typed
 public class JobContextImpl extends BaseContext {
 
     private ConcurrentMap<Long, AtomicInteger> jobReferences = new ConcurrentHashMap<Long, AtomicInteger>();

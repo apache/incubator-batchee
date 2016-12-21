@@ -20,6 +20,9 @@ import org.apache.batchee.cdi.scope.StepScoped;
 
 import java.lang.annotation.Annotation;
 
+import javax.enterprise.inject.Typed;
+
+@Typed
 public class StepContextImpl extends BaseContext {
 
     private ThreadLocal<Long> currentStepContext = new ThreadLocal<Long>();
