@@ -24,13 +24,18 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.enterprise.inject.Typed;
-
+import javax.enterprise.inject.spi.BeanManager;
 
 @Typed
 public class JobContextImpl extends BaseContext {
 
     private ConcurrentMap<Long, AtomicInteger> jobReferences = new ConcurrentHashMap<Long, AtomicInteger>();
-    private ThreadLocal<Long> currentJobExecutionId = new ThreadLocal<Long>();
+
+
+    JobContextImpl(BeanManager bm) {
+        super(bm);
+    }
+
 
     @Override
     public Class<? extends Annotation> getScope() {
@@ -39,11 +44,14 @@ public class JobContextImpl extends BaseContext {
 
     @Override
     protected Long currentKey() {
-        return currentJobExecutionId.get();
+        return getContextResolver().getJobContext().getExecutionId();
     }
 
 
-    public void enterJobExecution(Long jobExecutionId) {
+    public void enterJobExecution() {
+
+        Long jobExecutionId = currentKey();
+
         AtomicInteger jobRefs = jobReferences.get(jobExecutionId);
         if (jobRefs == null) {
             jobRefs = new AtomicInteger(0);
@@ -53,12 +61,12 @@ public class JobContextImpl extends BaseContext {
             }
         }
         jobRefs.incrementAndGet();
-
-        currentJobExecutionId.set(jobExecutionId);
     }
 
     public void exitJobExecution() {
-        Long jobExecutionId = currentJobExecutionId.get();
+
+        Long jobExecutionId = currentKey();
+
         AtomicInteger jobRefs = jobReferences.get(jobExecutionId);
         if (jobRefs != null) {
             int references = jobRefs.decrementAndGet();
@@ -66,8 +74,5 @@ public class JobContextImpl extends BaseContext {
                 endContext(jobExecutionId);
             }
         }
-
-        currentJobExecutionId.set(null);
-        currentJobExecutionId.remove();
     }
 }

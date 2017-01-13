@@ -16,24 +16,38 @@
  */
 package org.apache.batchee.cdi.impl;
 
+import javax.batch.runtime.BatchRuntime;
 import javax.enterprise.context.ContextNotActiveException;
 import javax.enterprise.context.spi.Context;
 import javax.enterprise.context.spi.Contextual;
 import javax.enterprise.context.spi.CreationalContext;
+import javax.enterprise.inject.spi.BeanManager;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 public abstract class BaseContext implements Context {
+
+    protected final BeanManager bm;
+
     /**
      * key == either the stepExecutionId or the jobExecutionId
      */
     private ConcurrentMap<Long, ConcurrentMap<Contextual<?>, Instance<?>>> storages = new ConcurrentHashMap<Long, ConcurrentMap<Contextual<?>, Instance<?>>>();
 
+    private ContextResolver contextResolver;
+
+
+    public BaseContext(BeanManager bm) {
+        this.bm = bm;
+    }
+
+
     /**
      * @return current keys (we inherit contexts here) sorted by order (the last is the most specific)
      */
     protected abstract Long currentKey();
+
 
     @Override
     public <T> T get(final Contextual<T> component, final CreationalContext<T> creationalContext) {
@@ -88,6 +102,23 @@ public abstract class BaseContext implements Context {
         storage.clear();
     }
 
+
+    protected ContextResolver getContextResolver() {
+
+        // lazy initialisation to ensure BatchRuntime.getJobOperator()
+        // and all dependents are there and ready
+
+        if (contextResolver == null) {
+
+            if (BatchRuntime.getJobOperator().getClass().getName().contains("batchee")) {
+                contextResolver = new ThreadLocalContextResolver();
+            } else {
+                contextResolver = new DynamicContextResolver(bm);
+            }
+        }
+
+        return contextResolver;
+    }
 
     private void checkActive() {
         if (!isActive()) {

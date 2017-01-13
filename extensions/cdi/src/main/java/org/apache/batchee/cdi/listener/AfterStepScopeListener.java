@@ -23,6 +23,10 @@ import javax.enterprise.context.Dependent;
 import javax.inject.Inject;
 import javax.inject.Named;
 
+/**
+ * This Listener is important for cleanup the {@link org.apache.batchee.cdi.impl.StepContextImpl}.
+ * Otherwise the {@link org.apache.batchee.cdi.impl.StepContextImpl} will leak.
+ */
 @Named
 @Dependent
 public class AfterStepScopeListener implements StepListener {

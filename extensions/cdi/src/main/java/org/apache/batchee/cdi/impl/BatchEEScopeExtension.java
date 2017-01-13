@@ -27,8 +27,8 @@ public class BatchEEScopeExtension implements Extension {
     private StepContextImpl stepContext;
 
     void addBatchScopes(final @Observes AfterBeanDiscovery afterBeanDiscovery, final BeanManager bm) {
-        jobContext = new JobContextImpl();
-        stepContext = new StepContextImpl();
+        jobContext = new JobContextImpl(bm);
+        stepContext = new StepContextImpl(bm);
 
         afterBeanDiscovery.addContext(jobContext);
         afterBeanDiscovery.addContext(stepContext);

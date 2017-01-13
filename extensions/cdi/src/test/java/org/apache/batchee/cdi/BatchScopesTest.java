@@ -82,4 +82,13 @@ public class BatchScopesTest {
         assertEquals(PartitionedJobScopedReader.currentBeanId(), PartitionedJobScopedReader.originalBeanId());
         assertTrue(JobScopedBean.isDestroyed());
     }
+
+    @Test
+    public void testPartitionedStepScoped() {
+
+        JobOperator jobOperator = BatchRuntime.getJobOperator();
+
+        BatchStatus status = Batches.waitFor(jobOperator.start("partitioned-step-scoped", new Properties()));
+        assertEquals(status, BatchStatus.COMPLETED);
+    }
 }

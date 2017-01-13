@@ -14,30 +14,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.batchee.cdi.listener;
+package org.apache.batchee.cdi.partitioned;
 
-import javax.batch.api.listener.StepListener;
+import org.apache.batchee.cdi.component.StepScopedBean;
+import org.apache.batchee.cdi.scope.StepScoped;
+
+import javax.batch.api.chunk.AbstractItemReader;
 import javax.enterprise.context.Dependent;
+import javax.inject.Inject;
 import javax.inject.Named;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
-/**
- * @deprecated only kept for compatibility - will be removed in 1.0
- */
 @Named
 @Dependent
-public class BeforeStepScopeListener implements StepListener {
+public class PartitionedStepScopedReader extends AbstractItemReader {
 
-    private static final Logger LOG = Logger.getLogger(BeforeJobScopeListener.class.getName());
+    @Inject
+    private StepScopedBean bean;
 
-    @Override
-    public void beforeStep() throws Exception {
-        LOG.log(Level.WARNING, "BeforeStepScopeListener is not required to enable @StepScoped! This Listener will removed in future versions!");
-    }
+    private int count;
 
     @Override
-    public void afterStep() throws Exception {
-        // no op
+    public Object readItem() throws Exception {
+
+        if (++count < 11) {
+            return "continue - BeanId: " + bean.getId();
+        }
+
+        return null;
     }
 }

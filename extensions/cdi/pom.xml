@@ -33,10 +33,17 @@
     </properties>
 
     <dependencies>
+        <!-- optional since we are protable and can be used with other jbatch implementations as well -->
+        <dependency>
+            <groupId>org.apache.batchee</groupId>
+            <artifactId>batchee-jbatch</artifactId>
+            <version>${project.version}</version>
+            <optional>true</optional>
+        </dependency>
+
         <dependency>
             <groupId>org.apache.geronimo.specs</groupId>
             <artifactId>geronimo-servlet_3.0_spec</artifactId>
-            <version>1.0</version>
             <scope>test</scope>
         </dependency>
 

@@ -21,11 +21,16 @@ import org.apache.batchee.cdi.scope.StepScoped;
 import java.lang.annotation.Annotation;
 
 import javax.enterprise.inject.Typed;
+import javax.enterprise.inject.spi.BeanManager;
 
 @Typed
 public class StepContextImpl extends BaseContext {
 
-    private ThreadLocal<Long> currentStepContext = new ThreadLocal<Long>();
+
+    StepContextImpl(BeanManager bm) {
+        super(bm);
+    }
+
 
     @Override
     public Class<? extends Annotation> getScope() {
@@ -34,20 +39,12 @@ public class StepContextImpl extends BaseContext {
 
     @Override
     protected Long currentKey() {
-        return currentStepContext.get();
-    }
-
-    public void enterStep(final Long stepContextId) {
-        currentStepContext.set(stepContextId);
+        return getContextResolver().getStepContext().getStepExecutionId();
     }
 
     public void exitStep() {
-        Long stepContextId = currentKey();
-        endContext(stepContextId);
-        currentStepContext.set(null);
-        currentStepContext.remove();
+        endContext(currentKey());
     }
-
 
 
 }

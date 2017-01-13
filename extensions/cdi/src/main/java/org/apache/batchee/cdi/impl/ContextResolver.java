@@ -14,30 +14,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.batchee.cdi.listener;
+package org.apache.batchee.cdi.impl;
 
-import javax.batch.api.listener.StepListener;
-import javax.enterprise.context.Dependent;
-import javax.inject.Named;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import javax.batch.runtime.context.JobContext;
+import javax.batch.runtime.context.StepContext;
 
 /**
- * @deprecated only kept for compatibility - will be removed in 1.0
+ * Provides methods to resolve {@link JobContext} and {@link StepContext}
+ * for setting up {@link JobContextImpl} and {@link StepContextImpl}.
  */
-@Named
-@Dependent
-public class BeforeStepScopeListener implements StepListener {
+interface ContextResolver {
 
-    private static final Logger LOG = Logger.getLogger(BeforeJobScopeListener.class.getName());
+    /**
+     * @return the current {@link JobContext} for this {@link Thread}
+     */
+    JobContext getJobContext();
 
-    @Override
-    public void beforeStep() throws Exception {
-        LOG.log(Level.WARNING, "BeforeStepScopeListener is not required to enable @StepScoped! This Listener will removed in future versions!");
-    }
+    /**
+     * @return the current {@link StepContext} for this {@link Thread}
+     */
+    StepContext getStepContext();
 
-    @Override
-    public void afterStep() throws Exception {
-        // no op
-    }
 }
