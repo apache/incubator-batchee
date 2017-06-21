@@ -28,10 +28,6 @@
     <name>BatchEE :: Extensions :: CDI</name>
     <description>This module implements some CDI scopes batch oriented.</description>
 
-    <properties>
-        <deltaspike.version>1.5.1</deltaspike.version>
-    </properties>
-
     <dependencies>
         <!-- optional since we are protable and can be used with other jbatch implementations as well -->
         <dependency>
@@ -93,10 +89,6 @@
 
         <profile>
             <id>cdi-1.1</id>
-
-            <properties>
-                <owb.version>1.6.2</owb.version>
-            </properties>
 
             <dependencies>
                 <dependency>

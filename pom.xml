@@ -43,7 +43,9 @@
         <batch-api.version>1.0</batch-api.version>
         <jackson.version>2.2.2</jackson.version>
         <jodatime.version>2.9.1</jodatime.version>
-        <johnzon.version>0.9.5</johnzon.version>
+        <johnzon.version>1.0.0</johnzon.version>
+        <tomee.version>7.0.3</tomee.version>
+        <deltaspike.version>1.8.0</deltaspike.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <batchee.scmPubUrl>https://svn.apache.org/repos/asf/incubator/batchee/site</batchee.scmPubUrl>
         <batchee.scmPubCheckoutDirectory>${basedir}/.site-content</batchee.scmPubCheckoutDirectory>

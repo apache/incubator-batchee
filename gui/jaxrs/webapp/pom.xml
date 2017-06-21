@@ -90,9 +90,9 @@
                 </configuration>
             </plugin>
             <plugin>
-                <groupId>org.apache.openejb.maven</groupId>
+                <groupId>org.apache.tomee.maven</groupId>
                 <artifactId>tomee-maven-plugin</artifactId>
-                <version>1.6.0</version>
+                <version>${tomee.version}</version>
                 <configuration>
                     <tomeeClassifier>jaxrs</tomeeClassifier>
                     <simpleLog>true</simpleLog>
