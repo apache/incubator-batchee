@@ -33,6 +33,13 @@
         <module>servlet</module>
     </modules>
 
+    <properties>
+        <arquillian.version>1.0.3.Final</arquillian.version>
+        <cxf.version>2.6.9</cxf.version>
+        <tomcat.version>7.0.50</tomcat.version>
+        <tomee.version>7.0.3</tomee.version>
+    </properties>
+
     <dependencyManagement>
         <dependencies>
             <dependency>
@@ -139,9 +146,4 @@
         </dependencies>
     </dependencyManagement>
 
-    <properties>
-        <arquillian.version>1.0.3.Final</arquillian.version>
-        <cxf.version>2.6.9</cxf.version>
-        <tomcat.version>7.0.50</tomcat.version>
-    </properties>
 </project>
