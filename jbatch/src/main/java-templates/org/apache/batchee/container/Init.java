@@ -32,10 +32,15 @@ public final class Init {
 
     public static void doInit() {
         if (Boolean.parseBoolean(ServicesManager.value("org.apache.batchee.init.verbose", "true"))) {
+            String splashScreen = ServicesManager.value("org.apache.batchee.init.splashscreen", null);
+            if (splashScreen == null) {
+                splashScreen = LOGO;
+            }
+
             if (!Boolean.parseBoolean(ServicesManager.value("org.apache.batchee.init.verbose.sysout", "false"))) {
-                LOGGER.info(LOGO);
+                LOGGER.info(splashScreen);
             } else {
-                System.out.println(LOGO);
+                System.out.println(splashScreen);
             }
         }
     }
