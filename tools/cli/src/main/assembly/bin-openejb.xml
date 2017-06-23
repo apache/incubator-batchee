@@ -45,6 +45,15 @@
       <outputDirectory>conf/</outputDirectory>
       <includes>
         <include>logging.properties</include>
+        <include>batchee-cli_openejb.properties</include>
+      </includes>
+      <lineEnding>unix</lineEnding>
+    </fileSet>
+    <fileSet>
+      <directory>${project.build.outputDirectory}/openejb</directory>
+      <outputDirectory>conf/</outputDirectory>
+      <includes>
+        <include>batchee-cli.properties</include>
       </includes>
       <lineEnding>unix</lineEnding>
     </fileSet>

@@ -40,6 +40,10 @@ import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.Reader;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -50,6 +54,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.ServiceLoader;
 import java.util.TreeMap;
 
@@ -111,6 +116,49 @@ public class BatchEECLI {
 
         final Collection<String> newArgs = new ArrayList<String>(asList(args));
         newArgs.remove(newArgs.iterator().next());
+
+        final File cliConf;
+        String home = System.getProperty("batchee.home");
+        if (home == null) {
+            final String conf = System.getProperty("batchee.cli.configuration");
+            if (conf == null) {
+                cliConf = null;
+            } else {
+                cliConf = new File(conf);
+            }
+        } else {
+            cliConf = new File(home, "conf/batchee-cli.properties");
+        }
+        if (cliConf != null && cliConf.exists()) {
+            final Properties properties = new Properties() {{
+                Reader reader = null;
+                try {
+                    reader = new FileReader(cliConf);
+                    load(reader);
+                } catch (IOException e) {
+                    throw new IllegalArgumentException(e);
+                } finally {
+                    if (reader != null) {
+                        try {
+                            reader.close();
+                        } catch (final IOException e) {
+                            // no-op
+                        }
+                    }
+                }
+            }};
+            for (final String key : properties.stringPropertyNames()) {
+                if (key.startsWith("_arguments.")) { // /!\ added whatever passed values are
+                    newArgs.add(properties.getProperty(key));
+                } else {
+                    final String opt = "-" + key;
+                    if (!newArgs.contains(opt)) {
+                        newArgs.add(opt);
+                        newArgs.add(properties.getProperty(key));
+                    }
+                }
+            }
+        }
 
         final CommandLineParser parser = new DefaultParser();
         try {

@@ -49,6 +49,14 @@
       <lineEnding>unix</lineEnding>
     </fileSet>
     <fileSet>
+      <directory>${project.build.outputDirectory}/default</directory>
+      <outputDirectory>conf/</outputDirectory>
+      <includes>
+        <include>batchee-cli.properties</include>
+      </includes>
+      <lineEnding>unix</lineEnding>
+    </fileSet>
+    <fileSet>
       <directory>${project.build.directory}/</directory>
       <outputDirectory>bin/</outputDirectory>
       <includes>

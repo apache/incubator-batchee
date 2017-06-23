@@ -175,10 +175,6 @@ public abstract class JobOperatorCommand implements Runnable {
             final Lifecycle<Object> lifecycleInstance;
             final Object state;
 
-            if (lifecycle == null) {
-                lifecycle = System.getProperty("org.apache.batchee.cli.lifecycle");
-            }
-
             if (lifecycle != null) {
                 lifecycleInstance = createLifecycle(loader);
                 state = lifecycleInstance.start();
