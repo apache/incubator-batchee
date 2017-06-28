@@ -1090,15 +1090,14 @@ Shortname: `hazelcastUnlock`
 `@org.apache.batchee.cdi.scope.JobScoped` allows you to define a bean scoped to a job execution.
 `@org.apache.batchee.cdi.scope.StepScoped` allows you to define a bean scoped to a step execution.
 
-To activate these scopes you need to define 4 listeners:
+To activate these scopes you need to define 3 listeners:
 * `org.apache.batchee.cdi.listener.BeforeJobScopeListener`
 * `org.apache.batchee.cdi.listener.AfterJobScopeListener`
-* `org.apache.batchee.cdi.listener.BeforeStepScopeListener`
 * `org.apache.batchee.cdi.listener.AfterStepScopeListener`
 
 If your implementation supports ordering on listeners use them to ensure `Before*` are executed first and
 `After*` are executed last. This will let you use these scopes in your own listeners. `*JobScopeListener` are
-`javax.batch.api.listener.JobListener` and `*StepScopeListener` are `javax.batch.api.listener.StepListener`.
+`javax.batch.api.listener.JobListener` and the `AfterStepScopeListener` is a `javax.batch.api.listener.StepListener`.
 
 NB: these listeners are `@Named` so you can use their CDI name to reference them (not mandatory)
 
@@ -1110,5 +1109,4 @@ For BatchEE you can add them in `batchee.properties` this way:
 <pre class="prettyprint linenums"><![CDATA[
 org.apache.batchee.job.listeners.before = beforeJobScopeListener
 org.apache.batchee.job.listeners.after = afterJobScopeListener
-org.apache.batchee.step.listeners.before = beforeStepScopeListener
 org.apache.batchee.step.listeners.after = afterStepScopeListener]]></pre>
