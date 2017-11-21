@@ -20,10 +20,12 @@ import javax.enterprise.context.NormalScope;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
+import static java.lang.annotation.ElementType.FIELD;
+import static java.lang.annotation.ElementType.METHOD;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 import static java.lang.annotation.ElementType.TYPE;
 
-@Target(TYPE)
+@Target({TYPE, METHOD, FIELD})
 @Retention(RUNTIME)
 @NormalScope
 public @interface JobScoped {
