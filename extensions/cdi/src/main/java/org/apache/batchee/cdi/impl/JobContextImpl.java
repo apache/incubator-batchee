@@ -23,6 +23,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import javax.batch.runtime.context.JobContext;
 import javax.enterprise.inject.Typed;
 import javax.enterprise.inject.spi.BeanManager;
 
@@ -44,7 +45,12 @@ public class JobContextImpl extends BaseContext {
 
     @Override
     protected Long currentKey() {
-        return getContextResolver().getJobContext().getExecutionId();
+        JobContext jobContext = getContextResolver().getJobContext();
+        if (jobContext == null) {
+            return null;
+        }
+
+        return jobContext.getExecutionId();
     }
 
 

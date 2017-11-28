@@ -20,6 +20,7 @@ import org.apache.batchee.cdi.scope.StepScoped;
 
 import java.lang.annotation.Annotation;
 
+import javax.batch.runtime.context.StepContext;
 import javax.enterprise.inject.Typed;
 import javax.enterprise.inject.spi.BeanManager;
 
@@ -39,7 +40,12 @@ public class StepContextImpl extends BaseContext {
 
     @Override
     protected Long currentKey() {
-        return getContextResolver().getStepContext().getStepExecutionId();
+        StepContext stepContext = getContextResolver().getStepContext();
+        if (stepContext == null) {
+            return null;
+        }
+
+        return stepContext.getStepExecutionId();
     }
 
     public void exitStep() {
