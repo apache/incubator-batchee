@@ -40,7 +40,7 @@ import javax.batch.api.partition.PartitionCollector;
 /**
  * When a partitioned step is run, this controller will only be used for the partition threads,
  * NOT the top-level main thread that the step executes upon.
- * <p/>
+ * <p>
  * When a non-partitioned step is run this controller will be used as well (and there will be no
  * separate main thread with controller).
  */
@@ -71,7 +71,7 @@ public abstract class SingleThreadedStepController extends BaseStepController im
             Collector collector = step.getPartition().getCollector();
             if (collector != null) {
                 List<Property> propList = (collector.getProperties() == null) ? null : collector.getProperties().getPropertyList();
-                /**
+                /*
                  * Inject job flow, split, and step contexts into partition
                  * artifacts like collectors and listeners some of these
                  * contexts may be null

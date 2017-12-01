@@ -26,23 +26,23 @@ import java.util.List;
 
 
 /**
- * <p>Java class for Decision complex type.
- * <p/>
- * <p>The following schema fragment specifies the expected content contained within this class.
- * <p/>
+ * Java class for Decision complex type.
+ * <p>
+ * The following schema fragment specifies the expected content contained within this class.
+ *
  * <pre>
- * &lt;complexType name="Decision">
- *   &lt;complexContent>
- *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *       &lt;sequence>
- *         &lt;element name="properties" type="{http://xmlns.jcp.org/xml/ns/javaee}Properties" minOccurs="0"/>
- *         &lt;group ref="{http://xmlns.jcp.org/xml/ns/javaee}TransitionElements" maxOccurs="unbounded" minOccurs="0"/>
- *       &lt;/sequence>
- *       &lt;attribute name="id" use="required" type="{http://www.w3.org/2001/XMLSchema}ID" />
- *       &lt;attribute name="ref" use="required" type="{http://xmlns.jcp.org/xml/ns/javaee}artifactRef" />
- *     &lt;/restriction>
- *   &lt;/complexContent>
- * &lt;/complexType>
+ * &lt;complexType name="Decision"&gt;
+ *   &lt;complexContent&gt;
+ *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+ *       &lt;sequence&gt;
+ *         &lt;element name="properties" type="{http://xmlns.jcp.org/xml/ns/javaee}Properties" minOccurs="0"/&gt;
+ *         &lt;group ref="{http://xmlns.jcp.org/xml/ns/javaee}TransitionElements" maxOccurs="unbounded" minOccurs="0"/&gt;
+ *       &lt;/sequence&gt;
+ *       &lt;attribute name="id" use="required" type="{http://www.w3.org/2001/XMLSchema}ID" /&gt;
+ *       &lt;attribute name="ref" use="required" type="{http://xmlns.jcp.org/xml/ns/javaee}artifactRef" /&gt;
+ *     &lt;/restriction&gt;
+ *   &lt;/complexContent&gt;
+ * &lt;/complexType&gt;
  * </pre>
  */
 @XmlAccessorType(XmlAccessType.FIELD)
@@ -90,21 +90,17 @@ public class Decision implements ExecutionElement {
 
     /**
      * Gets the value of the transitionElements property.
-     * <p/>
-     * <p/>
+     * <p>
      * This accessor method returns a reference to the live list,
      * not a snapshot. Therefore any modification you make to the
      * returned list will be present inside the JAXB object.
-     * This is why there is not a <CODE>set</CODE> method for the transitionElements property.
-     * <p/>
-     * <p/>
+     * This is why there is not a {@code set} method for the transitionElements property.
+     * <p>
      * For example, to add a new item, do as follows:
      * <pre>
      *    getTransitionElements().add(newItem);
      * </pre>
-     * <p/>
-     * <p/>
-     * <p/>
+     * <p>
      * Objects of the following type(s) are allowed in the list
      * {@link Next }
      * {@link Stop }

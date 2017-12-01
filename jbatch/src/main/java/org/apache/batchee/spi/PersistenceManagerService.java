@@ -157,7 +157,7 @@ public interface PersistenceManagerService extends BatchService {
 
     /**
      * Get a StepStatus
-     * <p/>
+     * <p>
      * The parent job instance id and this step name from the job xml
      * are used to determine if the current step execution have previously run.
      *

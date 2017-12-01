@@ -17,19 +17,19 @@ import javax.xml.bind.annotation.XmlType;
 
 
 /**
- * <p>Java class for Stop complex type.
- * <p/>
- * <p>The following schema fragment specifies the expected content contained within this class.
- * <p/>
+ * Java class for Stop complex type.
+ * <p>
+ * The following schema fragment specifies the expected content contained within this class.
+ *
  * <pre>
- * &lt;complexType name="Stop">
- *   &lt;complexContent>
- *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *       &lt;attGroup ref="{http://xmlns.jcp.org/xml/ns/javaee}TerminatingAttributes"/>
- *       &lt;attribute name="restart" type="{http://www.w3.org/2001/XMLSchema}string" />
- *     &lt;/restriction>
- *   &lt;/complexContent>
- * &lt;/complexType>
+ * &lt;complexType name="Stop"&gt;
+ *   &lt;complexContent&gt;
+ *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+ *       &lt;attGroup ref="{http://xmlns.jcp.org/xml/ns/javaee}TerminatingAttributes"/&gt;
+ *       &lt;attribute name="restart" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *     &lt;/restriction&gt;
+ *   &lt;/complexContent&gt;
+ * &lt;/complexType&gt;
  * </pre>
  */
 @XmlAccessorType(XmlAccessType.FIELD)

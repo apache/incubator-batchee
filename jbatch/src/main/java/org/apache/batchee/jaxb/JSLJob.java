@@ -27,32 +27,31 @@ import java.util.List;
 /**
  * The type of a job definition, whether concrete or
  * abstract. This is the type of the root element of any JSL document.
- * <p/>
- * <p/>
- * <p>Java class for Job complex type.
- * <p/>
- * <p>The following schema fragment specifies the expected content contained within this class.
- * <p/>
+ * <p>
+ * Java class for Job complex type.
+ * <p>
+ * The following schema fragment specifies the expected content contained within this class.
+ * <p>
  * <pre>
- * &lt;complexType name="Job">
- *   &lt;complexContent>
- *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *       &lt;sequence>
- *         &lt;element name="properties" type="{http://xmlns.jcp.org/xml/ns/javaee}Properties" minOccurs="0"/>
- *         &lt;element name="listeners" type="{http://xmlns.jcp.org/xml/ns/javaee}Listeners" minOccurs="0"/>
- *         &lt;choice maxOccurs="unbounded" minOccurs="0">
- *           &lt;element name="decision" type="{http://xmlns.jcp.org/xml/ns/javaee}Decision"/>
- *           &lt;element name="flow" type="{http://xmlns.jcp.org/xml/ns/javaee}Flow"/>
- *           &lt;element name="split" type="{http://xmlns.jcp.org/xml/ns/javaee}Split"/>
- *           &lt;element name="step" type="{http://xmlns.jcp.org/xml/ns/javaee}Step"/>
- *         &lt;/choice>
- *       &lt;/sequence>
- *       &lt;attribute name="version" use="required" type="{http://www.w3.org/2001/XMLSchema}string" fixed="1.0" />
- *       &lt;attribute name="id" use="required" type="{http://www.w3.org/2001/XMLSchema}ID" />
- *       &lt;attribute name="restartable" type="{http://www.w3.org/2001/XMLSchema}string" />
- *     &lt;/restriction>
- *   &lt;/complexContent>
- * &lt;/complexType>
+ * &lt;complexType name="Job"&gt;
+ *   &lt;complexContent&gt;
+ *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+ *       &lt;sequence&gt;
+ *         &lt;element name="properties" type="{http://xmlns.jcp.org/xml/ns/javaee}Properties" minOccurs="0"/&gt;
+ *         &lt;element name="listeners" type="{http://xmlns.jcp.org/xml/ns/javaee}Listeners" minOccurs="0"/&gt;
+ *         &lt;choice maxOccurs="unbounded" minOccurs="0"&gt;
+ *           &lt;element name="decision" type="{http://xmlns.jcp.org/xml/ns/javaee}Decision"/&gt;
+ *           &lt;element name="flow" type="{http://xmlns.jcp.org/xml/ns/javaee}Flow"/&gt;
+ *           &lt;element name="split" type="{http://xmlns.jcp.org/xml/ns/javaee}Split"/&gt;
+ *           &lt;element name="step" type="{http://xmlns.jcp.org/xml/ns/javaee}Step"/&gt;
+ *         &lt;/choice&gt;
+ *       &lt;/sequence&gt;
+ *       &lt;attribute name="version" use="required" type="{http://www.w3.org/2001/XMLSchema}string" fixed="1.0" /&gt;
+ *       &lt;attribute name="id" use="required" type="{http://www.w3.org/2001/XMLSchema}ID" /&gt;
+ *       &lt;attribute name="restartable" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *     &lt;/restriction&gt;
+ *   &lt;/complexContent&gt;
+ * &lt;/complexType&gt;
  * </pre>
  */
 @XmlAccessorType(XmlAccessType.FIELD)
@@ -124,21 +123,17 @@ public class JSLJob {
 
     /**
      * Gets the value of the executionElements property.
-     * <p/>
-     * <p/>
+     * <p>
      * This accessor method returns a reference to the live list,
      * not a snapshot. Therefore any modification you make to the
      * returned list will be present inside the JAXB object.
-     * This is why there is not a <CODE>set</CODE> method for the executionElements property.
-     * <p/>
-     * <p/>
+     * This is why there is not a {@code set} method for the executionElements property.
+     * <p>
      * For example, to add a new item, do as follows:
      * <pre>
      *    getExecutionElements().add(newItem);
      * </pre>
-     * <p/>
-     * <p/>
-     * <p/>
+     * <p>
      * Objects of the following type(s) are allowed in the list
      * {@link Flow }
      * {@link Step }

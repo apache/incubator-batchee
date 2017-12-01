@@ -14,26 +14,26 @@ import javax.xml.bind.annotation.XmlType;
 
 
 /**
- * <p>Java class for Partition complex type.
- * <p/>
+ * Java class for Partition complex type.
+ * <p>
  * <p>The following schema fragment specifies the expected content contained within this class.
- * <p/>
+ *
  * <pre>
- * &lt;complexType name="Partition">
- *   &lt;complexContent>
- *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *       &lt;sequence>
- *         &lt;choice minOccurs="0">
- *           &lt;element name="mapper" type="{http://xmlns.jcp.org/xml/ns/javaee}PartitionMapper"/>
- *           &lt;element name="plan" type="{http://xmlns.jcp.org/xml/ns/javaee}PartitionPlan"/>
- *         &lt;/choice>
- *         &lt;element name="collector" type="{http://xmlns.jcp.org/xml/ns/javaee}Collector" minOccurs="0"/>
- *         &lt;element name="analyzer" type="{http://xmlns.jcp.org/xml/ns/javaee}Analyzer" minOccurs="0"/>
- *         &lt;element name="reducer" type="{http://xmlns.jcp.org/xml/ns/javaee}PartitionReducer" minOccurs="0"/>
- *       &lt;/sequence>
- *     &lt;/restriction>
- *   &lt;/complexContent>
- * &lt;/complexType>
+ * &lt;complexType name="Partition"&gt;
+ *   &lt;complexContent&gt;
+ *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+ *       &lt;sequence&gt;
+ *         &lt;choice minOccurs="0"&gt;
+ *           &lt;element name="mapper" type="{http://xmlns.jcp.org/xml/ns/javaee}PartitionMapper"/&gt;
+ *           &lt;element name="plan" type="{http://xmlns.jcp.org/xml/ns/javaee}PartitionPlan"/&gt;
+ *         &lt;/choice&gt;
+ *         &lt;element name="collector" type="{http://xmlns.jcp.org/xml/ns/javaee}Collector" minOccurs="0"/&gt;
+ *         &lt;element name="analyzer" type="{http://xmlns.jcp.org/xml/ns/javaee}Analyzer" minOccurs="0"/&gt;
+ *         &lt;element name="reducer" type="{http://xmlns.jcp.org/xml/ns/javaee}PartitionReducer" minOccurs="0"/&gt;
+ *       &lt;/sequence&gt;
+ *     &lt;/restriction&gt;
+ *   &lt;/complexContent&gt;
+ * &lt;/complexType&gt;
  * </pre>
  */
 @XmlAccessorType(XmlAccessType.FIELD)

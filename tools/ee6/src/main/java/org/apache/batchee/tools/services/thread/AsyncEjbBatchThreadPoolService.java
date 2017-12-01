@@ -28,7 +28,7 @@ import org.apache.batchee.spi.BatchThreadPoolService;
 
 /**
  * This is an implementation of a {@link org.apache.batchee.spi.BatchThreadPoolService}
- * which uses an &&064;Asynchronous EJB method to spawn new Threads.
+ * which uses an &#64;Asynchronous EJB method to spawn new Threads.
  * The main reason for doing this is to have properly setup JavaEE Threads even
  * in JavaEE 6 environments where BatchEE is not deeply integrated in other ways.
  *

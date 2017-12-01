@@ -26,22 +26,22 @@ import java.util.List;
 
 
 /**
- * <p>Java class for Split complex type.
- * <p/>
- * <p>The following schema fragment specifies the expected content contained within this class.
- * <p/>
+ * Java class for Split complex type.
+ * <p>
+ * The following schema fragment specifies the expected content contained within this class.
+ *
  * <pre>
- * &lt;complexType name="Split">
- *   &lt;complexContent>
- *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *       &lt;sequence>
- *         &lt;element name="flow" type="{http://xmlns.jcp.org/xml/ns/javaee}Flow" maxOccurs="unbounded" minOccurs="0"/>
- *       &lt;/sequence>
- *       &lt;attribute name="id" use="required" type="{http://www.w3.org/2001/XMLSchema}ID" />
- *       &lt;attribute name="next" type="{http://www.w3.org/2001/XMLSchema}string" />
- *     &lt;/restriction>
- *   &lt;/complexContent>
- * &lt;/complexType>
+ * &lt;complexType name="Split"&gt;
+ *   &lt;complexContent&gt;
+ *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+ *       &lt;sequence&gt;
+ *         &lt;element name="flow" type="{http://xmlns.jcp.org/xml/ns/javaee}Flow" maxOccurs="unbounded" minOccurs="0"/&gt;
+ *       &lt;/sequence&gt;
+ *       &lt;attribute name="id" use="required" type="{http://www.w3.org/2001/XMLSchema}ID" /&gt;
+ *       &lt;attribute name="next" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *     &lt;/restriction&gt;
+ *   &lt;/complexContent&gt;
+ * &lt;/complexType&gt;
  * </pre>
  */
 @XmlAccessorType(XmlAccessType.FIELD)
@@ -62,21 +62,17 @@ public class Split implements ExecutionElement {
 
     /**
      * Gets the value of the flows property.
-     * <p/>
-     * <p/>
+     * <p>
      * This accessor method returns a reference to the live list,
      * not a snapshot. Therefore any modification you make to the
      * returned list will be present inside the JAXB object.
-     * This is why there is not a <CODE>set</CODE> method for the flows property.
-     * <p/>
-     * <p/>
+     * This is why there is not a {@code set} method for the flows property.
+     * <p>
      * For example, to add a new item, do as follows:
      * <pre>
      *    getFlows().add(newItem);
      * </pre>
-     * <p/>
-     * <p/>
-     * <p/>
+     * <p>
      * Objects of the following type(s) are allowed in the list
      * {@link Flow }
      */

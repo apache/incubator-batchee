@@ -52,14 +52,16 @@ import static java.util.Arrays.asList;
 
 /**
  * create a bar archive using packaging bar and this plugin:
- * <packaging>bar</packaging>
- * <p/>
- * <plugin>
- * <groupId>org.apache.batchee</groupId>
- * <artifactId>batchee-maven-plugin</artifactId>
- * <version>0.1-incubating-SNAPSHOT</version>
- * <extensions>true</extensions>
- * </plugin>
+ * &lt;packaging&gt;bar&lt;/packaging&gt;
+ * <p>
+ * <pre><code>
+ * &lt;plugin&gt;
+ *   &lt;groupId&gt;org.apache.batchee&lt;/groupId&gt;
+ *   &lt;artifactId&gt;batchee-maven-plugin&lt;/artifactId&gt;
+ *   &lt;version&gt;0.1-incubating-SNAPSHOT&lt;/version&gt;
+ *   &lt;extensions&gt;true&lt;/extensions&gt;
+ * &lt;/plugin&gt;
+ * </code></pre>
  */
 @Mojo(name = "bar", requiresDependencyResolution = ResolutionScope.COMPILE_PLUS_RUNTIME, defaultPhase = LifecyclePhase.PACKAGE)
 public class BarMojo extends AbstractMojo {

@@ -31,13 +31,12 @@ import java.util.Properties;
  *
  * Typically:
  *
- *
-   <code>
-   @PersistenceContext
-   @Produces
-   @Named
-   private EntityManager batcheeJpaEm;
-   </code>
+ * <pre><code>
+ * &#64;PersistenceContext
+ * &#64;Produces
+ * &#64;Named
+ * private EntityManager batcheeJpaEm;
+ * </code></pre>
  */
 public class EEEntityManagerProvider implements EntityManagerProvider {
     private EntityManager instance;

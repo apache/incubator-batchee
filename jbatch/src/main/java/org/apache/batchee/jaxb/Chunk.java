@@ -16,31 +16,31 @@ import javax.xml.bind.annotation.XmlType;
 
 
 /**
- * <p>Java class for Chunk complex type.
- * <p/>
- * <p>The following schema fragment specifies the expected content contained within this class.
- * <p/>
+ * Java class for Chunk complex type.
+ * <p>
+ * The following schema fragment specifies the expected content contained within this class.
+ *
  * <pre>
- * &lt;complexType name="Chunk">
- *   &lt;complexContent>
- *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *       &lt;sequence>
- *         &lt;element name="reader" type="{http://xmlns.jcp.org/xml/ns/javaee}ItemReader"/>
- *         &lt;element name="processor" type="{http://xmlns.jcp.org/xml/ns/javaee}ItemProcessor" minOccurs="0"/>
- *         &lt;element name="writer" type="{http://xmlns.jcp.org/xml/ns/javaee}ItemWriter"/>
- *         &lt;element name="checkpoint-algorithm" type="{http://xmlns.jcp.org/xml/ns/javaee}CheckpointAlgorithm" minOccurs="0"/>
- *         &lt;element name="skippable-exception-classes" type="{http://xmlns.jcp.org/xml/ns/javaee}ExceptionClassFilter" minOccurs="0"/>
- *         &lt;element name="retryable-exception-classes" type="{http://xmlns.jcp.org/xml/ns/javaee}ExceptionClassFilter" minOccurs="0"/>
- *         &lt;element name="no-rollback-exception-classes" type="{http://xmlns.jcp.org/xml/ns/javaee}ExceptionClassFilter" minOccurs="0"/>
- *       &lt;/sequence>
- *       &lt;attribute name="checkpoint-policy" type="{http://www.w3.org/2001/XMLSchema}string" />
- *       &lt;attribute name="item-count" type="{http://www.w3.org/2001/XMLSchema}string" />
- *       &lt;attribute name="time-limit" type="{http://www.w3.org/2001/XMLSchema}string" />
- *       &lt;attribute name="skip-limit" type="{http://www.w3.org/2001/XMLSchema}string" />
- *       &lt;attribute name="retry-limit" type="{http://www.w3.org/2001/XMLSchema}string" />
- *     &lt;/restriction>
- *   &lt;/complexContent>
- * &lt;/complexType>
+ * &lt;complexType name="Chunk"&gt;
+ *   &lt;complexContent&gt;
+ *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+ *       &lt;sequence&gt;
+ *         &lt;element name="reader" type="{http://xmlns.jcp.org/xml/ns/javaee}ItemReader"/&gt;
+ *         &lt;element name="processor" type="{http://xmlns.jcp.org/xml/ns/javaee}ItemProcessor" minOccurs="0"/&gt;
+ *         &lt;element name="writer" type="{http://xmlns.jcp.org/xml/ns/javaee}ItemWriter"/&gt;
+ *         &lt;element name="checkpoint-algorithm" type="{http://xmlns.jcp.org/xml/ns/javaee}CheckpointAlgorithm" minOccurs="0"/&gt;
+ *         &lt;element name="skippable-exception-classes" type="{http://xmlns.jcp.org/xml/ns/javaee}ExceptionClassFilter" minOccurs="0"/&gt;
+ *         &lt;element name="retryable-exception-classes" type="{http://xmlns.jcp.org/xml/ns/javaee}ExceptionClassFilter" minOccurs="0"/&gt;
+ *         &lt;element name="no-rollback-exception-classes" type="{http://xmlns.jcp.org/xml/ns/javaee}ExceptionClassFilter" minOccurs="0"/&gt;
+ *       &lt;/sequence&gt;
+ *       &lt;attribute name="checkpoint-policy" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *       &lt;attribute name="item-count" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *       &lt;attribute name="time-limit" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *       &lt;attribute name="skip-limit" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *       &lt;attribute name="retry-limit" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *     &lt;/restriction&gt;
+ *   &lt;/complexContent&gt;
+ * &lt;/complexType&gt;
  * </pre>
  */
 @XmlAccessorType(XmlAccessType.FIELD)
