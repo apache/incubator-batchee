@@ -21,7 +21,7 @@
   <parent>
     <artifactId>batchee-gui</artifactId>
     <groupId>org.apache.batchee</groupId>
-    <version>0.5-incubating-SNAPSHOT</version>
+    <version>0.5-incubating</version>
   </parent>
 
   <artifactId>batchee-servlet</artifactId>
