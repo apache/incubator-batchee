@@ -24,9 +24,9 @@ Developers:
 ********************************* PLEASE NOTE **********************************
 
   Releases will be signed using one of these keys in this file. This file will
-  be available with the distributed Apache Johnzon releases at:
+  be available with the distributed Apache BatchEE releases at:
 
-      https://dist.apache.org/repos/dist/release/incubator/johnzon/KEYS
+      https://dist.apache.org/repos/dist/release/incubator/batchee/KEYS
 
 ********************************************************************************
 pub   4096R/61078634 2015-08-20
@@ -248,8 +248,6 @@ Q//T8S5GKQ==
 =rquO
 -----END PGP PUBLIC KEY BLOCK-----
 
-
-----------------------------
 pub   4096R/2FDB81B1 2010-02-01
 uid                  Mark Struberg (Apache) <struberg@apache.org>
 sub   4096R/F24C5214 2010-02-01
