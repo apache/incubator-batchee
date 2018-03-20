@@ -61,7 +61,7 @@ import java.util.logging.Logger;
 import static org.apache.batchee.container.util.ClassLoaderAwareHandler.makeLoaderAware;
 
 
-public class JobOperatorImpl implements JobOperator {
+public class JobOperatorImpl implements JobOperator, AutoCloseable {
     private static final Logger LOGGER = Logger.getLogger(JobOperatorImpl.class.getName());
 
     static {
@@ -113,6 +113,10 @@ public class JobOperatorImpl implements JobOperator {
 
     public JobOperatorImpl() {
         this(ServicesManager.find());
+    }
+
+    public void close() throws Exception {
+
     }
 
     @Override
