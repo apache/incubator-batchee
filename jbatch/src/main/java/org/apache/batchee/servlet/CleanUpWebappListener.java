@@ -16,16 +16,11 @@
  */
 package org.apache.batchee.servlet;
 
-import org.apache.batchee.container.services.ServicesManager;
-import org.apache.batchee.jmx.BatchEEMBean;
-import org.apache.batchee.spi.BatchThreadPoolService;
-
-import javax.management.MBeanServer;
-import javax.management.ObjectName;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 import javax.servlet.annotation.WebListener;
-import java.lang.management.ManagementFactory;
+
+import org.apache.batchee.container.services.ServicesManager;
 
 @WebListener
 public class CleanUpWebappListener implements ServletContextListener {
@@ -36,20 +31,9 @@ public class CleanUpWebappListener implements ServletContextListener {
 
     @Override
     public void contextDestroyed(final ServletContextEvent sce) {
-        final BatchThreadPoolService threadPoolService = ServicesManager.find().service(BatchThreadPoolService.class);
-        if (CleanUpWebappListener.class.getClassLoader() == sce.getServletContext().getClassLoader()) {
-            threadPoolService.shutdown();
-
-            // unregister jmx bean if deployed in an app
-            final MBeanServer jmx = ManagementFactory.getPlatformMBeanServer();
-            try {
-                final ObjectName objectName = new ObjectName(BatchEEMBean.DEFAULT_OBJECT_NAME);
-                if (jmx.isRegistered(objectName)) {
-                    jmx.unregisterMBean(objectName);
-                }
-            } catch (final Exception e) {
-                // no-op
-            }
+        final ServicesManager servicesManager = ServicesManager.find();
+        if (ServicesManager.class.getClassLoader() == sce.getServletContext().getClassLoader()) {
+            servicesManager.close();
         }
     }
 }

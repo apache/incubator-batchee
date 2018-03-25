@@ -129,7 +129,7 @@ public class DefaultDataRepresentationServiceTest {
             Class<?> clazz = Class.forName(className);
             Method now = clazz.getMethod("now");
             return now.invoke(null);
-        } catch (ReflectiveOperationException e) {
+        } catch (Exception e) {
             // all fine, we are just not running on java8
         }
         return null;

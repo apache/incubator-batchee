@@ -41,8 +41,6 @@ import java.util.Set;
 public class BatchEEMBeanImpl implements BatchEEMBean {
     public static final BatchEEMBeanImpl INSTANCE = new BatchEEMBeanImpl();
 
-    private final JobOperator operator = BatchRuntime.getJobOperator();
-
     private static final String[] JOB_INSTANCES_ATTRIBUTES = { "jobName", "instanceId" };
     private static final TabularType JOB_INSTANCES_TABULAR_TYPE;
     private static final CompositeType JOB_INSTANCES_COMPOSITE_TYPE;
@@ -154,20 +152,24 @@ public class BatchEEMBeanImpl implements BatchEEMBean {
         // no-op
     }
 
+    private JobOperator operator() { // lazy since we register jmx with the servicesmanager init
+        return BatchRuntime.getJobOperator();
+    }
+
     @Override
     public String[] getJobNames() {
-        final Set<String> jobNames = operator.getJobNames();
+        final Set<String> jobNames = operator().getJobNames();
         return jobNames.toArray(new String[jobNames.size()]);
     }
 
     @Override
     public int getJobInstanceCount(final String jobName) {
-        return operator.getJobInstanceCount(jobName);
+        return operator().getJobInstanceCount(jobName);
     }
 
     @Override
     public TabularData getJobInstances(final String jobName, final int start, final int count) {
-        final List<JobInstance> instances = operator.getJobInstances(jobName, start, count);
+        final List<JobInstance> instances = operator().getJobInstances(jobName, start, count);
 
         try {
             final TabularDataSupport data = new TabularDataSupport(JOB_INSTANCES_TABULAR_TYPE);
@@ -183,7 +185,7 @@ public class BatchEEMBeanImpl implements BatchEEMBean {
     @Override
     public Long[] getRunningExecutions(final String jobName) {
         try {
-            final List<Long> runningExecutions = operator.getRunningExecutions(jobName);
+            final List<Long> runningExecutions = operator().getRunningExecutions(jobName);
             return runningExecutions.toArray(new Long[runningExecutions.size()]);
         } catch (final NoSuchJobException nsje) {
             return new Long[0];
@@ -192,7 +194,7 @@ public class BatchEEMBeanImpl implements BatchEEMBean {
 
     @Override
     public TabularData getParameters(final long executionId) {
-        final Properties parameters = operator.getParameters(executionId);
+        final Properties parameters = operator().getParameters(executionId);
         try {
             final TabularDataSupport data = new TabularDataSupport(PROPERTIES_TABULAR_TYPE);
             for (final Map.Entry<Object, Object> entry : parameters.entrySet()) {
@@ -206,7 +208,7 @@ public class BatchEEMBeanImpl implements BatchEEMBean {
 
     @Override
     public TabularData getJobInstance(final long executionId) {
-        final JobInstance instance = operator.getJobInstance(executionId);
+        final JobInstance instance = operator().getJobInstance(executionId);
         try {
             final TabularDataSupport data = new TabularDataSupport(JOB_INSTANCES_TABULAR_TYPE);
             data.put(new CompositeDataSupport(JOB_INSTANCES_COMPOSITE_TYPE, JOB_INSTANCES_ATTRIBUTES, new Object[] { instance.getJobName(), instance.getInstanceId() }));
@@ -218,27 +220,27 @@ public class BatchEEMBeanImpl implements BatchEEMBean {
 
     @Override
     public void stop(final long executionId) {
-        operator.stop(executionId);
+        operator().stop(executionId);
     }
 
     @Override
     public void abandon(final long executionId) {
-        operator.abandon(executionId);
+        operator().abandon(executionId);
     }
 
     @Override
     public long start(final String jobXMLName, final String jobParameters) {
-        return operator.start(jobXMLName, toProperties(jobParameters));
+        return operator().start(jobXMLName, toProperties(jobParameters));
     }
 
     @Override
     public long restart(final long executionId, final String restartParameters) {
-        return operator.restart(executionId, toProperties(restartParameters));
+        return operator().restart(executionId, toProperties(restartParameters));
     }
 
     @Override
     public TabularData getJobExecutions(final long id, final String name) {
-        final List<JobExecution> executions = operator.getJobExecutions(new JobInstanceImpl(id, name));
+        final List<JobExecution> executions = operator().getJobExecutions(new JobInstanceImpl(id, name));
         try {
             final TabularDataSupport data = new TabularDataSupport(JOB_EXECUTION_TABULAR_TYPE);
             for (final JobExecution n : executions) {
@@ -252,7 +254,7 @@ public class BatchEEMBeanImpl implements BatchEEMBean {
 
     @Override
     public TabularData getJobExecution(final long executionId) {
-        final JobExecution execution = operator.getJobExecution(executionId);
+        final JobExecution execution = operator().getJobExecution(executionId);
         try {
             final TabularDataSupport data = new TabularDataSupport(JOB_EXECUTION_TABULAR_TYPE);
             data.put(new CompositeDataSupport(JOB_EXECUTION_COMPOSITE_TYPE, JOB_EXECUTION_ATTRIBUTES, asArray(execution)));
@@ -264,7 +266,7 @@ public class BatchEEMBeanImpl implements BatchEEMBean {
 
     @Override
     public TabularData getStepExecutions(final long jobExecutionId) {
-        final List<StepExecution> executions = operator.getStepExecutions(jobExecutionId);
+        final List<StepExecution> executions = operator().getStepExecutions(jobExecutionId);
         try {
             final TabularDataSupport data = new TabularDataSupport(STEP_EXECUTION_TABULAR_TYPE);
             for (final StepExecution n : executions) {

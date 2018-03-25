@@ -22,7 +22,6 @@ import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.lang.reflect.Method;
 import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -46,7 +45,7 @@ public class DefaultDataRepresentationService implements DataRepresentationServi
 
     public static final String BATCHEE_DATA_PREFIX = "BatchEE_data" + BATCHEE_SPLIT_TOKEN;
 
-    private static final Charset UTF8_CHARSET = StandardCharsets.UTF_8;
+    private static final Charset UTF8_CHARSET = Charset.forName("UTF-8");
 
     private static final Logger LOGGER = Logger.getLogger(DefaultDataRepresentationService.class.getName());
 
@@ -298,7 +297,7 @@ public class DefaultDataRepresentationService implements DataRepresentationServi
             Class<?> typeClass = getClassLoader().loadClass(typeVal);
             Method method = typeClass.getMethod(methodName, paramType);
             return method.invoke(null, valueVal);
-        } catch (ReflectiveOperationException e) {
+        } catch (Exception e) {
             throw new BatchContainerServiceException("Cannot convert data [" + valueVal + "] of type [" + typeVal + "]", e );
         }
     }

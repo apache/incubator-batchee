@@ -17,6 +17,23 @@
  */
 package org.apache.batchee.container.services;
 
+import static org.apache.batchee.container.util.ClassLoaderAwareHandler.makeLoaderAware;
+
+import java.io.Closeable;
+import java.io.IOException;
+import java.io.InputStream;
+import java.lang.management.ManagementFactory;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.util.Map;
+import java.util.Properties;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import javax.management.MBeanServer;
+import javax.management.ObjectName;
+
 import org.apache.batchee.container.exception.BatchContainerRuntimeException;
 import org.apache.batchee.container.exception.BatchContainerServiceException;
 import org.apache.batchee.container.services.callback.SimpleJobExecutionCallbackService;
@@ -31,6 +48,9 @@ import org.apache.batchee.container.services.persistence.MemoryPersistenceManage
 import org.apache.batchee.container.services.status.DefaultJobStatusManager;
 import org.apache.batchee.container.services.transaction.DefaultBatchTransactionService;
 import org.apache.batchee.container.util.BatchContainerConstants;
+import org.apache.batchee.jmx.BatchEE;
+import org.apache.batchee.jmx.BatchEEMBean;
+import org.apache.batchee.jmx.BatchEEMBeanImpl;
 import org.apache.batchee.spi.BatchArtifactFactory;
 import org.apache.batchee.spi.BatchService;
 import org.apache.batchee.spi.BatchThreadPoolService;
@@ -39,15 +59,6 @@ import org.apache.batchee.spi.JobExecutionCallbackService;
 import org.apache.batchee.spi.JobXMLLoaderService;
 import org.apache.batchee.spi.PersistenceManagerService;
 import org.apache.batchee.spi.TransactionManagementService;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
-import java.util.Map;
-import java.util.Properties;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.logging.Logger;
 
 public class ServicesManager implements BatchContainerConstants {
     private final static Logger LOGGER = Logger.getLogger(ServicesManager.class.getName());
@@ -77,6 +88,7 @@ public class ServicesManager implements BatchContainerConstants {
 
     private static ServicesManagerLocator servicesManagerLocator;
 
+    private ObjectName jmxName;
     private ClassLoader loader = null;
 
     // designed to be used from app or a server
@@ -147,7 +159,64 @@ public class ServicesManager implements BatchContainerConstants {
 
                     logServices = Boolean.parseBoolean(batchRuntimeConfig.getProperty("batchee.service-manager.log", "false"));
 
+                    if (Boolean.parseBoolean(batchRuntimeConfig.getProperty("org.apache.batchee.jmx", "true"))) {
+                        try {
+                            final MBeanServer platformMBeanServer = ManagementFactory.getPlatformMBeanServer();
+                            final String app = batchRuntimeConfig.getProperty("org.apache.batchee.jmx.application", "");
+                            if (app.isEmpty()) {
+                                jmxName = new ObjectName(BatchEEMBean.DEFAULT_OBJECT_NAME);
+                            } else {
+                                jmxName = new ObjectName(BatchEEMBean.DEFAULT_OBJECT_NAME + ",application=" + app);
+                            }
+
+                            if (!platformMBeanServer.isRegistered(jmxName)) {
+                                platformMBeanServer.registerMBean(
+                                        new BatchEE(
+                                                makeLoaderAware(BatchEEMBean.class, new Class<?>[]{ BatchEEMBean.class },
+                                                        BatchEEMBeanImpl.INSTANCE)),
+                                        jmxName);
+                            } else {
+                                jmxName = null;
+                                LOGGER.warning("You didn't specify org.apache.batchee.jmx.application and JMX is already registered, skipping");
+                            }
+                        } catch (final Exception e) {
+                            throw new IllegalStateException(e);
+                        }
+                    }
+
                     isInited = Boolean.TRUE;
+                }
+            }
+        }
+    }
+
+    public void close() {
+        if (isInited) {
+            synchronized (isInitedLock) {
+                if (isInited) {
+                    service(BatchThreadPoolService.class).shutdown();
+                    synchronized (serviceRegistry) {
+                        for (final Object service : serviceRegistry.values()) {
+                            if (Closeable.class.isInstance(service)) {
+                                try {
+                                    Closeable.class.cast(service).close();
+                                } catch (IOException e) { // don't make it blocking, on j7 we can use suppressed maybe?
+                                    LOGGER.log(Level.SEVERE, e.getMessage(), e);
+                                }
+                            }
+                        }
+                    }
+
+
+                    if (jmxName != null) { // unregister jmx bean if deployed in an app
+                        final MBeanServer jmx = ManagementFactory.getPlatformMBeanServer();
+                        try {
+                            jmx.unregisterMBean(jmxName);
+                        } catch (final Exception e) {
+                            // no-op
+                        }
+                    }
+                    isInited = false;
                 }
             }
         }

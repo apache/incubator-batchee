@@ -16,18 +16,16 @@
  */
 package org.apache.batchee.container.impl;
 
-import org.apache.batchee.container.Init;
-import org.apache.batchee.container.services.BatchKernelService;
-import org.apache.batchee.container.services.InternalJobExecution;
-import org.apache.batchee.container.services.JobStatusManagerService;
-import org.apache.batchee.container.services.ServicesManager;
-import org.apache.batchee.container.status.JobStatus;
-import org.apache.batchee.jmx.BatchEE;
-import org.apache.batchee.jmx.BatchEEMBean;
-import org.apache.batchee.jmx.BatchEEMBeanImpl;
-import org.apache.batchee.spi.JobExecutionCallbackService;
-import org.apache.batchee.spi.JobXMLLoaderService;
-import org.apache.batchee.spi.PersistenceManagerService;
+import java.io.IOException;
+import java.io.StringWriter;
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Properties;
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.batch.operations.JobExecutionAlreadyCompleteException;
 import javax.batch.operations.JobExecutionIsRunningException;
@@ -44,52 +42,23 @@ import javax.batch.runtime.BatchStatus;
 import javax.batch.runtime.JobExecution;
 import javax.batch.runtime.JobInstance;
 import javax.batch.runtime.StepExecution;
-import javax.management.MBeanServer;
-import javax.management.ObjectName;
-import java.io.IOException;
-import java.io.StringWriter;
-import java.lang.management.ManagementFactory;
-import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Properties;
-import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
-import static org.apache.batchee.container.util.ClassLoaderAwareHandler.makeLoaderAware;
+import org.apache.batchee.container.Init;
+import org.apache.batchee.container.services.BatchKernelService;
+import org.apache.batchee.container.services.InternalJobExecution;
+import org.apache.batchee.container.services.JobStatusManagerService;
+import org.apache.batchee.container.services.ServicesManager;
+import org.apache.batchee.container.status.JobStatus;
+import org.apache.batchee.spi.JobExecutionCallbackService;
+import org.apache.batchee.spi.JobXMLLoaderService;
+import org.apache.batchee.spi.PersistenceManagerService;
 
 
-public class JobOperatorImpl implements JobOperator, AutoCloseable {
+public class JobOperatorImpl implements JobOperator {
     private static final Logger LOGGER = Logger.getLogger(JobOperatorImpl.class.getName());
 
     static {
         Init.doInit();
-
-        if (Boolean.parseBoolean(ServicesManager.value("org.apache.batchee.jmx", "true"))) {
-            try {
-                final MBeanServer platformMBeanServer = ManagementFactory.getPlatformMBeanServer();
-                final String app = ServicesManager.value("org.apache.batchee.jmx.application", "");
-                final ObjectName name;
-                if (app.isEmpty()) {
-                    name = new ObjectName(BatchEEMBean.DEFAULT_OBJECT_NAME);
-                } else {
-                    name = new ObjectName(BatchEEMBean.DEFAULT_OBJECT_NAME + ",application=" + app);
-                }
-
-                if (platformMBeanServer.isRegistered(name)) {
-                    platformMBeanServer.unregisterMBean(name);
-                }
-
-                platformMBeanServer.registerMBean(
-                    new BatchEE(
-                        makeLoaderAware(BatchEEMBean.class, new Class<?>[]{ BatchEEMBean.class }, BatchEEMBeanImpl.INSTANCE)),
-                    name);
-            } catch (final Exception e) {
-                throw new IllegalStateException(e);
-            }
-        }
     }
 
     private final BatchKernelService kernelService;
@@ -113,10 +82,6 @@ public class JobOperatorImpl implements JobOperator, AutoCloseable {
 
     public JobOperatorImpl() {
         this(ServicesManager.find());
-    }
-
-    public void close() throws Exception {
-
     }
 
     @Override
