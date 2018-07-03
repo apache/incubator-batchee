@@ -46,12 +46,12 @@ public class SimpleJobExecutionCallbackService implements JobExecutionCallbackSe
 
     @Override
     public void waitFor(final long id) {
-        Collection<CountDownLatch> toRealease = waiters.remove(id);
-        if (toRealease == null) {
-            toRealease = new CopyOnWriteArrayList<CountDownLatch>();
-            final Collection<CountDownLatch> existing = waiters.putIfAbsent(id, toRealease);
+        Collection<CountDownLatch> toRelease = waiters.get(id);
+        if (toRelease == null) {
+            toRelease = new CopyOnWriteArrayList<CountDownLatch>();
+            final Collection<CountDownLatch> existing = waiters.putIfAbsent(id, toRelease);
             if (existing != null) {
-                toRealease = existing;
+                toRelease = existing;
             }
         }
 
@@ -63,9 +63,10 @@ public class SimpleJobExecutionCallbackService implements JobExecutionCallbackSe
         }
 
         final CountDownLatch latch = new CountDownLatch(1);
-        toRealease.add(latch);
+        toRelease.add(latch);
         try {
             latch.await();
+            waiters.remove(id);
         } catch (final InterruptedException e) {
             throw new BatchContainerRuntimeException(e);
         }
