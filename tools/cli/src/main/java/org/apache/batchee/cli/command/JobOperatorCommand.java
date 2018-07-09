@@ -48,8 +48,7 @@ import static java.lang.Thread.currentThread;
  * Note: the classloader is created from libs command, it is handy to organize batches
  *       by folders to be able to run them contextual using this command.
 */
-public abstract class JobOperatorCommand implements Runnable {
-    // Remote config
+public abstract class JobOperatorCommand implements Runnable {    // Remote config
 
     @Option(name = "url", description = "when using JAXRS the batchee resource url")
     protected String baseUrl = null;
@@ -178,6 +177,8 @@ public abstract class JobOperatorCommand implements Runnable {
             if (lifecycle != null) {
                 lifecycleInstance = createLifecycle(loader);
                 state = lifecycleInstance.start();
+
+                registerShutdownHook(lifecycleInstance, state);
             } else {
                 lifecycleInstance = null;
                 state = null;
@@ -193,6 +194,19 @@ public abstract class JobOperatorCommand implements Runnable {
         } finally {
             currentThread().setContextClassLoader(oldLoader);
         }
+    }
+
+    private void registerShutdownHook(final Lifecycle<Object> lifecycleInstance, final Object state) {
+        Runtime.getRuntime().addShutdownHook(new Thread() {
+            @Override
+            public void run() {
+                // as System.out as the Logger might already be resetted.
+                // Additionally we want to give this message to the person hitting Ctrl-C
+                // and not
+                System.out.println("\n    Shutting down the JBatch engine started...\n");
+                lifecycleInstance.stop(state);
+             }
+        });
     }
 
     private Lifecycle<Object> createLifecycle(final ClassLoader loader) {

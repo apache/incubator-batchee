@@ -18,6 +18,8 @@ package org.apache.batchee.cli.lifecycle.impl;
 
 import org.apache.batchee.cli.classloader.ChildFirstURLClassLoader;
 import org.apache.batchee.container.exception.BatchContainerRuntimeException;
+import org.apache.batchee.container.services.ServicesManager;
+import org.apache.batchee.spi.BatchThreadPoolService;
 import org.apache.openejb.OpenEjbContainer;
 import org.apache.openejb.UndeployException;
 import org.apache.openejb.assembler.classic.AppInfo;
@@ -39,11 +41,14 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 // EJBContainer doesn't support war deployment
 public class OpenEJBLifecycle extends LifecycleBase<Object> {
     private Assembler assembler = null;
     private AppInfo info = null;
+
+    private AtomicBoolean running = new AtomicBoolean(false);
 
     @Override
     public Object start() {
@@ -78,6 +83,7 @@ public class OpenEJBLifecycle extends LifecycleBase<Object> {
                         assembler = SystemInstance.get().getComponent(Assembler.class);
                         assembler.createApplication(info, loader);
 
+                        running.set(true);
                         return initialContext;
                     } catch (final Exception e) {
                         throw new BatchContainerRuntimeException(e);
@@ -94,6 +100,13 @@ public class OpenEJBLifecycle extends LifecycleBase<Object> {
 
     @Override
     public void stop(final Object state) {
+        if (!running.compareAndSet(true, false)) {
+            return;
+        }
+
+        BatchThreadPoolService threadPoolService = ServicesManager.find().service(BatchThreadPoolService.class);
+        threadPoolService.shutdown();
+
         if (state != null) {
             if (assembler != null && info != null) {
                 try {
