@@ -95,7 +95,7 @@
         <include>org.apache.tomee:openejb-loader</include>
         <include>org.apache.tomee:openejb-jpa-integration</include>
         <include>org.apache.tomee:mbean-annotation-api</include>
-        <include>org.apache.tomee.shade:quartz-openejb-shade</include>
+        <include>org.apache.openejb.shade:quartz-openejb-shade</include>
         <include>org.metatype.sxc:sxc-runtime</include>
         <include>org.metatype.sxc:sxc-jaxb-core</include>
         <include>org.apache.geronimo.components:geronimo-transaction</include>
