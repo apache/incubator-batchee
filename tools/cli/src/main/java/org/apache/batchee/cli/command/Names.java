@@ -31,6 +31,9 @@ import java.util.regex.Pattern;
 
 @Command(name = "names", description = "list known batches")
 public class Names extends JobOperatorCommand {
+
+    private static final Pattern JOB_XML_PATTERN = Pattern.compile("META-INF/batch-jobs/(.*)\\.xml");
+
     @Override
     public void doRun() {
         final Set<String> names = operator().getJobNames();
@@ -63,22 +66,28 @@ public class Names extends JobOperatorCommand {
                 }
             }
         }
+        info("-----");
     }
 
     private void findInJar(final File file) {
-        final Pattern pattern = Pattern.compile("META\\-INF/batch-jobs/\\(*\\).xml");
         final JarFile jar;
         try {
             jar = new JarFile(file);
         } catch (final IOException e) {
+            info(String.format("could not load jobs in file %s", file.getAbsolutePath()));
             return;
         }
         final Enumeration<JarEntry> entries = jar.entries();
         while (entries.hasMoreElements()) {
             final JarEntry entry = entries.nextElement();
-            final Matcher matcher = pattern.matcher(entry.getName());
+
+            if (entry.isDirectory()) {
+                continue;
+            }
+
+            final Matcher matcher = JOB_XML_PATTERN.matcher(entry.getName());
             if (matcher.matches()) {
-                info(matcher.group(1) + "*");
+                info(matcher.group(1));
             }
         }
     }
@@ -92,7 +101,7 @@ public class Names extends JobOperatorCommand {
         });
         if (batches != null) {
             for (final String batch : batches) {
-                info(batch + "*");
+                info(batch);
             }
         }
     }
@@ -101,7 +110,7 @@ public class Names extends JobOperatorCommand {
         final File file;
         final String externalForm = url.toExternalForm();
         if ("jar".equals(url.getProtocol())) {
-            file = new File(externalForm.substring("jar:".length(), externalForm.lastIndexOf('!')));
+            file = new File(externalForm.substring("jar:file:".length(), externalForm.lastIndexOf('!')));
         } else if ("file".equals(url.getProtocol())) {
             file = new File(externalForm.substring("file:".length()));
         } else {
