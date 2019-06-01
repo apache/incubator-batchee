@@ -15,6 +15,10 @@
 // limitations under the License.
 //
 
+
+WARNING: this project is moving over Apache Geronimo umbrella project, new source repository is available at https://gitbox.apache.org/repos/asf?p=geronimo-batchee.git and
+website should follow at https://geronimo.apache.org/batchee/.
+
 = Apache JBatch
 Apache BatchEE is a project providing an implementation of JBatch (aka jsr-352) and a set of useful extension for this specification.
 
