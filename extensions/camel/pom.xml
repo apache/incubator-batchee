@@ -54,6 +54,6 @@
     </dependencies>
 
     <properties>
-        <camel.version>2.11.1</camel.version>
+        <camel.version>2.24.2</camel.version>
     </properties>
 </project>
