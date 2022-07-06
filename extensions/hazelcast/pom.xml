@@ -43,6 +43,6 @@
     </dependencies>
 
     <properties>
-        <hazelcast.version>3.1</hazelcast.version>
+        <hazelcast.version>3.11</hazelcast.version>
     </properties>
 </project>
