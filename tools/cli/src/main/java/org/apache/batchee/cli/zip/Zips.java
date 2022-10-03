@@ -44,6 +44,9 @@ public class Zips {
             while ((entry = in.getNextEntry()) != null) {
                 final String path = entry.getName();
                 final File file = new File(destination, path);
+                if (!file.toPath().normalize().startsWith(destination.toPath().normalize())) {
+                    throw new IOException("Bad zip entry");
+                }
 
                 if (entry.isDirectory()) {
                     continue;
